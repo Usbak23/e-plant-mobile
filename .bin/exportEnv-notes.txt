@@ -1,0 +1,26 @@
+Auto
+- git checkout staging
+- git pull origin staging
+- git merge development
+- ./arvis export staging (change env)
+- if you are using linux and have problem. Try to execute this: bash ./arvis exportLinux staging
+- ./arvis bump patch (update version)
+- react-native run-android (test it first)
+- delete folder .gradle in /android
+- yarn build (bundle)
+- yarn buildAPK (apk)
+
+
+Manual:
+- open __config__ folder
+- Copy paste the contents of config that you want to change 
+  - example: copy .bin/config-staging/config.json file, paste it in __config__ folder (overwrite)
+- Change the package name 
+  - Dev to Staging -> com.eplant to id.eplant.app.android.staging 
+  - Staging to Dev -> id.eplant.app.android.staging to com.eplant
+- Change app display name 
+  - android -> app -> src -> main -> res -> values -> strings.xml
+      - Dev to Staging -> E-Plant (Dev) to E-Plant (Staging) 
+      - Staging to Dev -> E-Plant (Staging) to E-Plant (Dev)
+  - Dev: E-Plant (Dev)
+  - Staging: E-Plant (Staging)

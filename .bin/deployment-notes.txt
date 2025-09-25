@@ -1,0 +1,9 @@
+- git pull origin Development
+- ./arvis bump patch
+- remove console.log
+- react-native run-android (test it first)
+- delete folder .gradle in /android
+- yarn build
+
+
+APK/Bundle file = android -> app -> build -> outputs

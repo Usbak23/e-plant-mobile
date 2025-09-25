@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "632377942421",
+    "project_id": "e-plantation",
+    "storage_bucket": "e-plantation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:632377942421:android:21a781c048d9e08dfb969c",
+        "android_client_info": {
+          "package_name": "id.eplant.app.android.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "632377942421-m660vtehrldoukln31rs25cis6e0fjkr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZGkmNCFg0R3c8EvDKzBFpwN-_T7D4in8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "632377942421-m660vtehrldoukln31rs25cis6e0fjkr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,24 @@
+{
+    "appName": "eplant",
+    "displayName": "E-plant (UAT STG)",
+    "androidAppId": "id.eplant.app.android.staging",
+    "iosBundleId": "id.eplant.app.android.staging",
+    "googleSignInConfig": {
+      "scopes": ["profile", "email"],
+      "webClientId": "",
+      "iosClientId": "",
+      "iosClientIdReverse": "",
+      "offlineAccess": false
+    },
+    "firebaseConfig": {
+      "apiKey": "",
+      "authDomain": "",
+      "projectId": "eplant-staging",
+      "storageBucket": "",
+      "messagingSenderId": "",
+      "appId": "",
+      "measurementId": ""
+    },
+    "eplantDomain": "https://eplant-stg.arvis-engineering.net"
+  }
+  

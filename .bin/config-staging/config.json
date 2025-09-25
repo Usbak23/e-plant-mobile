@@ -1,0 +1,33 @@
+{
+  "appName": "eplant",
+  "displayName": "E-plant (Staging)",
+  "androidAppId": "id.eplant.app.android.staging",
+  "iosBundleId": "id.eplant.app.android.staging",
+  "googleSignInConfig": {
+    "scopes": ["profile", "email"],
+    "webClientId": "",
+    "iosClientId": "",
+    "iosClientIdReverse": "",
+    "offlineAccess": false
+  },
+  "firebaseConfig": {
+    "apiKey": "",
+    "authDomain": "",
+    "projectId": "eplant-staging",
+    "storageBucket": "",
+    "messagingSenderId": "",
+    "appId": "",
+    "measurementId": ""
+  },
+  "eplantDomain": "https://eplant-stg.arvis-engineering.net",
+  "branchIO": {
+    "applicationName": "Arvis - E-Plantation (Staging)",
+    "appID": "1032492880276509260",
+    "defaultFallbackURL": "https://www.arvis.id",
+    "androidURL": "arvis-eplantation://",
+    "package": "id.eplant.app.android.staging",
+    "defaultLinkDomain": "arvisstg-eplantation.app.link",
+    "branchKey": "key_live_mcXRDrxcdKAL2i9CXSkGniilDyoNBk1e",
+    "branchSecret": "secret_live_KcfYkJ15YaJLCXyWURaUv4hY8RfkdJqF"
+  }
+}

@@ -1,0 +1,41 @@
+E-Plantation - Arvis
+
+Version: 0.0.1x (1x) - 23 December 2021 [Not deployed yet]
+
+- #271 [5 Story Point] As a User, I want to be able to see the list of BPBKS, so that I analyze and see the result of my Panen for each TPH
+- #272 [8 Story Point] As a User, I want to be able to create and edit a new BPBKS, so that I can input panen quality and result for a specific date and specific division.
+- #273 [5 Story Point] As a User, I want to be able to see the list of Tonase Kebun, so that I can see total tonase of each kebun. **(Searching not work. need BE changes)** 
+- #274 [5 Story Point] As a User, I want to be able to create and edit a new Tonase Kebun, so that I can input weight of each Kebun tonnage. 
+- #275 [2 Story Point] As a User, I want to be able to see the detail of Tonase Kebun, so that I can see the result of kebun tonnage.
+- #276 [5 Story Point] As a User, I want to be able to see the list of Tonase PKS, so that I can see the result of my PKS tonnage. **(List paginated buggy with filter org and date (Need BE fix). Also sorting not work. Searching also not working (Need BE fix)**
+- #277 [5 Story Point] As a User, I want to be able to create and edit a new Tonase PKS, so that I can see the difference between my PKS and Kebun tonnage.
+- #278 [2 Story Point] As a User, I want to be able to see the detailed information of Tonase PKS. So that I can analyze the result for each PKS tonnage.
+- #279 [1 Story Point] Touch up master data equipment/tools (Sewa/Milik Sendiri).
+- #257 [1 Story Point] Touch up Master Data Material (Nambahin nama organisasi di list material).
+
+Bug Fixes:
+- MB 106: Need to refresh PMA page to see newest data. (It is actually not FE bug, it is because BE query cache. For now, I delayed it for 1 second, hopefully BE give the latest result) https://gitlab.com/arvis-team/eplantation-mobile-bugs/-/issues/106
+- MB 103: Cannot export BKM
+- #98 fix Can add mandor with have no access with Division on BKM
+- #99 fix Crash when add BKM without fill Blok information
+- Autofill untuk blok yang sudah ter input di Form BKM (VIEW ONLY)
+- Validasi Aggregate hk, max 1 dalam 1 karyawan
+- Tambah column blok di table BKM
+- Tambah info blok name di card bkm list
+#95 Sometimes RKH Menu gone from apk
+#114 When edit PMA, it will delete others PMA
+#121 Random netto not valid tonase kebun
+#123 Supir empty when should show
+#124 Netto tidak valid tonase pks
+#100 fix Can add Hasil Kerja HA more than Luas Blok
+#115 validasi buah matang tidak boleh kurang dari 0
+#119 Satuan Janjang should be Janjang not Kg
+#122 fix export XLS data not valid on tonase kebun
+
+
+Notes:
+Per tanggal 23 Dec 2021, Pukul 7:10 Pagi.
+- Searching tonase kebun gak work (butuh BE fix)
+- Searching tonase pks gak work (butuh BE fix)
+- Delete tonase pks belum ada endpoinya, jadi gak works (nunggu BE)
+- Nge list data Tonase PKS gak work properly. Gak dapet response kalao filter by organisasi atau tanggal. (Need BE fix)

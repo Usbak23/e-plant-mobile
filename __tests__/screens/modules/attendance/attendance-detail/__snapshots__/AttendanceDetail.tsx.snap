@@ -1,0 +1,559 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Screen.Modules.AttendanceDetail should render correctly 1`] = `
+<View
+  onLayout={[Function]}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+        },
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+  >
+    <RCTSafeAreaView
+      emulateUnlessSupported={true}
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingHorizontal": 22,
+              "paddingVertical": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "flex-start",
+            }
+          }
+        >
+          <View
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            nativeID="animatedComponent"
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              Object {
+                "opacity": 1,
+              }
+            }
+            testID="headerBackButton"
+          >
+            <Text
+              allowFontScaling={false}
+              style={
+                Array [
+                  Object {
+                    "color": "#000",
+                    "fontSize": 22,
+                  },
+                  undefined,
+                  Object {
+                    "fontFamily": "Material Icons",
+                    "fontStyle": "normal",
+                    "fontWeight": "normal",
+                  },
+                  Object {},
+                ]
+              }
+            >
+              
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexGrow": 10,
+            }
+          }
+        >
+          <Text
+            numberOfLines={2}
+            style={
+              Array [
+                Object {
+                  "fontFamily": "OpenSans-SemiBold",
+                  "fontSize": 27,
+                },
+                Object {
+                  "color": "#24272B",
+                },
+                Object {
+                  "fontSize": 27,
+                },
+                Object {
+                  "paddingHorizontal": 8,
+                  "textAlign": "center",
+                },
+              ]
+            }
+          >
+            Absensi - 5 Aug 2022
+          </Text>
+        </View>
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+              "justifyContent": "flex-end",
+            }
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "paddingHorizontal": 16,
+          }
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "flex": 1,
+              }
+            }
+          >
+            <Text
+              style={
+                Array [
+                  Object {
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 27,
+                  },
+                  Object {
+                    "color": "#24272B",
+                  },
+                  Object {
+                    "fontSize": 27,
+                  },
+                  undefined,
+                ]
+              }
+            >
+               - 
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            Array [
+              Object {
+                "flexDirection": "row",
+                "marginVertical": 8,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              Object {
+                "flex": 1,
+                "flexDirection": "row",
+              }
+            }
+          >
+            <TextInput
+              onChangeText={[Function]}
+              placeholder="Masukkan kata kunci"
+              placeholderTextColor="#AFB9C7"
+              style={
+                Array [
+                  Object {
+                    "backgroundColor": "#F1F3F6",
+                    "borderRadius": 5,
+                    "color": "#515151",
+                    "flex": 1,
+                    "height": 40,
+                    "paddingLeft": 35,
+                    "width": "100%",
+                  },
+                ]
+              }
+              value=""
+            />
+            <View
+              style={
+                Object {
+                  "left": 11,
+                  "position": "absolute",
+                  "top": 14,
+                }
+              }
+            >
+              <Text
+                allowFontScaling={false}
+                style={
+                  Array [
+                    Object {
+                      "color": "#515151",
+                      "fontSize": 14,
+                    },
+                    undefined,
+                    Object {
+                      "fontFamily": "anticon",
+                      "fontStyle": "normal",
+                      "fontWeight": "normal",
+                    },
+                    Object {},
+                  ]
+                }
+              >
+                
+              </Text>
+            </View>
+          </View>
+        </View>
+        <RCTScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View>
+            <View
+              style={
+                Object {
+                  "marginBottom": 1,
+                  "marginTop": 16,
+                }
+              }
+            >
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans-Regular",
+                      "fontSize": 26,
+                    },
+                    Object {
+                      "color": "#24272B",
+                    },
+                    Object {
+                      "fontSize": 27,
+                    },
+                    Object {
+                      "alignSelf": "center",
+                    },
+                  ]
+                }
+              >
+                Tidak ada data
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+      <Modal
+        animationType="none"
+        hardwareAccelerated={false}
+        transparent={true}
+        visible={false}
+      >
+        <View
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          nativeID="animatedComponent"
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            Object {
+              "backgroundColor": "rgba(0,0,0, 0.6)",
+              "flex": 1,
+              "justifyContent": "center",
+              "opacity": 1,
+            }
+          }
+          testID="modalAskOnTouchOutside"
+        >
+          <View
+            accessible={true}
+            focusable={false}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              Object {
+                "alignItems": "center",
+                "backgroundColor": "white",
+                "borderRadius": 12,
+                "elevation": 5,
+                "marginHorizontal": 18,
+                "paddingBottom": 10,
+                "paddingHorizontal": 18,
+                "paddingVertical": 18,
+                "shadowColor": "#000",
+                "shadowOffset": Object {
+                  "height": 2,
+                  "width": 0,
+                },
+                "shadowOpacity": 0.25,
+                "shadowRadius": 3.84,
+              }
+            }
+          >
+            <Text
+              allowFontScaling={false}
+              style={
+                Array [
+                  Object {
+                    "color": "#E95675",
+                    "fontSize": 48,
+                  },
+                  undefined,
+                  Object {
+                    "fontFamily": "Material Icons",
+                    "fontStyle": "normal",
+                    "fontWeight": "normal",
+                  },
+                  Object {},
+                ]
+              }
+            >
+              
+            </Text>
+            <Text
+              style={
+                Array [
+                  Object {
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 27,
+                  },
+                  Object {
+                    "color": "#24272B",
+                  },
+                  Object {
+                    "fontSize": 27,
+                  },
+                  Array [
+                    Object {
+                      "alignSelf": "center",
+                      "textAlign": "center",
+                    },
+                    Object {
+                      "marginVertical": 16,
+                    },
+                  ],
+                ]
+              }
+            >
+              Anda yakin ingin menghapus karyawan ini dari daftar absensi?
+            </Text>
+            <Text
+              style={
+                Array [
+                  Object {
+                    "fontFamily": "OpenSans-Regular",
+                    "fontSize": 26,
+                  },
+                  Object {
+                    "color": "#9C9C9C",
+                  },
+                  Object {
+                    "fontSize": 24,
+                  },
+                  Array [
+                    Object {
+                      "alignSelf": "center",
+                      "textAlign": "center",
+                    },
+                    Object {
+                      "marginBottom": 16,
+                    },
+                  ],
+                ]
+              }
+            >
+              Data absensi akan diperbarui
+            </Text>
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "marginHorizontal": -8,
+                }
+              }
+            >
+              <View
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                nativeID="animatedComponent"
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#E95675",
+                    "borderColor": "#E5E5E5",
+                    "borderRadius": 15,
+                    "justifyContent": "center",
+                    "marginHorizontal": 8,
+                    "marginVertical": 8,
+                    "opacity": 1,
+                    "paddingHorizontal": 60,
+                    "paddingVertical": 12,
+                  }
+                }
+                testID="modalAskPositiveButton"
+              >
+                <Text
+                  style={
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans-Regular",
+                        "fontSize": 26,
+                      },
+                      Object {
+                        "color": "white",
+                      },
+                      Object {
+                        "fontSize": 27,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  Hapus
+                </Text>
+              </View>
+              <View
+                accessible={true}
+                collapsable={false}
+                focusable={true}
+                nativeID="animatedComponent"
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  Object {
+                    "alignItems": "center",
+                    "backgroundColor": "#24272B",
+                    "borderColor": "#E5E5E5",
+                    "borderRadius": 15,
+                    "justifyContent": "center",
+                    "marginHorizontal": 8,
+                    "marginVertical": 8,
+                    "opacity": 1,
+                    "paddingHorizontal": 60,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans-Regular",
+                        "fontSize": 26,
+                      },
+                      Object {
+                        "color": "white",
+                      },
+                      Object {
+                        "fontSize": 27,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  Cancel
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </RCTSafeAreaView>
+  </View>
+  <RCTSafeAreaView
+    emulateUnlessSupported={true}
+    pointerEvents="box-none"
+    style={
+      Object {
+        "bottom": 0,
+        "left": 0,
+        "position": "absolute",
+        "right": 0,
+        "top": 0,
+      }
+    }
+  >
+    <View
+      collapsable={false}
+      onLayout={[Function]}
+      pointerEvents="box-none"
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    />
+  </RCTSafeAreaView>
+</View>
+`;

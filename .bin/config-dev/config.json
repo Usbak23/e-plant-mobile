@@ -1,0 +1,33 @@
+{
+  "appName": "eplant",
+  "displayName": "E-plant (Dev)",
+  "androidAppId": "com.eplant",
+  "iosBundleId": "com.eplant",
+  "googleSignInConfig": {
+    "scopes": ["profile", "email"],
+    "webClientId": "",
+    "iosClientId": "",
+    "iosClientIdReverse": "",
+    "offlineAccess": false
+  },
+  "firebaseConfig": {
+    "apiKey": "",
+    "authDomain": "",
+    "projectId": "eplant-dev",
+    "storageBucket": "",
+    "messagingSenderId": "",
+    "appId": "",
+    "measurementId": ""
+  },
+  "eplantDomain": "https://eplant.arvis-engineering.net",
+  "branchIO": {
+    "applicationName": "Arvis - E-Plantation (Dev)",
+    "appID": "969438753548423994",
+    "defaultFallbackURL": "https://www.arvis.id",
+    "androidURL": "arvis-eplantation://",
+    "package": "com.eplant",
+    "defaultLinkDomain": "arvisdev-eplantation.app.link",
+    "branchKey": "key_live_lhWFzXCckUa4vLOm8WJj6aloAqf7k8PH",
+    "branchSecret": "secret_live_P43eCe2r0eKtxDGkYfP8fQGescAjj1w6"
+  }
+}

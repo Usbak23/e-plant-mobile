@@ -1,0 +1,24 @@
+{
+    "appName": "eplant",
+    "displayName": "E-plant (UAT DEV)",
+    "androidAppId": "com.eplant",
+    "iosBundleId": "com.eplant",
+    "googleSignInConfig": {
+      "scopes": ["profile", "email"],
+      "webClientId": "",
+      "iosClientId": "",
+      "iosClientIdReverse": "",
+      "offlineAccess": false
+    },
+    "firebaseConfig": {
+      "apiKey": "",
+      "authDomain": "",
+      "projectId": "eplant-dev",
+      "storageBucket": "",
+      "messagingSenderId": "",
+      "appId": "",
+      "measurementId": ""
+    },
+    "eplantDomain": "https://eplant.arvis-engineering.net"
+  }
+  

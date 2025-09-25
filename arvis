@@ -1,0 +1,155 @@
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CURRENT_BRANCH="$(git branch --show-current)"
+GIT_USERNAME=$GITLAB_USERNAME
+GIT_PASSWORD=$GITLAB_PASSWORD
+
+function bump {
+  BUMP_TYPE=$2
+  echo "bump type $BUMP_TYPE"
+
+  if [[ $BUMP_TYPE = "major" ]]
+  then
+    npx react-native bump-version --type $BUMP_TYPE
+  elif [[ $BUMP_TYPE = "minor" ]]
+  then
+    npx react-native bump-version --type $BUMP_TYPE
+  elif [[ $BUMP_TYPE = "patch" ]]
+  then
+    npx react-native bump-version --type $BUMP_TYPE
+  else
+    echo "2nd argument not accepted, only accept 'major', 'minor' or 'patch'"
+  fi
+}
+
+function export {
+  ENV=$2
+  OPTION_ARG=$3
+  echo "env $ENV"
+  echo "opt $OPTION_ARG"
+
+  if [[ $ENV = "dev" ]] || [[ $ENV = "dev-uat" ]] || [[ $ENV = "staging" ]] || [[ $ENV = "staging-uat" ]] || [[ $ENV = "prod" ]]
+  then
+    cd $SCRIPT_DIR
+    sh ./.bin/export $ENV $OPTION_ARG
+  else
+    echo "2nd argument not accepted, only accept 'dev', 'staging' or 'prod'"
+  fi
+}
+
+function exportLinux {
+  ENV=$2
+  OPTION_ARG=$3
+  echo "env $ENV"
+  echo "opt $OPTION_ARG"
+
+  if [[ $ENV = "dev" ]] || [[ $ENV = "dev-uat" ]] || [[ $ENV = "staging" ]] || [[ $ENV = "staging-uat" ]] || [[ $ENV = "prod" ]]
+  then
+    cd $SCRIPT_DIR
+    bash ./.bin/exportLinux $ENV $OPTION_ARG
+  else
+    echo "2nd argument not accepted, only accept 'dev', 'staging' or 'prod'"
+  fi
+}
+
+function run {
+  PLATFORM=$2
+  echo "platform $PLATFORM"
+
+  if [[ $PLATFORM = "android" ]] || [[ $PLATFORM = "ios" ]]
+  then
+    cd $SCRIPT_DIR
+    npx react-native run-$PLATFORM
+  else
+    echo "2nd argument not accepted, only accept 'android' or 'ios'"
+  fi
+}
+
+function build {
+  PLATFORM=$2
+  echo "platform $PLATFORM"
+
+  if [[ $PLATFORM = "android" ]]
+  then
+    cd $SCRIPT_DIR/android
+    ./gradlew assembleRelease --warning-mode all
+    cd $SCRIPT_DIR
+  else
+    echo "2nd argument not accepted, only accept 'android'"
+  fi
+}
+
+function push {
+  PLATFORM=$2
+  ENV=$3
+
+  if [[ $PLATFORM = "android" ]] || [[ $PLATFORM = "ios" ]]
+  then
+    if [[ $ENV = 'dev' ]] || [[ $ENV = 'staging' ]] || [[ $ENV = 'prod' ]]
+    then
+      cd $SCRIPT_DIR
+      sh ./.bin/distribution/firebase-upload $PLATFORM $ENV
+    else
+      echo "only accept [dev|staging|prod]"
+    fi
+  else
+    echo "only accept [android|ios]"
+  fi
+}
+
+function commit {
+  APP_VERSION="$( jq -r .version $SCRIPT_DIR/package.json )"
+  MESSAGE="[skip ci] bump version $APP_VERSION"
+  REPO_ADDRESS="https://$GIT_USERNAME:$GIT_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git"
+
+  cd $SCRIPT_DIR
+  pwd
+  git add .
+  git commit -m "$MESSAGE"
+  echo $REPO_ADDRESS
+  git push $REPO_ADDRESS $CURRENT_BRANCH
+  echo "commit message: $MESSAGE"
+  git status
+}
+
+function main {
+  cd $SCRIPT_DIR
+  if [[ $1 = "export" ]]
+  then
+    export $1 $2 $3
+  elif [[ $1 = "exportLinux" ]]
+  then
+    exportLinux $1 $2 $3
+  elif [[ $1 = 'run' ]]
+  then
+    run $1 $2
+  elif [[ $1 = 'build' ]]
+  then
+    build $1 $2
+  elif [[ $1 = 'bump' ]]
+  then
+    bump $1 $2
+  elif [[ $1 = 'push' ]]
+  then
+    push $1 $2 $3
+  elif [[ $1 = 'commit' ]]
+  then
+    commit
+  else
+    echo "unknown arg $1, accept [export|run|bump|build|push|commit]"
+  fi
+}
+
+ main $1 $2 $3
+
+## aab ./gradlew bundleRelease
+## apk ./gradlew assembleRelease
+
+# ./arvis export [dev|staging|prod]
+# ./arvis export [dev|staging|prod] --initiate-only
+# ./arvis run [android|ios]
+# ./arvis bump [patch|minor|major]
+# ./arvis build [ios|android]
+# ./arvis push [android|ios] [dev|staging|prod]
+# ./arvis commit

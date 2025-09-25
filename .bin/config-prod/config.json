@@ -1,0 +1,33 @@
+{
+  "appName": "eplant",
+  "displayName": "E-Plantation",
+  "androidAppId": "id.eplant.app.android.production",
+  "iosBundleId": "id.eplant.app.android.production",
+  "googleSignInConfig": {
+    "scopes": ["profile", "email"],
+    "webClientId": "",
+    "iosClientId": "",
+    "iosClientIdReverse": "",
+    "offlineAccess": false
+  },
+  "firebaseConfig": {
+    "apiKey": "",
+    "authDomain": "",
+    "projectId": "eplant-production",
+    "storageBucket": "",
+    "messagingSenderId": "",
+    "appId": "",
+    "measurementId": ""
+  },
+  "eplantDomain": "https://sahabatagrogroup.com",
+  "branchIO": {
+    "applicationName": "Arvis - E-Plantation (Production)",
+    "appID": "1078848708293972480",
+    "defaultFallbackURL": "https://sahabatagrogroup.com",
+    "androidURL": "arvis-eplantation://",
+    "package": "id.eplant.app.android.production",
+    "defaultLinkDomain": "prod-eplantation.app.link",
+    "branchKey": "key_live_ko7M4YNaWEFZkM91dSKlsnjcvslTlfeo",
+    "branchSecret": "secret_live_nFd86EnONDwNTWu8iCDhRA0dCWs72Bfi"
+  }
+}
