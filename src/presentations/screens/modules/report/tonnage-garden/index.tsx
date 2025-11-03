@@ -1,0 +1,395 @@
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { theme } from '@app/presentations/utils/styles'
+import WebView from 'react-native-webview'
+import { Button, EmptyChart, Header, SelectInput, Text } from '@app/presentations/_shared-components'
+import { useDispatch, useSelector } from 'react-redux'
+import { actions, RootStateType } from '@app/domain/states/store'
+import ModalFilter from '@app/presentations/_shared-components/ModalFilter'
+import { useOrganizationOptions } from '@app/domain/states/organization/hooks'
+import { useDivisionsByOrganization } from '@app/domain/states/division/hooks'
+import AntDesign from 'react-native-vector-icons/AntDesign'
+import DateTimePicker, { Event } from '@react-native-community/datetimepicker'
+import moment from 'moment'
+import { useRoute } from '@react-navigation/native'
+import { useLoggedInOrganizationsAndDivision } from '@app/domain/states/user/hooks'
+import downloadFile from '@app/presentations/utils/downloadFile'
+import { showErrorToast, showInfoToast, showSuccessToast } from '@app/presentations/_shared-components/Toast'
+import * as notifications from '@utils/notifications/eksportNotification'
+import * as c from '@utils/notifications/constantsNotificationt'
+import { useRangeMonths, useRangeYear, useRangeYears } from '@app/domain/states/master/hooks'
+
+let debounceSearch: NodeJS.Timeout
+
+const window = Dimensions.get('window')
+const screen = Dimensions.get('screen')
+
+const TonnageGardenReport = () => {
+  const dispatch = useDispatch()
+  const route: any = useRoute()
+  const years = useRangeYears()
+  const months = useRangeMonths()
+  const q = route?.params?.query
+
+  const [dimensions, setDimensions] = useState({ window, screen })
+  const [modalFilter, setModalFilter] = useState(false)
+  const organizations = useLoggedInOrganizationsAndDivision()
+  const [query, setQuery] = useState({
+    search: '',
+    organizationId: q?.organizationId || '',
+    year: q?.year || '',
+    month: q?.month || '',
+    date: q?.date || '',
+  })
+
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false)
+  const tonnageGardenReport = useSelector((state: RootStateType) => state.dashboardAndChart?.tonnageGardenReport)
+  const iframeUrl = tonnageGardenReport?.data?.data?.response?.iframe
+
+  const isValidForm = () => {
+    if (query?.date) {
+      return Boolean(query?.organizationId)
+    } else {
+      if ((!query?.year || !query?.month)) {
+        return false
+      } else {
+        return Boolean(query?.organizationId)
+      }
+    }
+  }
+
+  const constructTitleHelper = () => {
+    const o = organizations.find(org => org.value == query.organizationId)?.label || ''
+    const monthsInStr = months.find(m => m.value == query?.month)?.label || ''
+    return o + ' - ' + (query?.date ? query?.date : `${monthsInStr} ${query.year}`)
+  }
+
+  const refreshMaterializedViews = () => {
+    dispatch(actions.refreshMaterializedViews.request({ loading: true }))
+  }
+
+  const onSubmitFilter = () => {
+    if (!query?.date && (!query?.year || !query?.month)) {
+      showErrorToast('Pilih Tahun dan Bulan terlebih dahulu')
+      return
+    }
+    setModalFilter(false)
+    getData({ ...query })
+  }
+
+  const shouldClearQuery = () => {
+    if (!isValidForm()) {
+      setQuery({
+        ...query,
+        organizationId: q?.organizationId || '',
+        year: q?.year || '',
+        month: q?.month || '',
+        date: q?.date || '',
+      })
+    }
+  }
+
+  const handleExport = async (url: string, fileType: string) => {
+    try {
+      const millis = new Date().getTime()
+      const title = constructTitleHelper()
+      const fileName = `tonase_kebun_${millis}.${fileType}`
+      const tofile = await downloadFile(url, fileName)
+      notifications
+        .onDisplayNotificationExportFile(c.NOTIF_TITLE, c.NOTIF_BODY(fileName), c.EXPORT_NOTIFICATION_ID, {
+          path: tofile,
+        })
+        .then(res => { })
+        .catch(e => { })
+
+      showSuccessToast('Berhasil mengekspor data.')
+    } catch (error: any) {
+      showErrorToast('Gagal saat mengekspor data')
+    }
+  }
+
+  const ChartView = () => (
+    <View>
+      {isValidForm() && (
+        <Text type="semibold" style={{ marginHorizontal: 16, marginTop: 8 }}>
+          {constructTitleHelper()}
+        </Text>
+      )}
+
+      {Boolean(tonnageGardenReport?.loading) && (
+        <Text color={theme.colors.lightGrey} style={{ margin: 16, alignSelf: 'center' }}>
+          Memperbarui
+        </Text>
+      )}
+
+      {iframeUrl && (
+        <WebView
+          onShouldStartLoadWithRequest={request => {
+            try {
+              if (request?.url) {
+                const chunked = request.url.split('/')
+                if (
+                  chunked[chunked.length - 1] == 'xlsx?' ||
+                  chunked[chunked.length - 1] == 'csv?' ||
+                  chunked[chunked.length - 1] == 'json?'
+                ) {
+                  handleExport(request.url, chunked[chunked.length - 1].replace('?', ''))
+                  return false
+                }
+              }
+              return true
+            } catch (e) {
+              console.log('error onShouldStartWithReq:', e)
+              return true
+            }
+          }}
+          style={[
+            styles.webView,
+            dimensions.window.height > dimensions.window.width
+              ? { width: dimensions.window.width, height: dimensions.window.height * 1.2 }
+              : { width: dimensions.window.width, height: dimensions.window.height * 2.3 },
+          ]}
+          source={{ uri: iframeUrl }}
+        />
+      )}
+    </View>
+  )
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
+      setDimensions({ window, screen })
+    })
+    return () => subscription?.remove()
+  })
+
+  const getData = useCallback(data => {
+    dispatch(actions.getTonnageGardenReport.request({ loading: true, data: { ...data } }))
+  }, [])
+
+  const handleSearch = (search: string) => {
+    setQuery({ ...query, search: search })
+    clearTimeout(debounceSearch)
+    debounceSearch = setTimeout(() => {
+      getData({ ...query, search: search })
+    }, 500)
+  }
+
+  useEffect(() => {
+    // refreshMaterializedViews()
+    if (isValidForm()) {
+      getData({ ...query })
+    }
+  }, [])
+
+  return (
+    <SafeAreaView style={styles.root}>
+      <Header title="Laporan Tonase Kebun" />
+      <View style={[styles.container]}>
+        <View style={styles.wrapSearch}>
+          <TextInput
+            value={query.search}
+            onChangeText={handleSearch}
+            placeholderTextColor={theme.colors.grey}
+            placeholder="Masukkan kata kunci"
+            style={[styles.searhInput]}
+          />
+          <View style={styles.icon}>
+            <AntDesign name="search1" size={14} color={theme.colors.textThinBlack} />
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setModalFilter(true)
+            setIsDatePickerOpen(false)
+          }}
+          style={styles.button}>
+          <AntDesign name="filter" size={14} color={theme.colors.textThinBlack} />
+        </TouchableOpacity>
+      </View>
+      <ScrollView>{!isValidForm() ? <EmptyChart /> : <ChartView />}</ScrollView>
+      <ModalFilter
+        isOpen={modalFilter}
+        onTouchOutside={() => {
+          shouldClearQuery()
+          setModalFilter(false)
+          setIsDatePickerOpen(false)
+        }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch', alignItems: 'center' }}>
+          <Text type="semibold" size={13} color="#000000">
+            Filter Tonase Kebun
+          </Text>
+          <TouchableOpacity
+            style={{ padding: 8 }}
+            onPress={() => {
+              setModalFilter(false)
+              shouldClearQuery()
+              setIsDatePickerOpen(false)
+            }}>
+            <AntDesign name="close" size={18} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ width: '100%', marginVertical: 8 }}>
+          <Text size={11} type="semibold">
+            Organisasi
+            <Text size={11} color="red">
+              *
+            </Text>
+          </Text>
+          <SelectInput
+            containerStyle={styles.filterInput}
+            items={organizations}
+            value={query.organizationId}
+            isRequired
+            placeholder="Pilih Organisasi"
+            onChange={organizationId => setQuery({ ...query, organizationId })}
+          />
+        </View>
+
+        <View style={{ width: '100%', marginTop: 8 }}>
+          <SelectInput
+            label="Tahun"
+            style={{ alignSelf: 'stretch' }}
+            // containerStyle={styles.filterInput}
+            items={years}
+            value={query?.year || ''}
+            placeholder="Pilih Tahun"
+            onChange={v => setQuery({ ...query, year: v, date: '' })}
+          />
+        </View>
+
+        <View style={{ width: '100%', marginBottom: 8 }}>
+          <SelectInput
+            label="Bulan"
+            style={{ alignSelf: 'stretch' }}
+            // containerStyle={styles.filterInput}
+            items={months}
+            value={query?.month || ''}
+            placeholder="Pilih Bulan"
+            onChange={v => setQuery({ ...query, month: v, date: '' })}
+          />
+        </View>
+
+
+        <View style={{ width: '100%', marginBottom: 8 }}>
+          <Text size={11} type="semibold">
+            Tanggal
+          </Text>
+          <TouchableOpacity style={{ alignSelf: 'stretch' }} onPress={() => setIsDatePickerOpen(true)}>
+            <TextInput
+              editable={false}
+              placeholderTextColor={theme.colors.darkGray}
+              keyboardType="phone-pad"
+              value={query.date}
+              placeholder="Pilih tanggal"
+              style={[styles.regularInput]}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <Button disabled={!isValidForm()} style={{ width: '100%', marginTop: 20 }} onPress={() => onSubmitFilter()}>
+          <Text color="white">Filter</Text>
+        </Button>
+        <Button style={{ width: '100%', marginTop: 10, backgroundColor: theme.colors.redDark }} onPress={() => {
+          setQuery({ organizationId: '', year: '', month: '', date: '', search: '' })
+        }}>
+          <Text color="white">Reset</Text>
+        </Button>
+      </ModalFilter>
+      {isDatePickerOpen && (
+        <DateTimePicker
+          testID="datepicker-library"
+          value={query.date != '' ? new Date(query.date) : new Date()}
+          onChange={(event: Event, selectedDate: Date | undefined) => {
+            setIsDatePickerOpen(false)
+            if (event.type == 'set') {
+              const stringDate = moment(selectedDate).format('YYYY-MM-DD')
+              setQuery({ ...query, date: stringDate, month: '', year: '' })
+            }
+          }}
+        />
+      )}
+    </SafeAreaView>
+  )
+}
+
+export default TonnageGardenReport
+
+const styles = StyleSheet.create({
+  root: {
+    backgroundColor: theme.colors.pureWhite,
+    flex: 1,
+  },
+  webView: {
+    resizeMode: 'cover',
+    flex: 1,
+  },
+  filterInput: {
+    marginVertical: -16,
+  },
+  container: {
+    paddingHorizontal: 16,
+    marginVertical: 8,
+    flexDirection: 'row',
+  },
+  searhInput: {
+    color: theme.colors.textThinBlack,
+    borderRadius: 5,
+    backgroundColor: '#F1F3F6',
+    height: 40,
+    width: '100%',
+    flex: 1,
+    paddingLeft: 35,
+  },
+  icon: {
+    position: 'absolute',
+    left: 11,
+    top: 14,
+  },
+  button: {
+    borderRadius: 5,
+    backgroundColor: '#F1F3F6',
+    height: 40,
+    width: 40,
+    marginLeft: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  wrapSearch: { flex: 1, flexDirection: 'row' },
+  regularInput: {
+    color: theme.colors.textThinBlack,
+    marginTop: 16,
+    borderColor: theme.colors.defaultBorderColor,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    paddingHorizontal: 16,
+    fontStyle: 'italic',
+    fontSize: 13,
+    alignSelf: 'stretch',
+    fontFamily: Platform.OS !== 'ios' ? 'OpenSans-Regular' : undefined,
+  },
+  textInputTouch: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    alignContent: 'stretch',
+    backgroundColor: 'red',
+  },
+  textV: {
+    fontSize: 12,
+    color: theme.colors.darkGray,
+    alignContent: 'stretch',
+    fontStyle: 'italic',
+    fontFamily: Platform.OS !== 'ios' ? 'OpenSans-Regular' : undefined,
+  },
+})
