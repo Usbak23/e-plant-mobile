@@ -3,7 +3,7 @@ import {SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View} from 'reac
 import {theme} from '@app/presentations/utils/styles'
 import {Button, Header, Text} from '@app/presentations/_shared-components'
 import SelectTonnageGardenFile from './select-file-view'
-import DocumentPicker from 'react-native-document-picker'
+import { pick, keepLocalCopy } from '@react-native-documents/picker'
 import FeatherFolder from '@assets/icons/feather/feather_folder.svg'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import {useNavigation, useRoute} from '@react-navigation/native'
