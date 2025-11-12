@@ -7,7 +7,7 @@ import useYupValidationResolver from '@app/presentations/hooks/useYupValidationR
 import * as schema from '@utils/validation/attendance-file-form-validation'
 import { useForm } from 'react-hook-form'
 import SelectAttendanceFile from './select-file-view'
-import DocumentPicker from 'react-native-document-picker'
+import { pick, keepLocalCopy } from '@react-native-documents/picker'
 import { useWatch } from 'react-hook-form'
 import { theme } from '@app/presentations/utils/styles'
 import FeatherFolder from '@assets/icons/feather/feather_folder.svg'

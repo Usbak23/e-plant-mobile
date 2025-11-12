@@ -1,45 +1,60 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, {useEffect} from 'react'
+// import 'react-native-gesture-handler'
+import App from '@app/presentations/App'
+import {Provider as ReduxProvider} from 'react-redux'
+import flux from '@app/domain/states/store'
+import {StatusBar} from 'react-native'
+import {PersistGate} from 'redux-persist/integration/react'
+import Toast from 'react-native-toast-message'
+import {SafeAreaProvider} from 'react-native-safe-area-context'
+import {ReduxNetworkProvider} from 'react-native-offline'
+import {MenuProvider} from 'react-native-popup-menu'
+import notifee, {EventType} from '@notifee/react-native'
+import FileViewer from 'react-native-file-viewer'
+import * as c from '@utils/notifications/constantsNotificationt'
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+export default function Main() {
+  useEffect(() => {
+    return notifee.onForegroundEvent(({type, detail}) => {
+      switch (type) {
+        case EventType.DISMISSED:
+          console.log('User dismissed notification', detail.notification)
+          break
+        case EventType.PRESS:
+          if (detail?.notification?.android?.channelId == c.EXPORT_NOTIFICATION_CHANNEL) {
+            const path = detail?.notification?.data?.path
+            if (path) {
+              FileViewer.open(decodeURI(path))
+                .then(v => {})
+                .catch((e: any) => {
+                  console.log('Unable to open file from notif:', e)
+                })
+            }
+          }
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+          break
+      }
+    })
+  }, [])
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
+    <MenuProvider>
+      <ReduxProvider store={flux.store}>
+        <ReduxNetworkProvider
+          shouldPing
+          pingInBackground
+          pingInterval={600}
+          pingTimeout={1000}
+          // pingServerUrl={'http://192.168.1.8:5011'}
+        >
+          <PersistGate persistor={flux.persistor}>
+            <SafeAreaProvider>
+              <StatusBar backgroundColor={'white'} barStyle="dark-content" />
+              <App />
+              <Toast ref={(ref: any) => Toast.setRef(ref)} />
+            </SafeAreaProvider>
+          </PersistGate>
+        </ReduxNetworkProvider>
+      </ReduxProvider>
+    </MenuProvider>
+  )
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
