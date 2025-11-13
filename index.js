@@ -7,7 +7,7 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
 import schema from '@models/schema/schema'
 import migrations from '@models/migration/migrations'
-import TPH from '@app/models/schema/tphs'
+import TPH from '@models/schema/tphs'
 // import Post from './model/Post' // ⬅️ You'll import your Models here
 
 // First, create the adapter to the underlying database:
@@ -31,7 +31,7 @@ const adapter = new SQLiteAdapter({
 export const database = new Database({
     adapter,
     modelClasses: [
-        TPH
+        TPH,
         // Post, // ⬅️ You'll add Models to Watermelon here
     ],
 })
