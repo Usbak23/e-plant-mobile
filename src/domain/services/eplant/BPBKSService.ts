@@ -1,11 +1,10 @@
 import qs from 'query-string'
 import IStdResponse from '@app/models/commons/IStdResponse'
-import BaseService from '../BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {IBPBKSFormDataCreate, IBPBKSFormDataUpdate, IBPBKSResponse} from '@app/models/eplant/BPBKS'
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '../types'
 import {GET, POST} from '../utils/http'
-import IPagingDocs from '@app/models/commons/IPagingDocs'
 
 export default class BKMService extends BaseService {
   private get d() {

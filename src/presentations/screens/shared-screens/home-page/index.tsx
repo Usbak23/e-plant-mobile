@@ -8,16 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import {
   useCurrentUserInfo,
   useIsAllowedToSeeAbsensi,
-  useIsAllowedToSeeFieldReport,
-  useIsAllowedToSeeRKH,
-  useIsAllowedToSeeTPH,
-  useUserDataCredential,
+  useIsAllowedToSeeFieldReport
 } from '@app/domain/states/user/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { ROLE_ACCESS_SLUG } from '@app/models/eplant/Role'
-import Icon from 'react-native-vector-icons/MaterialIcons'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import Routes from '@app/presentations/navigation/Routes'
 import { actions, RootStateType } from '@app/domain/states/store'
 import { database } from '@root/index'

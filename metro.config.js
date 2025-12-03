@@ -1,16 +1,27 @@
-const {getDefaultConfig} = require('metro-config')
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const path = require('path');
 
-module.exports = (async () => {
-  const {
-    resolver: {sourceExts, assetExts},
-  } = await getDefaultConfig()
-  return {
-    transformer: {
-      babelTransformerPath: require.resolve('react-native-svg-transformer'),
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '.');
+
+const config = {
+  projectRoot,
+  watchFolders: [workspaceRoot],
+  resolver: {
+    nodeModulesPaths: [path.resolve(projectRoot, 'node_modules')],
+    extraNodeModules: {
+      '@app': path.resolve(projectRoot, 'src'),
+      '@root': path.resolve(projectRoot),
+      '@components': path.resolve(projectRoot, 'src/presentations/_shared-components'),
+      '@navigation': path.resolve(projectRoot, 'src/presentations/navigation'),
+      '@screens': path.resolve(projectRoot, 'src/presentations/screens'),
+      '@styles': path.resolve(projectRoot, 'src/presentations/utils/styles'),
+      '@domain': path.resolve(projectRoot, 'src/domain'),
+      '@models': path.resolve(projectRoot, 'src/models'),
+      '@assets': path.resolve(projectRoot, 'assets'),
+      '@utils': path.resolve(projectRoot, 'src/presentations/utils'),
     },
-    resolver: {
-      assetExts: assetExts.filter(ext => ext !== 'svg'),
-      sourceExts: [...sourceExts, 'svg'],
-    },
-  }
-})()
+  },
+};
+
+module.exports = mergeConfig(getDefaultConfig(projectRoot), config);

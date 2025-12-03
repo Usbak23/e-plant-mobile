@@ -1,6 +1,6 @@
 import qs from 'query-string'
 import IStdResponse from '@app/models/commons/IStdResponse'
-import BaseService from '../BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {IBlockFormData, IBlockRow} from '@app/models/eplant/Block'
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '../types'
