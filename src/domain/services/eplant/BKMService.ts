@@ -1,6 +1,7 @@
 import qs from 'query-string'
 import IStdResponse from '@app/models/commons/IStdResponse'
-import BaseService from '../BaseService'
+import BaseService from '@app/domain/services/BaseServices'
+
 import { IBKMDetail, IBKMFormDataCreate, IBKMFormDataUpdate, IBKMRow } from '@app/models/eplant/BKM'
 import { AxiosResponse } from 'axios'
 import { IRESTApiResponse } from '../types'
