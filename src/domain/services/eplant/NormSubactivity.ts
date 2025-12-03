@@ -1,6 +1,6 @@
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '@app/domain/services/types'
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {GET} from '@app/domain/services/utils/http'
 import qs from 'query-string'
 import {INormSubActivity} from '@app/models/eplant/NormSubactivity'

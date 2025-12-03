@@ -1,4 +1,4 @@
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import { AxiosResponse } from 'axios'
 import { IRESTApiResponse } from '@app/domain/services/types'
 import qs from 'query-string'

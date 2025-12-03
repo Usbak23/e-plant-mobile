@@ -1,4 +1,4 @@
-import * as configJson from './__config__/config.json'
+// import * as configJson from './__config__/config.json'
 
 export interface IGoogleConfig {
   scopes: string[]
@@ -29,7 +29,30 @@ export interface IConfig {
   eplantDomain: string
 }
 
-const Config: IConfig = configJson
+const Config: IConfig = {
+  appName: "",
+  displayName: "",
+  androidAppId: "",
+  iosBundleId: "",
+  googleSignInConfig: {
+    scopes: [],
+    webClientId: "",
+    iosClientId: "",
+    offlineAccess: false
+  },
+  firebaseConfig: {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: ""
+  },
+  apiDomain: "https://eplant.sahabatagro.net",
+  crmDomain: "https://eplant.sahabatagro.net",
+  eplantDomain: "https://eplant.sahabatagro.net"
+}
 
 export default Config
  

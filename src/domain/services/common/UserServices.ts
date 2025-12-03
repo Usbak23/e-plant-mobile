@@ -2,8 +2,8 @@ import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '@app/domain/services/types'
 import BaseService from '@app/domain/services/BaseServices'
 import {GET, POST} from '@app/domain/services/utils/http'
-import User, {IArvisUserData, IUserAccess} from '@app/models/crm/User'
-import {ICurrentUser, IEmployeeCost, IUserRow} from '@app/models/eplant/User'
+import User, {IArvisUserData} from '@app/models/crm/User'
+import { IEmployeeCost, IUserRow} from '@app/models/eplant/User'
 import qs from 'query-string'
 
 //please do not delete this, just update or move

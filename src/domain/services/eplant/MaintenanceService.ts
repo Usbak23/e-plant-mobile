@@ -1,12 +1,10 @@
 import qs from 'query-string'
 import IStdResponse from '@app/models/commons/IStdResponse'
-import BaseService from '../BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '../types'
 import {DELETE, GET, POST, PUT} from '../utils/http'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
-import {ICensusDetail, ICensusEditFormData, ICensusFormData, ICensusRow} from '@app/models/eplant/Census'
-import {IDailyActivity, IDailyActivityForm} from '@app/models/eplant/IDailyActivity'
 import {IMaintenance, IMaintenanceForm} from '@app/models/eplant/Maintenance'
 
 export default class MaintenanceService extends BaseService {

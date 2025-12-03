@@ -1,11 +1,8 @@
 import axios, {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '@app/domain/services/types'
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {GET, POST} from '@app/domain/services/utils/http'
-import IStdEntity from '@app/models/commons/IStdEntity'
 import {IArvisCredential, ICurrentUser} from '@models/eplant/User'
-import qs from 'query-string'
-import IPagingDocs from '@models/commons/IPagingDocs'
 import IStdResponse from '@app/models/commons/IStdResponse'
 
 export default class AuthService extends BaseService {
@@ -14,6 +11,7 @@ export default class AuthService extends BaseService {
   }
 
   login(formData: {nipOrEmail: string; password: string}): Promise<AxiosResponse<IRESTApiResponse<IArvisCredential>>> {
+    console.log(`${this.d.eplantDomain}/api/eplant-server/web/v0/auth/login`)
     return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/auth/login`, formData)
   }
 
