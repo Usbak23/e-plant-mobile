@@ -1,7 +1,7 @@
 import {AxiosResponse} from 'axios'
 import {IRKHTakeCareFormData, IRKHTakeCareRow, IRKHTakeCareDetail} from '@app/models/eplant/RKHTakeCare'
 import {IRESTApiResponse} from '@app/domain/services/types'
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {GET, POST} from '@app/domain/services/utils/http'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
 import IStdEntity from '@app/models/commons/IStdEntity'
