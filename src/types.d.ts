@@ -21,3 +21,8 @@ declare module '*.svg' {
   const content: React.FC<SvgProps>
   export default content
 }
+// declare module '*.svg' {
+//   import type { FunctionComponent, SVGProps } from 'react';
+//   const content: FunctionComponent<SVGProps<SVGSVGElement>>;
+//   export default content;
+// }
