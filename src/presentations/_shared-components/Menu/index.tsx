@@ -7,7 +7,7 @@ import {Text} from '..'
 const {width} = Dimensions.get('window')
 interface IMenuProps {
   menuItem: {
-    icon: React.ReactNode
+    icon: any
     title: string
     screen: string
     bgColor: string
@@ -23,10 +23,12 @@ const Menu: React.FC<IMenuProps> = props => {
     navigation.navigate(screen)
   }
 
+  const Icon = icon;
+
   return (
     <TouchableOpacity onPress={onMenuTap} activeOpacity={0.5} style={styles.container}>
       <View style={{marginVertical: 10, padding: 26, borderRadius: 12, backgroundColor: bgColor}}>
-        {/* {icon} */}
+        <Icon width={48} height={48} />
       </View>
       <Text maxLines={2} type="semibold" size={12} color={theme.colors.textThinBlack} style={styles.title}>
         {title}
