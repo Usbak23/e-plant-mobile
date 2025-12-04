@@ -10,58 +10,60 @@ import Attendance from '@assets/icons/ic_attendance.svg'
 import Request from '@assets/icons/ic_request.svg'
 import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 
+console.log(MasterData)
+
 export const Menus = [
   {
-    icon: <MasterData width={24} height={24} />,
+    icon: MasterData,
     title: 'Master data',
     slug: 'master-data',
     screen: Routes.MASTER_DATA,
     bgColor: 'rgba(246, 134, 62, 0.35)',
   },
   {
-    icon: <Planning width={24} height={24} />,
+    icon: Planning,
     title: 'Rencana',
     slug: 'rencana',
     screen: Routes.PLAN,
     bgColor: 'rgba(30, 115, 200, 0.35)',
   },
   {
-    icon: <Attendance width={24} height={24} />,
+    icon: Attendance,
     title: 'Absensi',
     slug: 'lihat-absensi',
     screen: Routes.ATTENDANCE_FILTER,
     bgColor: 'rgba(240, 177, 13, 0.5);',
   },
   {
-    icon: <Harvesting width={24} height={24} />,
+    icon: Harvesting,
     title: 'Panen',
     slug: 'panen',
     screen: Routes.HARVEST,
     bgColor: 'rgba(5, 152, 172, 0.35)',
   },
   {
-    icon: <Treat width={24} height={24} />,
+    icon: Treat,
     title: 'Rawat',
     slug: 'rawat',
     screen: Routes.TAKE_CARE,
     bgColor: 'rgba(156, 93, 228, 0.35)',
   },
   {
-    icon: <Report width={24} height={24} />,
+    icon: Report,
     title: 'Laporan',
     slug: 'laporan',
     screen: Routes.REPORT,
     bgColor: 'rgba(233, 86, 117, 0.35)',
   },
   {
-    icon: <News width={24} height={24} />,
+    icon: News,
     title: 'Berita acara',
     slug: ROLE_ACCESS_SLUG.SEE_WAREHOUSE_MANAGEMENT,
     screen: Routes.FIELD_REPORT_FILTER,
     bgColor: 'rgba(19, 144, 242, 0.35)',
   },
   {
-    icon: <Request width={24} height={24} />,
+    icon: Request,
     title: 'Gudang',
     slug: 'request',
     screen: Routes.REQUEST,
