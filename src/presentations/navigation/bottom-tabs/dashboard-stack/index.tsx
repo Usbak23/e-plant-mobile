@@ -16,14 +16,16 @@ const DashboardStack = ({ }) => {
       screenOptions={{
         headerShown: false,
         ...TransitionPresets.SlideFromRightIOS,
-      }}>
-      <Stack.Screen name={Routes.HOME_PAGE} component={Dashboard} />
-      <Stack.Screen name={Routes.DASHBOARD_PRODUCTION_ORGANIZATION} options={{ animationEnabled: false }} component={DashboardProductionOrganization} />
+      }}
+    >
+      <Stack.Screen name={Routes.DASHBOARD} component={Dashboard} />
+      <Stack.Screen name={Routes.DASHBOARD_PRODUCTION_ORGANIZATION} component={DashboardProductionOrganization} />
       <Stack.Screen name={Routes.REPORT_AKP_PLAN_D} component={AKPPlanTableReport} />
       <Stack.Screen name={Routes.REPORT_AKP_REALIZATION_D} component={AKPRealizationTableReport} />
       <Stack.Screen name={Routes.REPORT_BJB_PER_BLOK_D} component={BJRBlockReport} />
       {/* <Stack.Screen name={Routes.REPORT_EMPLOYEE_WAGE_D} component={EmployeeWageReport}/> */}
     </Stack.Navigator>
+
   )
 }
 
