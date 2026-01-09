@@ -1,4 +1,5 @@
-import UserService from '@domain/services/common/UserService'
+// import UserService from '@domain/services/common/UserService'
+import UserService from './common/UserServices'
 import OrganizationService from '@domain/services/eplant/OrganizationService'
 import DivisionService from '@domain/services/eplant/DivisionService'
 import MasterService from '@domain/services/eplant/MasterService'

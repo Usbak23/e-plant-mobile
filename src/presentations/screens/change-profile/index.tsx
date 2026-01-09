@@ -1,15 +1,14 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import {Image, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native'
 import {theme} from '@app/presentations/utils/styles'
 import {Header, Loader, MoreButton, Text} from '@app/presentations/_shared-components'
 import Entypo from 'react-native-vector-icons/Entypo'
 import {useNavigation} from '@react-navigation/native'
-import DocumentPicker from 'react-native-document-picker'
+import { pick, types } from '@react-native-documents/picker'
 import Routes from '@app/presentations/navigation/Routes'
 import {showErrorToast, showSuccessToast} from '@app/presentations/_shared-components/Toast'
 import {useDispatch, useSelector} from 'react-redux'
 import {actions, RootStateType} from '@app/domain/states/store'
-import RNFS from 'react-native-fs'
 
 const ChangeProfile = () => {
   const dispatch = useDispatch()
@@ -30,22 +29,22 @@ const ChangeProfile = () => {
 
   const chooseFile = async () => {
     try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.images],
+      const res = await pick({
+        type: [types.images],
         allowMultiSelection: false,
       })
 
-      if (res[0].size > 1000000) {
+      if ( res[0].size && res[0].size > 1000000) {
         showErrorToast('Size file melebihi batas (1MB)')
         return
       }
 
       doUpload(res[0])
     } catch (err: any) {
-      if (DocumentPicker.isCancel(err)) {
-      } else {
-        throw err
-      }
+      throw err
+      // if (DocumentPicker.isCancel(err)) {
+      // } else {
+      // }
     }
   }
 

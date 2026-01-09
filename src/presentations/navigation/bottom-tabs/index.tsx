@@ -6,7 +6,6 @@ import {theme} from '@styles'
 import Routes from '@navigation/Routes'
 
 import HomeStack from '@navigation/bottom-tabs/home-stack'
-import Dashboard from '@screens/shared-screens/dashboard'
 import ProfileStack from './profile-stack'
 import DashboardStack from './dashboard-stack'
 
@@ -31,7 +30,8 @@ const BottomTabs: React.FC<TabProps> = ({}) => {
           paddingHorizontal: 5,
         },
       }}
-      initialRouteName="Home">
+      initialRouteName={Routes.HOME_STACK}>
+
       <Tab.Screen
         name={Routes.HOME_STACK}
         options={{

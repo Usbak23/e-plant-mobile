@@ -1,10 +1,8 @@
-import Routes from '@app/presentations/navigation/Routes'
 import {theme} from '@app/presentations/utils/styles'
 import {useNavigation} from '@react-navigation/core'
 import React from 'react'
-import {Dimensions, Image, StyleSheet, View} from 'react-native'
+import {Dimensions, StyleSheet, View} from 'react-native'
 import {TouchableOpacity} from 'react-native-gesture-handler'
-import {SvgProps} from 'react-native-svg'
 import {Text} from '..'
 const {width} = Dimensions.get('window')
 interface IMenuProps {
@@ -24,9 +22,14 @@ const Menu: React.FC<IMenuProps> = props => {
     //@ts-ignore
     navigation.navigate(screen)
   }
+
+  const Icon = icon;
+
   return (
     <TouchableOpacity onPress={onMenuTap} activeOpacity={0.5} style={styles.container}>
-      <View style={{marginVertical: 10, padding: 26, borderRadius: 12, backgroundColor: bgColor}}>{icon()}</View>
+      <View style={{marginVertical: 10, padding: 26, borderRadius: 12, backgroundColor: bgColor}}>
+        <Icon width={48} height={48} />
+      </View>
       <Text maxLines={2} type="semibold" size={12} color={theme.colors.textThinBlack} style={styles.title}>
         {title}
       </Text>

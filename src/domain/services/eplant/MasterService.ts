@@ -1,6 +1,6 @@
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '@app/domain/services/types'
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {GET} from '@app/domain/services/utils/http'
 import {IMinimumAKP, IProvince, IRangeBreakTime, IRangeYear, IUom} from '@app/models/eplant/Master'
 import qs from 'query-string'

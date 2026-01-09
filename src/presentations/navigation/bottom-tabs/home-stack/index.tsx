@@ -140,7 +140,6 @@ import RealizationFertilizationForm from '@app/presentations/screens/modules/tak
 import RealizationFertilizationDetail from '@app/presentations/screens/modules/take-care/realization-fertilization-detail'
 import BMPReport from '@app/presentations/screens/modules/report/bmp'
 import ChapelReport from '@app/presentations/screens/modules/report/chapel'
-import ReasonRejection from '@app/presentations/screens/modules/common/info-long-text'
 import InformationLongText from '@app/presentations/screens/modules/common/info-long-text'
 
 interface HomeStackProps {}
