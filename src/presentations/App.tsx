@@ -1,27 +1,27 @@
 import React, {useEffect, useState} from 'react'
 import {NavigationContainer} from '@react-navigation/native'
-import {useDispatch, useSelector} from 'react-redux'
+import {useSelector} from 'react-redux'
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
 import Routes from '@navigation/Routes'
 import RegisterScreen from '@screens/shared-screens/auth/register'
-import SplashScreen from '@screens/shared-screens/auth/splash'
+// import SplashScreen from '@screens/shared-screens/auth/splash'
 import LoginScreen from '@screens/shared-screens/auth/login'
 import BottomTabs from '@navigation/bottom-tabs'
-import flux, {RootStateType} from '@domain/states/store'
-import useSyncData from './hooks/useSyncData'
-import useHeadlessTask from './hooks/useHeadlessTask'
+import {RootStateType} from '@domain/states/store'
+// import useSyncData from './hooks/useSyncData'
+// import useHeadlessTask from './hooks/useHeadlessTask'
 import ForgotPassword from '@screens/shared-screens/auth/forgot-password'
 import ResetPassword from '@screens/shared-screens/auth/reset-password'
 // your entry point
 import MapsPreview from './screens/preview-maps'
 import {authNavigationRef} from '@navigation/services/auth'
-import {useNavigateDeeplink} from './utils/deeplink/useNavigateDeeplink'
-import {Linking} from 'react-native'
+// import {useNavigateDeeplink} from './utils/deeplink/useNavigateDeeplink'
+// import {Linking} from 'react-native'
 import {appNavigationRef} from './navigation/services/app'
-import {Text} from './_shared-components'
+// import {Text} from './_shared-components'
 
 export default function App() {
-  const [splash, setSplash] = useState(true)
+  // const [splash, setSplash] = useState(true)
   const Stack = createStackNavigator()
 
   const userState = useSelector((state: RootStateType) => state.user)
@@ -33,15 +33,15 @@ export default function App() {
 
   // useSyncData()
   // useHeadlessTask()
-  useNavigateDeeplink()
+  // useNavigateDeeplink()
 
-  useEffect(() => {
-    if (splash) {
-      setTimeout(() => {
-        setSplash(false)
-      }, 1000)
-    }
-  }, [splash])
+  // useEffect(() => {
+  //   if (splash) {
+  //     setTimeout(() => {
+  //       setSplash(false)
+  //     }, 1000)
+  //   }
+  // }, [splash])
 
   // if (splash) {
   //   return (

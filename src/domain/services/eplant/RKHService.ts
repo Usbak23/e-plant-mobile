@@ -1,6 +1,6 @@
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '@app/domain/services/types'
-import BaseService from '@app/domain/services/BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {GET, POST} from '@app/domain/services/utils/http'
 import IStdEntity from '@app/models/commons/IStdEntity'
 import {IRKHFormData, IRKHRow, IRKHDetail, IRKHSummary, IRKHAllRow} from '@app/models/eplant/RKH'

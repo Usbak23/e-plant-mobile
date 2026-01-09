@@ -8,3 +8,12 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+-keep class com.tom_roush.pdfbox.** { *; }
+-keep class com.twelvemonkeys.** { *; }
+-keep class com.github.jaiimageio.** { *; }
+
+-dontwarn com.gemalto.**
+-dontwarn java.awt.**
+-dontwarn javax.imageio.**
+-dontwarn com.twelvemonkeys.**
+-dontwarn com.github.jaiimageio.**

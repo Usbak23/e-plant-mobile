@@ -1,11 +1,11 @@
 import qs from 'query-string'
 import IStdResponse from '@app/models/commons/IStdResponse'
-import BaseService from '../BaseService'
+import BaseService from '@app/domain/services/BaseServices'
 import {AxiosResponse} from 'axios'
 import {IRESTApiResponse} from '../types'
 import {DELETE, GET, POST, PUT} from '../utils/http'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
-import {IDailyActivity, IDailyActivityForm} from '@app/models/eplant/IDailyActivity'
+import {IDailyActivity} from '@app/models/eplant/IDailyActivity'
 import {IMyRequestDetail, IMyRequestForm} from '@app/models/eplant/MyRequest'
 import {IProcessRequest} from '@app/models/eplant/Request'
 

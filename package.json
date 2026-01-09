@@ -10,7 +10,8 @@
     "test": "jest",
     "postinstall": "patch-package",
     "buildAPK": "cd android && ./gradlew clean && ./gradlew assembleRelease && cd ..",
-    "cleanAndroid": "cd android && ./gradlew clean && cd .. && react-native run-android"
+    "cleanAndroid": "cd android && ./gradlew clean && cd .. && react-native run-android",
+    "bundle": "cd android && ./gradlew clean && ./gradlew bundleRelease && cd .."
   },
   "dependencies": {
     "@codler/react-native-keyboard-aware-scroll-view": "^2.0.1",
@@ -21,7 +22,7 @@
     "@react-native-community/checkbox": "^0.5.20",
     "@react-native-community/datetimepicker": "^8.5.0",
     "@react-native-community/netinfo": "^11.4.1",
-    "@react-native-documents/picker": "^11.0.0",
+    "@react-native-documents/picker": "^11.0.3",
     "@react-native-firebase/analytics": "^23.5.0",
     "@react-native-firebase/app": "^23.5.0",
     "@react-native-firebase/crashlytics": "^23.5.0",
@@ -36,10 +37,11 @@
     "babel-jest": "^30.2.0",
     "babel-plugin-optional-require": "^0.3.1",
     "buffer": "^6.0.3",
+    "deprecated-react-native-prop-types": "^5.0.0",
     "hermes-engine": "^0.11.0",
     "jest-svg-transformer": "^1.0.0",
     "moment": "^2.30.1",
-    "react": "^19.2.0",
+    "react": "19.1.1",
     "react-hook-form": "^7.66.0",
     "react-native": "0.82.1",
     "react-native-autocomplete-dropdown": "^5.0.0",
@@ -97,7 +99,7 @@
     "@react-native/metro-config": "0.82.1",
     "@react-native/typescript-config": "^0.82.1",
     "@types/jest": "^29.5.13",
-    "@types/react": "^19.1.1",
+    "@types/react": "19.1.0",
     "@types/react-native-table-component": "^1",
     "@types/react-test-renderer": "^19.1.0",
     "@types/xmldom": "^0",
@@ -108,7 +110,7 @@
     "patch-package": "^8.0.0",
     "prettier": "2.8.8",
     "react-native-cli-bump-version": "^1.5.1",
-    "react-test-renderer": "^19.2.0",
+    "react-test-renderer": "19.1.0",
     "typescript": "^5.8.3"
   },
   "engines": {
