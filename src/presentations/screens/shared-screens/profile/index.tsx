@@ -279,7 +279,8 @@ const styles = StyleSheet.create({
     width: '100%',
     // position: 'absolute',
     minHeight: 200,
-    borderBottomEndRadius: 36,
+   borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     backgroundColor: theme.colors.backgroundDark,
     padding: 26,
   },
@@ -289,8 +290,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   arvisLogoImg: {
-    width: 20,
-    height: 20,
+    width: 35,
+    height: 35,
     resizeMode: 'contain',
   },
   profilePicView: {
