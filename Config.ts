@@ -49,9 +49,9 @@ const Config: IConfig = {
     appId: "",
     measurementId: ""
   },
-  apiDomain: "https://eplant.sahabatagro.net",
-  crmDomain: "https://eplant.sahabatagro.net",
-  eplantDomain: "https://eplant.sahabatagro.net"
+  apiDomain: "https://sahabatagrogroup.com",
+  crmDomain: "https://sahabatagrogroup.com",
+  eplantDomain: "https://sahabatagrogroup.com"
 }
 
 export default Config
