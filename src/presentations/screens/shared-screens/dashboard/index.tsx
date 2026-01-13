@@ -148,50 +148,52 @@ const Dashboard = () => {
         modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_TOTAL_PRODUCTION)
       ) {
         return true
-      } else if (
-        chart?.slug == 'total-rawat-dan-pemupukan' &&
-        modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_TOTAL_TAKECARE_AND_FERTILIZATION)
-      ) {
-        return true
-      } else if (
-        chart?.slug == 'produksi-per-mandor' &&
-        modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_PRODUCTION_PER_MANDOR)
-      ) {
-        return true
-      } else if (
-        chart?.slug == 'produksi-per-pemanen' &&
-        modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_PRODUCTION_PER_HARVESTER)
-      ) {
-        return true
+      // } else if (
+      //   chart?.slug == 'total-rawat-dan-pemupukan' &&
+      //   modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_TOTAL_TAKECARE_AND_FERTILIZATION)
+      // ) {
+      //   return true
+      // } else if (
+      //   chart?.slug == 'produksi-per-mandor' &&
+      //   modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_PRODUCTION_PER_MANDOR)
+      // ) {
+      //   return true
+      // } else if (
+      //   chart?.slug == 'produksi-per-pemanen' &&
+      //   modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_PRODUCTION_PER_HARVESTER)
+      // ) {
+      //   return true
       } else if (
         chart?.slug == 'kualitas-buah-per-blok' &&
         modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_QUALITY_OF_FRUIT_PER_BLOCK)
       ) {
         return true
-      } else if (chart?.slug == 'bjr' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_BJR)) {
-        return true
-      } else if (chart?.slug == 'refraksi-pks' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_REFRAKSI)) {
-        return true
-      } else if (chart?.slug == 'total-restan' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
-        return true
-      } else if (chart?.slug == 'pmb' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
-        return true
-      } else if (chart?.slug == 'pmb-organization' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
-        return true
-      } else if (chart?.slug == 'pmb-division' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
-        return true
+      // } else if (chart?.slug == 'bjr' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_BJR)) {
+      //   return true
+      // } else if (chart?.slug == 'refraksi-pks' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_DASHBOARD_REFRAKSI)) {
+      //   return true
+      // } else if (chart?.slug == 'total-restan' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
+      //   return true
+      // } else if (chart?.slug == 'pmb' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
+      //   return true
+      // } else if (chart?.slug == 'pmb-organization' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
+      //   return true
+      // } else if (chart?.slug == 'pmb-division' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_PMB)) {
+      //   return true
       } else if (chart?.slug == 'akp' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_AKP)) {
         return true
       } else if (chart?.slug == 'yield' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_YIELD)) {
         return true
-      } else if (chart?.slug == 'hasil-perawatan') {
-        return isAllowedToSeeDashboardTakeCareResult
-      } else if (chart?.slug == 'budgeting') {
-        return isAllowedToSeeDashboardBudgeting
-      } else if (chart?.slug == 'biaya-rawat-ha') {
-        return isAllowedToSeeTakeCareBudgeting
-      } else if (chart?.slug == 'biaya-panen-kg') {
-        return isAllowedToSeeHarvestBudgeting
+      } else if (chart?.slug == 'bpbks' && modules.find((m: any) => m.slug == ROLE_ACCESS_SLUG.SEE_REPORT_BPBKS)) {
+        return true
+      // } else if (chart?.slug == 'hasil-perawatan') {
+      //   return isAllowedToSeeDashboardTakeCareResult
+      // } else if (chart?.slug == 'budgeting') {
+      //   return isAllowedToSeeDashboardBudgeting
+      // } else if (chart?.slug == 'biaya-rawat-ha') {
+      //   return isAllowedToSeeTakeCareBudgeting
+      // } else if (chart?.slug == 'biaya-panen-kg') {
+      //   return isAllowedToSeeHarvestBudgeting
       }
 
       return false
