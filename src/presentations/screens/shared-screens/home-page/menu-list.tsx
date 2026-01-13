@@ -62,11 +62,11 @@ export const Menus = [
     screen: Routes.FIELD_REPORT_FILTER,
     bgColor: 'rgba(19, 144, 242, 0.35)',
   },
-  {
-    icon: Request,
-    title: 'Gudang',
-    slug: 'request',
-    screen: Routes.REQUEST,
-    bgColor: 'rgba(30, 115, 200, 0.35)',
-  },
+  // {
+  //   icon: Request,
+  //   title: 'Gudang',
+  //   slug: 'request',
+  //   screen: Routes.REQUEST,
+  //   bgColor: 'rgba(30, 115, 200, 0.35)',
+  // },
 ]
