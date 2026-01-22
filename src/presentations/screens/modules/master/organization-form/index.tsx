@@ -126,7 +126,7 @@ export default function OrganizationForm() {
           <TextInput
             control={control}
             label="Nama Organisasi"
-            placeholder="Contoh : PT. Aksara Integrasi Sejahtera"
+            placeholder="Contoh : PT. Sahabat Agro Group"
             name="name"
             errorText={errors?.name?.message}
             isRequired
