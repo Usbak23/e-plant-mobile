@@ -30,12 +30,15 @@ export interface IConfig {
 }
 
 const Config: IConfig = {
-  appName: "",
-  displayName: "",
-  androidAppId: "",
-  iosBundleId: "",
+  appName: "eplant",
+  displayName: "E-Plantation",
+  androidAppId: "id.eplant.app.android.production",
+  iosBundleId: "id.eplant.app.android.production",
   googleSignInConfig: {
-    scopes: [],
+    scopes: [
+      "profile",
+      "email"
+    ],
     webClientId: "",
     iosClientId: "",
     offlineAccess: false
@@ -43,7 +46,7 @@ const Config: IConfig = {
   firebaseConfig: {
     apiKey: "",
     authDomain: "",
-    projectId: "",
+    projectId: "eplant-production",
     storageBucket: "",
     messagingSenderId: "",
     appId: "",

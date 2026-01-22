@@ -137,7 +137,6 @@ const ApprovalScreen = () => {
 
   useEffect(() => {
     if (approval?.pendingApprovals?.data) {
-      console.log('Approval data received:', approval.pendingApprovals.data)
       const newData = approval.pendingApprovals.data
       
       if (page === 1) {
@@ -179,14 +178,12 @@ const ApprovalScreen = () => {
       showErrorToast('Gagal menolak RKT')
     }
     if (approval?.pendingApprovals?.error) {
-      console.error('Error fetching approvals:', approval.pendingApprovals.error)
       showErrorToast('Gagal memuat data persetujuan')
     }
   }, [approval?.approve?.error, approval?.reject?.error, approval?.pendingApprovals?.error])
 
   // Safety check for approval state
   if (!approval) {
-    console.error('Approval state is undefined')
     return (
       <SafeAreaView style={styles.container}>
         <Header title="Persetujuan RKT" />
@@ -199,7 +196,6 @@ const ApprovalScreen = () => {
 
   const fetchPendingApprovals = (pageNum = 1, isLoadMore = false) => {
     try {
-      console.log('Fetching pending approvals...', { page: pageNum, isLoadMore })
       if (!isLoadMore) {
         setPage(1)
         setHasMore(true)
@@ -210,7 +206,7 @@ const ApprovalScreen = () => {
         limit: 10
       }))
     } catch (error) {
-      console.error('Error in fetchPendingApprovals:', error)
+      showErrorToast('Error fetching approvals')
     }
   }
 
@@ -307,22 +303,13 @@ const ApprovalScreen = () => {
   }
 
   const renderApprovalItem = ({ item }: { item: ApprovalItem }) => {
-    try {
-      return (
-        <ApprovalCard
-          item={item}
-          onApprove={() => handleApprove(item)}
-          onReject={() => handleReject(item)}
-        />
-      )
-    } catch (error) {
-      console.error('Error rendering approval item:', error)
-      return (
-        <View style={styles.card}>
-          <Text>Error rendering item</Text>
-        </View>
-      )
-    }
+    return (
+      <ApprovalCard
+        item={item}
+        onApprove={() => handleApprove(item)}
+        onReject={() => handleReject(item)}
+      />
+    )
   }
 
   return (

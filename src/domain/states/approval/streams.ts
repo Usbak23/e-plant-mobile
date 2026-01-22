@@ -10,23 +10,12 @@ const getPendingApprovalsStream: Epic<ActionsType, ActionsType, RootStateType> =
   action$.pipe(
     filter(isActionOf(actions.getPendingApprovals.request)),
     switchMap(action => {
-      console.log('Stream: getPendingApprovals called')
-      console.log('Config:', config)
-      
       const approvalService = new ApprovalService(config)
       return from(approvalService.getPendingApprovals()).pipe(
         map(response => {
-          console.log('Stream: Full API response:', response)
-          console.log('Stream: Response data:', response.data)
-          console.log('Stream: Response status:', response.status)
-          console.log('Stream: Response headers:', response.headers)
           return actions.getPendingApprovals.success({loading: false, data: response.data.response})
         }),
         catchError(error => {
-          console.error('Stream: Full API error:', error)
-          console.error('Stream: Error response:', error.response)
-          console.error('Stream: Error message:', error.message)
-          console.error('Stream: Error config:', error.config)
           return of(actions.getPendingApprovals.failure({loading: false, error}))
         }),
       )
