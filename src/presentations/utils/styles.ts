@@ -54,5 +54,6 @@ export const theme = {
 
     yellowSemiTransparent: 'rgba(240, 177, 13, 0.1)',
     yellowDark: '#F0B10D',
+    red: '#EF5350',
   },
 }

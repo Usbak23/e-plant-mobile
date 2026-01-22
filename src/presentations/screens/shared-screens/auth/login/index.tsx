@@ -115,7 +115,7 @@ const Login = () => {
         </View>
 
         <Text type="regular" size={12} style={styles.helperColor}>
-          Masukkan Email/NIP dan juga kata sandi Anda pada kolom di bawah ini
+          Masukkan NIP dan juga kata sandi Anda pada kolom di bawah ini
         </Text>
 
         {/* <TextInput
@@ -135,7 +135,7 @@ const Login = () => {
           name="nipOrEmail"
           style={{fontSize: 12}}
           errorText={errors?.nipOrEmail?.message}
-          placeholder="Email/NIP"
+          placeholder="NIP"
         />
         <TextInput
           useDarkTheme={true}

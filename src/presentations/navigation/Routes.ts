@@ -20,6 +20,7 @@ export default class Routes {
   static TAKE_CARE = 'app/home-stack/take-care'
   static REPORT = 'app/home-stack/report'
   static REQUEST = 'app/home-stack/request'
+  static APPROVAL = 'app/home-stack/approval'
 
   static DIVISION_LIST = 'app/home-stack/master-data/division-list'
   static DIVISION_FORM = 'app/home-stack/master-data/division-form'

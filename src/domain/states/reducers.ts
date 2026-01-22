@@ -35,6 +35,7 @@ import requestReducer, {IRSRequests} from './request/reducer'
 import fieldReportReducer, {IRSFieldReport} from './field-report/reducers'
 import warehouseReducer, {IRSWarehouseManagement} from './warehouse-management/reducer'
 import realizationFertilizationReducer, {IRSRealizationFertilization} from './realization-fertilization/reducer'
+import approvalReducer, {ApprovalState} from './approval/reducers'
 
 export type RootState = {
   user: IRSUser
@@ -73,6 +74,7 @@ export type RootState = {
   fieldReportReducer: IRSFieldReport
   warehouseReducer: IRSWarehouseManagement
   realizationFertilizationReducer: IRSRealizationFertilization
+  approval: ApprovalState
 }
 
 const defaultConfig = {
@@ -346,6 +348,7 @@ const reducers = combineReducers({
   fieldReportReducer: fieldReportReducer,
   warehouseReducer: warehouseReducer,
   realizationFertilizationReducer: realizationFertilizationReducer,
+  approval: approvalReducer,
 })
 
 export default reducers

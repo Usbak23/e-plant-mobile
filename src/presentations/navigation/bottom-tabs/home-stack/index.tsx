@@ -141,6 +141,7 @@ import RealizationFertilizationDetail from '@app/presentations/screens/modules/t
 import BMPReport from '@app/presentations/screens/modules/report/bmp'
 import ChapelReport from '@app/presentations/screens/modules/report/chapel'
 import InformationLongText from '@app/presentations/screens/modules/common/info-long-text'
+import ApprovalScreen from '@app/presentations/screens/shared-screens/approval'
 
 interface HomeStackProps {}
 const Stack = createStackNavigator()
@@ -311,6 +312,9 @@ const HomeStack: React.FC<HomeStackProps> = ({}) => {
 
       {/* COMMON */}
       <Stack.Screen name={Routes.COMMON_INFORMATION_LONG} component={InformationLongText} />
+      
+      {/* APPROVAL */}
+      <Stack.Screen name={Routes.APPROVAL} component={ApprovalScreen} />
     </Stack.Navigator>
   )
 }

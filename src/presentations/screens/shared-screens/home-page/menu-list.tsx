@@ -8,6 +8,7 @@ import Report from '@assets/icons/menus/ic_report.svg'
 import News from '@assets/icons/menus/ic_news.svg'
 import Attendance from '@assets/icons/ic_attendance.svg'
 import Request from '@assets/icons/ic_request.svg'
+import Approval from '@assets/icons/ic_checklist.svg' // Menggunakan icon checklist yang sudah ada
 import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 
 console.log(MasterData)
@@ -61,6 +62,13 @@ export const Menus = [
     slug: ROLE_ACCESS_SLUG.SEE_WAREHOUSE_MANAGEMENT,
     screen: Routes.FIELD_REPORT_FILTER,
     bgColor: 'rgba(19, 144, 242, 0.35)',
+  },
+  {
+    icon: Approval,
+    title: 'Persetujuan',
+    slug: 'persetujuan',
+    screen: Routes.APPROVAL,
+    bgColor: 'rgba(76, 175, 80, 0.35)',
   },
   // {
   //   icon: Request,

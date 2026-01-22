@@ -206,7 +206,7 @@ const RKHHarvestForm = () => {
             disabledText={item?.block?.division?.organization?.name || '-'}
             control={{}}
             label="Organisasi"
-            placeholder="Contoh: PT. Aksara Integrasi Sejahtera"
+            placeholder="Contoh: PT. Sahabat Agro Group"
             name="organization"
             isRequired
           />
