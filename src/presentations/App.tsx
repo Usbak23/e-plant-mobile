@@ -18,6 +18,7 @@ import {authNavigationRef} from '@navigation/services/auth'
 // import {useNavigateDeeplink} from './utils/deeplink/useNavigateDeeplink'
 // import {Linking} from 'react-native'
 import {appNavigationRef} from './navigation/services/app'
+import {useNotifications} from './hooks/useNotifications'
 // import {Text} from './_shared-components'
 
 export default function App() {
@@ -30,6 +31,8 @@ export default function App() {
   // }
 
   const user = userState.userCredential?.data
+
+  useNotifications()
 
   // useSyncData()
   // useHeadlessTask()

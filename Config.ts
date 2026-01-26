@@ -32,8 +32,8 @@ export interface IConfig {
 const Config: IConfig = {
   appName: "eplant",
   displayName: "E-Plantation",
-  androidAppId: "id.eplant.app.android.production",
-  iosBundleId: "id.eplant.app.android.production",
+  androidAppId: "com.eplantation.mobile.app",
+  iosBundleId: "id.eplant.app.ios.production",
   googleSignInConfig: {
     scopes: [
       "profile",
@@ -46,15 +46,15 @@ const Config: IConfig = {
   firebaseConfig: {
     apiKey: "",
     authDomain: "",
-    projectId: "eplant-production",
-    storageBucket: "",
+    projectId: "e-plantation-f2fa5",
+    storageBucket: "e-plantation-f2fa5.firebasestorage.app",
     messagingSenderId: "",
     appId: "",
     measurementId: ""
   },
   apiDomain: "https://sahabatagrogroup.com",
   crmDomain: "https://sahabatagrogroup.com",
-  eplantDomain: "https://sahabatagrogroup.com"
+  eplantDomain: "http://192.168.50.151:7000"
 }
 
 export default Config

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332935437204",
+    "project_id": "e-plantation-f2fa5",
+    "storage_bucket": "e-plantation-f2fa5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332935437204:android:451d38569ce12d54c64d81",
+        "android_client_info": {
+          "package_name": "com.eplantation.mobile.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_Z_oE536xH7ut7r6p-z6KkwAh0eEGorY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
