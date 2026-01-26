@@ -15,6 +15,8 @@ import ResetPassword from '@screens/shared-screens/auth/reset-password'
 // your entry point
 import MapsPreview from './screens/preview-maps'
 import {authNavigationRef} from '@navigation/services/auth'
+
+import { useNotifications } from './hooks/useNotifications'
 // import {useNavigateDeeplink} from './utils/deeplink/useNavigateDeeplink'
 // import {Linking} from 'react-native'
 import {appNavigationRef} from './navigation/services/app'
@@ -30,7 +32,7 @@ export default function App() {
   // }
 
   const user = userState.userCredential?.data
-
+  useNotifications()
   // useSyncData()
   // useHeadlessTask()
   // useNavigateDeeplink()

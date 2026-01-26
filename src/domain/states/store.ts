@@ -42,6 +42,7 @@ import * as fieldReportActions from '@domain/states/field-report/actions'
 import * as warehouseActions from '@domain/states/warehouse-management/actions'
 import * as realizationFertilizationActions from '@domain/states/realization-fertilization/actions'
 import * as approvalActions from '@domain/states/approval/actions'
+import * as notificationActions from '@domain/states/notification/actions'
 import leadStreams from '@domain/states/leads/streams'
 import organizationStreams from '@domain/states/organization/streams'
 import masterStreams from '@domain/states/master/streams'
@@ -75,6 +76,7 @@ import fieldReportStreams from '@domain/states/field-report/streams'
 import warehouseStreams from '@domain/states/warehouse-management/streams'
 import realizationFertilizationStreams from '@domain/states/realization-fertilization/streams'
 import approvalStreams from '@domain/states/approval/streams'
+import notificationStreams from '@domain/states/notification/streams'
 
 export const actions = {
   ...userActions,
@@ -112,6 +114,7 @@ export const actions = {
   ...warehouseActions,
   ...realizationFertilizationActions,
   approval: approvalActions,
+  notification: notificationActions,
 }
 
 const streams = [
@@ -150,6 +153,7 @@ const streams = [
   ...warehouseStreams,
   ...realizationFertilizationStreams,
   ...approvalStreams,
+  ...notificationStreams,
 ]
 
 const persistConfig = {

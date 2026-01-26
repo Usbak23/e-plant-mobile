@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "643199958313",
+    "project_id": "e-plantation-sag-prod",
+    "storage_bucket": "e-plantation-sag-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643199958313:android:6d607d0bb73b7fa78e4b38",
+        "android_client_info": {
+          "package_name": "com.eplantation.mobile.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8mq3rJNr2VdZ_KfrUILNNwOIN1MttB10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
