@@ -21,6 +21,7 @@ export default class Routes {
   static REPORT = 'app/home-stack/report'
   static REQUEST = 'app/home-stack/request'
   static APPROVAL = 'app/home-stack/approval'
+  static NOTIFICATION = 'app/home-stack/notification'
 
   static DIVISION_LIST = 'app/home-stack/master-data/division-list'
   static DIVISION_FORM = 'app/home-stack/master-data/division-form'

@@ -32,7 +32,7 @@ export interface IConfig {
 const Config: IConfig = {
   appName: "eplant",
   displayName: "E-Plantation",
-  androidAppId: "id.eplant.app.android.production",
+  androidAppId: "com.eplantation.mobile.app",
   iosBundleId: "id.eplant.app.android.production",
   googleSignInConfig: {
     scopes: [
@@ -44,17 +44,17 @@ const Config: IConfig = {
     offlineAccess: false
   },
   firebaseConfig: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "eplant-production",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    measurementId: ""
+    apiKey: "AIzaSyC8mq3rJNr2VdZ_KfrUILNNwOIN1MttB10",
+    authDomain: "e-plantation-sag-prod.firebaseapp.com",
+    projectId: "e-plantation-sag-prod",
+    storageBucket: "e-plantation-sag-prod.firebasestorage.app",
+    messagingSenderId: "643199958313",
+    appId: "1:643199958313:android:6d607d0bb73b7fa78e4b38",
+    measurementId: "G-LD2H8VZNSF"
   },
   apiDomain: "https://sahabatagrogroup.com",
   crmDomain: "https://sahabatagrogroup.com",
-  eplantDomain: "https://sahabatagrogroup.com"
+  eplantDomain: "http://192.168.50.70:7000"
 }
 
 export default Config

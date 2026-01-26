@@ -142,6 +142,7 @@ import BMPReport from '@app/presentations/screens/modules/report/bmp'
 import ChapelReport from '@app/presentations/screens/modules/report/chapel'
 import InformationLongText from '@app/presentations/screens/modules/common/info-long-text'
 import ApprovalScreen from '@app/presentations/screens/shared-screens/approval'
+import NotificationScreen from '@app/presentations/screens/notification/NotificationScreen'
 
 interface HomeStackProps {}
 const Stack = createStackNavigator()
@@ -315,6 +316,9 @@ const HomeStack: React.FC<HomeStackProps> = ({}) => {
       
       {/* APPROVAL */}
       <Stack.Screen name={Routes.APPROVAL} component={ApprovalScreen} />
+      
+      {/* NOTIFICATION */}
+      <Stack.Screen name={Routes.NOTIFICATION} component={NotificationScreen} />
     </Stack.Navigator>
   )
 }
