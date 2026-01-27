@@ -5,12 +5,13 @@ import {isActionOf} from 'typesafe-actions'
 import {ActionsType, RootStateType} from '@domain/states/store'
 import * as actions from '@domain/states/notification/actions'
 import NotificationService from '@domain/services/eplant/NotificationService'
+import Config from '@root/Config'
 
-const getNotificationsStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$, {config}) =>
+const getNotificationsStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$) =>
   action$.pipe(
     filter(isActionOf(actions.getNotifications.request)),
     switchMap(action => {
-      const notificationService = new NotificationService(config)
+      const notificationService = new NotificationService(Config)
       const limit = action.payload.data?.limit || 50
       return from(notificationService.getNotifications(limit)).pipe(
         map(response => {
@@ -27,11 +28,11 @@ const getNotificationsStream: Epic<ActionsType, ActionsType, RootStateType> = (a
     }),
   )
 
-const getUnreadCountStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$, {config}) =>
+const getUnreadCountStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$) =>
   action$.pipe(
     filter(isActionOf(actions.getUnreadCount.request)),
     switchMap(action => {
-      const notificationService = new NotificationService(config)
+      const notificationService = new NotificationService(Config)
       return from(notificationService.getUnreadCount()).pipe(
         map(response => {
           return actions.getUnreadCount.success({loading: false, data: response.data.response})
@@ -47,7 +48,7 @@ const getUnreadCountStream: Epic<ActionsType, ActionsType, RootStateType> = (act
     }),
   )
 
-const markAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$, {config}) =>
+const markAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$) =>
   action$.pipe(
     filter(isActionOf(actions.markAsRead.request)),
     switchMap(action => {
@@ -58,7 +59,7 @@ const markAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$
           message: 'Missing notification ID'
         }}))
       }
-      const notificationService = new NotificationService(config)
+      const notificationService = new NotificationService(Config)
       return from(notificationService.markAsRead(action.payload.data.notificationId)).pipe(
         map(response => actions.markAsRead.success({loading: false, data: response.data.response})),
         catchError(error => of(actions.markAsRead.failure({loading: false, error: {
@@ -70,11 +71,11 @@ const markAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$
     }),
   )
 
-const markAllAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$, {config}) =>
+const markAllAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$) =>
   action$.pipe(
     filter(isActionOf(actions.markAllAsRead.request)),
     switchMap(action => {
-      const notificationService = new NotificationService(config)
+      const notificationService = new NotificationService(Config)
       return from(notificationService.markAllAsRead()).pipe(
         map(response => actions.markAllAsRead.success({loading: false, data: response.data.response})),
         catchError(error => of(actions.markAllAsRead.failure({loading: false, error: {
@@ -86,7 +87,7 @@ const markAllAsReadStream: Epic<ActionsType, ActionsType, RootStateType> = (acti
     }),
   )
 
-const registerDeviceStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$, {config}) =>
+const registerDeviceStream: Epic<ActionsType, ActionsType, RootStateType> = (action$, state$) =>
   action$.pipe(
     filter(isActionOf(actions.registerDevice.request)),
     switchMap(action => {
@@ -97,7 +98,7 @@ const registerDeviceStream: Epic<ActionsType, ActionsType, RootStateType> = (act
           message: 'Missing device data'
         }}))
       }
-      const notificationService = new NotificationService(config)
+      const notificationService = new NotificationService(Config)
       return from(notificationService.registerDevice(action.payload.data)).pipe(
         map(response => actions.registerDevice.success({loading: false, data: response.data.response})),
         catchError(error => of(actions.registerDevice.failure({loading: false, error: {

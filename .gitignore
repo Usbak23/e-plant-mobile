@@ -161,7 +161,7 @@ tmp/
 temp/
 
 # Config files that might contain sensitive data
-__config__/
+# __config__/
 
 # Bundle files
 *.bundle

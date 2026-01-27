@@ -4,6 +4,7 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native'
 import {Text} from '..'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import CircleAvatar from '../CircleAvatar'
+import NotificationIcon from '../NotificationIcon'
 import {useSelector} from 'react-redux'
 import {RootStateType} from '@app/domain/states/store'
 import {useCurrentUserInfo} from '@app/domain/states/user/hooks'
@@ -38,9 +39,10 @@ const ProfileRightHeader: React.FC<IProfileHeaderRightProps> = props => {
 
   return (
     <View style={styles.container}>
-      {/* <TouchableOpacity style={{marginEnd: 8}} onPress={() => {}}>
-        <Icon name={'notifications'} size={22} color={props.useLightIcon ? theme.colors.white : theme.colors.black} />
-      </TouchableOpacity> */}
+      <NotificationIcon 
+        size={22} 
+        color={props.useLightIcon ? theme.colors.white : theme.colors.black} 
+      />
       {user?.imageProfile ? <CircleAvatar imageUrl={user?.imageProfile} /> : <InitialProfileView />}
     </View>
   )

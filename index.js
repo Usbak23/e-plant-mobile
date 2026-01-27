@@ -8,6 +8,8 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 import schema from '@models/schema/schema'
 import migrations from '@models/migration/migrations'
 import TPH from '@models/schema/tphs'
+// Firebase background handler
+import './src/firebase-background'
 // import Post from './model/Post' // ⬅️ You'll import your Models here
 
 // First, create the adapter to the underlying database:
