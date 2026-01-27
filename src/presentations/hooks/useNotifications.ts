@@ -30,6 +30,7 @@ export const useNotifications = () => {
   useEffect(() => {
     if (notification?.registerDevice?.error) {
       showErrorToast('Failed to register device for notifications')
+      dispatch(actions.notification.clearNotificationStatus())
     }
   }, [notification?.registerDevice?.error])
 
@@ -57,6 +58,8 @@ export const useNotifications = () => {
           deviceId: deviceInfo.deviceId
         }
       }))
+    } else {
+      showErrorToast('Failed to get FCM token')
     }
 
     // Listen for token refresh

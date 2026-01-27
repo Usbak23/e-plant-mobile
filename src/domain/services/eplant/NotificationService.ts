@@ -1,4 +1,5 @@
-import axios, { AxiosResponse } from 'axios'
+import { AxiosResponse } from 'axios'
+import Axios from '@domain/services/utils/Axios'
 import { IConfig } from '@root/Config'
 import {
   INotificationApiResponse,
@@ -23,7 +24,7 @@ class NotificationService {
   }
 
   async registerDevice(data: IDeviceRegistration): Promise<AxiosResponse<INotificationApiResponse<IDeviceRegistrationResponse>>> {
-    return axios.post(
+    return Axios.post(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications/register-device`,
       data,
       { headers: this.getHeaders() }
@@ -31,21 +32,21 @@ class NotificationService {
   }
 
   async getNotifications(limit: number = 50): Promise<AxiosResponse<INotificationApiResponse<INotificationResponse>>> {
-    return axios.get(
+    return Axios.get(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications?limit=${limit}`,
       { headers: this.getHeaders() }
     )
   }
 
   async getUnreadCount(): Promise<AxiosResponse<INotificationApiResponse<IUnreadCountResponse>>> {
-    return axios.get(
+    return Axios.get(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications/unread-count`,
       { headers: this.getHeaders() }
     )
   }
 
   async markAsRead(notificationId: string): Promise<AxiosResponse<INotificationApiResponse<{ message: string }>>> {
-    return axios.put(
+    return Axios.put(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications/${notificationId}/read`,
       {},
       { headers: this.getHeaders() }
@@ -53,7 +54,7 @@ class NotificationService {
   }
 
   async markAllAsRead(): Promise<AxiosResponse<INotificationApiResponse<{ message: string }>>> {
-    return axios.put(
+    return Axios.put(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications/mark-all-read`,
       {},
       { headers: this.getHeaders() }
@@ -61,7 +62,7 @@ class NotificationService {
   }
 
   async unregisterDevice(deviceId: string): Promise<AxiosResponse<INotificationApiResponse<{ message: string }>>> {
-    return axios.post(
+    return Axios.post(
       `${this.config.eplantDomain}/api/eplant-server/web/v0/notifications/unregister-device`,
       { deviceId },
       { headers: this.getHeaders() }

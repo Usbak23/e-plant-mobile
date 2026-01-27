@@ -22,17 +22,29 @@ import { useNotifications } from './hooks/useNotifications'
 import {appNavigationRef} from './navigation/services/app'
 // import {Text} from './_shared-components'
 
+const MainStack = () => {
+  const Stack = createStackNavigator()
+  useNotifications()
+  
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        ...TransitionPresets.SlideFromRightIOS,
+        headerShown: false,
+      }}
+      initialRouteName={Routes.HOME_PAGE}>
+      <Stack.Screen name={Routes.HOME_PAGE} component={BottomTabs} />
+      <Stack.Screen name={Routes.MAPS_PREVIEW} component={MapsPreview} />
+    </Stack.Navigator>
+  )
+}
+
 export default function App() {
   // const [splash, setSplash] = useState(true)
   const Stack = createStackNavigator()
 
   const userState = useSelector((state: RootStateType) => state.user)
-  // const linking = {
-  //   prefixes: ['eplant-arvis://', 'https://eplantation.app.link'],
-  // }
-
   const user = userState.userCredential?.data
-  useNotifications()
   // useSyncData()
   // useHeadlessTask()
   // useNavigateDeeplink()
@@ -72,15 +84,7 @@ export default function App() {
 
   return (
     <NavigationContainer ref={appNavigationRef}>
-      <Stack.Navigator
-        screenOptions={{
-          ...TransitionPresets.SlideFromRightIOS,
-          headerShown: false,
-        }}
-        initialRouteName={Routes.HOME_PAGE}>
-        <Stack.Screen name={Routes.HOME_PAGE} component={BottomTabs} />
-        <Stack.Screen name={Routes.MAPS_PREVIEW} component={MapsPreview} />
-      </Stack.Navigator>
+      <MainStack />
     </NavigationContainer>
   )
 }
