@@ -54,7 +54,7 @@ const Config: IConfig = {
   },
   apiDomain: "https://sahabatagrogroup.com",
   crmDomain: "https://sahabatagrogroup.com",
-  eplantDomain: "http://192.168.50.70:7000"
+  eplantDomain: "https://sahabatagrogroup.com"
 }
 
 export default Config
