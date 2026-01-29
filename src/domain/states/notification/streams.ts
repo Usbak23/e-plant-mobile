@@ -100,12 +100,24 @@ const registerDeviceStream: Epic<ActionsType, ActionsType, RootStateType> = (act
       }
       const notificationService = new NotificationService(Config)
       return from(notificationService.registerDevice(action.payload.data)).pipe(
-        map(response => actions.registerDevice.success({loading: false, data: response.data.response})),
-        catchError(error => of(actions.registerDevice.failure({loading: false, error: {
-          code: error.response?.status?.toString() || '500',
-          severity: 'error' as any,
-          message: error.message || 'Failed to register device'
-        }}))),
+        map(response => {
+          const data: any = response.data.response || response.data
+          
+          return actions.registerDevice.success({
+            loading: false, 
+            data: {
+              message: data.message || 'Device registered successfully',
+              deviceId: data.deviceId || data.id || 'unknown'
+            }
+          })
+        }),
+        catchError(error => {
+          return of(actions.registerDevice.failure({loading: false, error: {
+            code: error.response?.status?.toString() || '500',
+            severity: 'error' as any,
+            message: error.response?.data?.message || error.message || 'Failed to register device'
+          }}))
+        }),
       )
     }),
   )

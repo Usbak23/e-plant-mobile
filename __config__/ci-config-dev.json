@@ -18,7 +18,7 @@
     "appId": "1:643199958313:android:6d607d0bb73b7fa78e4b38",
     "measurementId": "G-LD2H8VZNSF"
   },
-  "apiDomain": "http://192.168.1.1:7000",
-  "crmDomain": "http://192.168.1.1:7000",
-  "eplantDomain": "http://192.168.1.1:7000"
+  "apiDomain": "http://192.168.50.70:7000",
+  "crmDomain": "http://192.168.50.70:7000",
+  "eplantDomain": "http://192.168.50.70:7000"
 }
