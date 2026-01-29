@@ -141,7 +141,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - developer
+          - developer@sahabatagro.co.id
         notify:
           success: true
           failure: true
