@@ -71,6 +71,19 @@ def enableProguardInReleaseBuilds = true
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// Read version from package.json
+def getVersionCode = { ->
+    def packageJson = new groovy.json.JsonSlurper().parseText(file("../../package.json").text)
+    def version = packageJson.version
+    def parts = version.tokenize('.')
+    return (parts[0].toInteger() * 10000) + (parts[1].toInteger() * 100) + parts[2].toInteger()
+}
+
+def getVersionName = { ->
+    def packageJson = new groovy.json.JsonSlurper().parseText(file("../../package.json").text)
+    return packageJson.version
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -93,8 +106,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
-        versionCode 4
-        versionName "4.1.0"
+        versionCode getVersionCode()
+        versionName getVersionName()
     }
     signingConfigs {
         debug {
