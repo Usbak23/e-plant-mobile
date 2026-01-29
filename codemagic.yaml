@@ -1,0 +1,228 @@
+workflows:
+  react-native-android-dev:
+    name: E-Plantation Development
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - node_modules
+    environment:
+      groups:
+        - eplant-credentials
+      vars:
+        PACKAGE_NAME: 'com.eplantation.mobile.app'
+        ENV: 'dev'
+      node: 20
+      java: 17
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: development
+          include: true
+          source: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install --legacy-peer-deps
+      
+      - name: Setup keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          cp /tmp/keystore.keystore android/app/production.keystore
+      
+      - name: Init Android SDK
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+      
+      - name: Setup app config
+        script: |
+          chmod +x sag-dev
+          ./sag-dev export dev --initiate-only
+      
+      - name: Bump version
+        script: |
+          chmod +x sag-dev
+          ./sag-dev bump patch
+      
+      - name: Build Android APK
+        script: |
+          cd android
+          ./gradlew clean
+          ./gradlew assembleRelease
+      
+      - name: Push commit changes
+        script: |
+          chmod +x sag-dev
+          ./sag-dev commit
+    
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+    
+    publishing:
+      email:
+        recipients:
+          - rizki.aiman@arvis.id
+          - feri.ferdinan@arvis.id
+          - prieyuda.sustono@arvis.id
+        notify:
+          success: true
+          failure: true
+
+  react-native-android-staging:
+    name: E-Plantation Staging
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - node_modules
+    environment:
+      groups:
+        - eplant-credentials
+      vars:
+        PACKAGE_NAME: 'com.eplantation.mobile.app'
+        ENV: 'staging'
+      node: 20
+      java: 17
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: staging
+          include: true
+          source: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install --legacy-peer-deps
+      
+      - name: Setup keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          cp /tmp/keystore.keystore android/app/production.keystore
+      
+      - name: Init Android SDK
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+      
+      - name: Setup app config
+        script: |
+          chmod +x sag-dev
+          ./sag-dev export staging --initiate-only
+      
+      - name: Bump version
+        script: |
+          chmod +x sag-dev
+          ./sag-dev bump minor
+      
+      - name: Build Android APK
+        script: |
+          cd android
+          ./gradlew clean
+          ./gradlew assembleRelease
+      
+      - name: Push commit changes
+        script: |
+          chmod +x sag-dev
+          ./sag-dev commit
+    
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+    
+    publishing:
+      email:
+        recipients:
+          - rizki.aiman@arvis.id
+          - feri.ferdinan@arvis.id
+          - prieyuda.sustono@arvis.id
+        notify:
+          success: true
+          failure: true
+
+  react-native-android-prod:
+    name: E-Plantation Production
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - node_modules
+    environment:
+      groups:
+        - eplant-credentials
+        - google-play-credentials
+      vars:
+        PACKAGE_NAME: 'com.eplantation.mobile.app'
+        ENV: 'prod'
+      node: 20
+      java: 17
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+        - pattern: master
+          include: true
+          source: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install --legacy-peer-deps
+      
+      - name: Setup keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          cp /tmp/keystore.keystore android/app/production.keystore
+      
+      - name: Init Android SDK
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+      
+      - name: Setup app config
+        script: |
+          chmod +x sag-dev
+          ./sag-dev export prod --initiate-only
+      
+      - name: Bump version
+        script: |
+          chmod +x sag-dev
+          ./sag-dev bump major
+      
+      - name: Build Android Bundle
+        script: |
+          cd android
+          ./gradlew clean
+          ./gradlew bundleRelease
+      
+      - name: Push commit changes
+        script: |
+          chmod +x sag-dev
+          ./sag-dev commit
+      
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/*.aab
+    
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_KEY
+        track: internal
+        in_app_update_priority: 3
+        rollout_fraction: 0.999
+        changes_not_sent_for_review: true
+      email:
+        recipients:
+          - rizki.aiman@arvis.id
+          - feri.ferdinan@arvis.id
+          - prieyuda.sustono@arvis.id
+        notify:
+          success: true
+          failure: true
