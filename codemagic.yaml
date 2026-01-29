@@ -53,6 +53,17 @@ workflows:
           ./gradlew clean
           ./gradlew assembleRelease
       
+      - name: Generate release notes
+        script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "E-Plantation Development v$APP_VERSION" > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
+          echo "Environment: Development" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Recent changes:" >> release_notes.txt
+          git log -5 --pretty=format:"- %s" >> release_notes.txt
+      
       - name: Push commit changes
         script: |
           APP_VERSION=$(node -p "require('./package.json').version")
@@ -72,6 +83,10 @@ workflows:
         notify:
           success: true
           failure: true
+        body: |
+          Build completed successfully!
+          
+          $(cat release_notes.txt)
 
   react-native-android-staging:
     name: E-Plantation Staging
@@ -126,6 +141,17 @@ workflows:
           ./gradlew clean
           ./gradlew assembleRelease
       
+      - name: Generate release notes
+        script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "E-Plantation Staging v$APP_VERSION" > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
+          echo "Environment: Staging" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Recent changes:" >> release_notes.txt
+          git log -5 --pretty=format:"- %s" >> release_notes.txt
+      
       - name: Push commit changes
         script: |
           APP_VERSION=$(node -p "require('./package.json').version")
@@ -145,6 +171,10 @@ workflows:
         notify:
           success: true
           failure: true
+        body: |
+          Build completed successfully!
+          
+          $(cat release_notes.txt)
 
   react-native-android-prod:
     name: E-Plantation Production
@@ -203,6 +233,20 @@ workflows:
           ./gradlew clean
           ./gradlew bundleRelease
       
+      - name: Generate release notes
+        script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "E-Plantation Production v$APP_VERSION" > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
+          echo "Environment: Production" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Recent changes:" >> release_notes.txt
+          git log -5 --pretty=format:"- %s" >> release_notes.txt
+          
+          echo "What's new in this version:" > whats_new.txt
+          git log -3 --pretty=format:"- %s" >> whats_new.txt
+      
       - name: Push commit changes
         script: |
           APP_VERSION=$(node -p "require('./package.json').version")
@@ -223,9 +267,14 @@ workflows:
         in_app_update_priority: 3
         rollout_fraction: 0.999
         changes_not_sent_for_review: true
+        whats_new: whats_new.txt
       email:
         recipients:
           - developer@sahabatagro.co.id
         notify:
           success: true
           failure: true
+        body: |
+          Build completed successfully!
+          
+          $(cat release_notes.txt)
