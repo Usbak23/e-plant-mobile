@@ -45,8 +45,7 @@ workflows:
       
       - name: Bump version
         script: |
-          chmod +x sag-dev
-          ./sag-dev bump patch
+          npx react-native bump-version --type patch
       
       - name: Build Android APK
         script: |
@@ -56,8 +55,12 @@ workflows:
       
       - name: Push commit changes
         script: |
-          chmod +x sag-dev
-          ./sag-dev commit
+          APP_VERSION=$(node -p "require('./package.json').version")
+          git config user.email "ci@codemagic.io"
+          git config user.name "Codemagic CI"
+          git add .
+          git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:development || echo "Push failed"
     
     artifacts:
       - android/app/build/outputs/**/*.apk
@@ -117,8 +120,7 @@ workflows:
       
       - name: Bump version
         script: |
-          chmod +x sag-dev
-          ./sag-dev bump minor
+          npx react-native bump-version --type minor
       
       - name: Build Android APK
         script: |
@@ -128,8 +130,12 @@ workflows:
       
       - name: Push commit changes
         script: |
-          chmod +x sag-dev
-          ./sag-dev commit
+          APP_VERSION=$(node -p "require('./package.json').version")
+          git config user.email "ci@codemagic.io"
+          git config user.name "Codemagic CI"
+          git add .
+          git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:staging || echo "Push failed"
     
     artifacts:
       - android/app/build/outputs/**/*.apk
@@ -193,8 +199,7 @@ workflows:
       
       - name: Bump version
         script: |
-          chmod +x sag-dev
-          ./sag-dev bump major
+          npx react-native bump-version --type major
       
       - name: Build Android Bundle
         script: |
@@ -204,8 +209,12 @@ workflows:
       
       - name: Push commit changes
         script: |
-          chmod +x sag-dev
-          ./sag-dev commit
+          APP_VERSION=$(node -p "require('./package.json').version")
+          git config user.email "ci@codemagic.io"
+          git config user.name "Codemagic CI"
+          git add .
+          git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:main || echo "Push failed"
       
     artifacts:
       - android/app/build/outputs/**/*.apk
@@ -220,9 +229,7 @@ workflows:
         changes_not_sent_for_review: true
       email:
         recipients:
-          - rizki.aiman@arvis.id
-          - feri.ferdinan@arvis.id
-          - prieyuda.sustono@arvis.id
+          - developer@sahabatagro.co.id
         notify:
           success: true
           failure: true

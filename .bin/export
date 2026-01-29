@@ -1,0 +1,13 @@
+#!/bin/bash
+
+ENV=$1
+OPTION=$2
+
+if [ "$ENV" = "dev" ] || [ "$ENV" = "staging" ] || [ "$ENV" = "prod" ]; then
+  echo "Exporting config for $ENV environment..."
+  cp __config__/ci-config-$ENV.json __config__/config.json
+  echo "Config exported successfully!"
+else
+  echo "Invalid environment. Use: dev, staging, or prod"
+  exit 1
+fi
