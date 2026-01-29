@@ -60,7 +60,7 @@ workflows:
           git config user.name "Codemagic CI"
           git add .
           git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
-          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:development || echo "Push failed"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.sahabatagro.co.id/sahabat-agro-group/eplant-mobile.git HEAD:development || echo "Push failed"
     
     artifacts:
       - android/app/build/outputs/**/*.apk
@@ -68,9 +68,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - rizki.aiman@arvis.id
-          - feri.ferdinan@arvis.id
-          - prieyuda.sustono@arvis.id
+          - developer@sahabatagro.co.id
         notify:
           success: true
           failure: true
@@ -135,7 +133,7 @@ workflows:
           git config user.name "Codemagic CI"
           git add .
           git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
-          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:staging || echo "Push failed"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.sahabatagro.co.id/sahabat-agro-group/eplant-mobile.git HEAD:staging || echo "Push failed"
     
     artifacts:
       - android/app/build/outputs/**/*.apk
@@ -143,9 +141,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - rizki.aiman@arvis.id
-          - feri.ferdinan@arvis.id
-          - prieyuda.sustono@arvis.id
+          - developer
         notify:
           success: true
           failure: true
@@ -214,7 +210,7 @@ workflows:
           git config user.name "Codemagic CI"
           git add .
           git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
-          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com/arvis-team/e-plantation-mobile.git HEAD:main || echo "Push failed"
+          git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.sahabatagro.co.id/sahabat-agro-group/eplant-mobile.git HEAD:main || echo "Push failed"
       
     artifacts:
       - android/app/build/outputs/**/*.apk
