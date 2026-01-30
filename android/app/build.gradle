@@ -94,7 +94,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
         versionCode 6
-        versionName "4.2.0"
+        versionName "4.1.2"
     }
     signingConfigs {
         debug {
