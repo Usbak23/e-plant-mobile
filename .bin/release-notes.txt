@@ -1,0 +1,11 @@
+E-Plantation Staging v4.2.0
+
+Build: #1
+Environment: Staging
+
+Recent changes:
+- Merge branch 'development' into 'staging'
+- Merge branch 'development' - accept CI version bumps
+- add email participant publis in staging
+- [skip ci] bump version 4.2.0
+- Move release notes to .bin directory
