@@ -178,8 +178,8 @@ workflows:
       email:
         recipients:
           - developer@sahabatagro.co.id
-          - fredy.pm@sahabatagro.co.id
-          - sys.analys@sahabatatagro.co.id
+          - freddy.pm@sahabatagro.co.id
+          - sys.analys@sahabatagro.co.id
         notify:
           success: true
           failure: true
@@ -287,7 +287,7 @@ workflows:
     publishing:
       google_play:
         credentials: $GOOGLE_PLAY_KEY
-        track: production
+        track: internal
         in_app_update_priority: 3
         rollout_fraction: 0.999
         changes_not_sent_for_review: false
@@ -295,8 +295,8 @@ workflows:
       email:
         recipients:
           - developer@sahabatagro.co.id
-          - fredy.pm@sahabatagro.co.id
-          - sys.analys@sahabatatagro.co.id
+          - freddy.pm@sahabatagro.co.id
+          - sys.analys@sahabatagro.co.id
         notify:
           success: true
           failure: true
