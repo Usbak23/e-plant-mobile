@@ -255,13 +255,6 @@ workflows:
           else
             git log -5 --pretty=format:"- %s" >> release_notes.txt
           fi
-          
-          echo "What's new in this version:" > whats_new.txt
-          if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> whats_new.txt
-          else
-            git log -3 --pretty=format:"- %s" >> whats_new.txt
-          fi
       
       - name: Push commit changes
         script: |
@@ -272,6 +265,18 @@ workflows:
           git commit -m "[skip ci] bump version $APP_VERSION" || echo "No changes"
           git push https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.sahabatagro.co.id/sahabat-agro-group/eplant-mobile.git HEAD:main || echo "Push failed"
       
+      - name: Upload release notes to Play Store
+        script: |
+          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | awk '{print $2}')
+          mkdir -p distribution/whatsnew
+          git fetch --all --tags
+          prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
+          if [ -n "$prev_tag" ]; then
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD > distribution/whatsnew/whatsnew-en-US
+          else
+            git log -3 --pretty=format:"- %s" > distribution/whatsnew/whatsnew-en-US
+          fi
+    
     artifacts:
       - android/app/build/outputs/**/*.apk
       - android/app/build/outputs/**/*.aab
@@ -280,11 +285,11 @@ workflows:
     publishing:
       google_play:
         credentials: $GOOGLE_PLAY_KEY
-        track: internal
+        track: production
         in_app_update_priority: 3
         rollout_fraction: 0.999
-        changes_not_sent_for_review: true
-        whats_new: whats_new.txt
+        changes_not_sent_for_review: false
+        submit_as_draft: false
       email:
         recipients:
           - developer@sahabatagro.co.id
