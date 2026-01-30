@@ -1,5 +1,5 @@
 workflows:
-  react-native-android-dev:
+  eplant-app-mobile-dev:
     name: E-Plantation Development
     max_build_duration: 120
     instance_type: mac_mini_m1
@@ -58,16 +58,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Development v$APP_VERSION" > .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
-          echo "Environment: Development" >> .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Recent changes:" >> .bin/release_notes.txt
+          echo "E-Plantation Development v$APP_VERSION" > .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release-notes.txt
+          echo "Environment: Development" >> .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Recent changes:" >> .bin/release-notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release-notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release-notes.txt
           fi
       
       - name: Push commit changes
@@ -81,7 +81,7 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
-      - .bin/release_notes.txt
+      - .bin/release-notes.txt
     
     publishing:
       email:
@@ -91,7 +91,7 @@ workflows:
           success: true
           failure: true
 
-  react-native-android-staging:
+  eplant-app-mobile-staging:
     name: E-Plantation Staging
     max_build_duration: 120
     instance_type: mac_mini_m1
@@ -149,16 +149,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Staging v$APP_VERSION" > .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
-          echo "Environment: Staging" >> .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Recent changes:" >> .bin/release_notes.txt
+          echo "E-Plantation Staging v$APP_VERSION" > .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release-notes.txt
+          echo "Environment: Staging" >> .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Recent changes:" >> .bin/release-notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release-notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release-notes.txt
           fi
       
       - name: Push commit changes
@@ -172,17 +172,19 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
-      - .bin/release_notes.txt
+      - .bin/release-notes.txt
     
     publishing:
       email:
         recipients:
           - developer@sahabatagro.co.id
+          - fredy.pm@sahabatagro.co.id
+          - sys.analys@sahabatatagro.co.id
         notify:
           success: true
           failure: true
 
-  react-native-android-prod:
+  eplant-app-mobile-prod:
     name: E-Plantation Production
     max_build_duration: 120
     instance_type: mac_mini_m1
@@ -244,16 +246,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Production v$APP_VERSION" > .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
-          echo "Environment: Production" >> .bin/release_notes.txt
-          echo "" >> .bin/release_notes.txt
-          echo "Recent changes:" >> .bin/release_notes.txt
+          echo "E-Plantation Production v$APP_VERSION" > .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release-notes.txt
+          echo "Environment: Production" >> .bin/release-notes.txt
+          echo "" >> .bin/release-notes.txt
+          echo "Recent changes:" >> .bin/release-notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release-notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release-notes.txt
           fi
       
       - name: Push commit changes
@@ -280,7 +282,7 @@ workflows:
     artifacts:
       - android/app/build/outputs/**/*.apk
       - android/app/build/outputs/**/*.aab
-      - .bin/release_notes.txt
+      - .bin/release-notes.txt
     
     publishing:
       google_play:
@@ -293,6 +295,8 @@ workflows:
       email:
         recipients:
           - developer@sahabatagro.co.id
+          - fredy.pm@sahabatagro.co.id
+          - sys.analys@sahabatatagro.co.id
         notify:
           success: true
           failure: true
