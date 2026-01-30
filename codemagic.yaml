@@ -55,6 +55,8 @@ workflows:
       
       - name: Generate release notes
         script: |
+          git fetch --all --tags
+          prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
           echo "E-Plantation Development v$APP_VERSION" > release_notes.txt
           echo "" >> release_notes.txt
@@ -62,7 +64,11 @@ workflows:
           echo "Environment: Development" >> release_notes.txt
           echo "" >> release_notes.txt
           echo "Recent changes:" >> release_notes.txt
-          git log -5 --pretty=format:"- %s" >> release_notes.txt
+          if [ -n "$prev_tag" ]; then
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+          else
+            git log -5 --pretty=format:"- %s" >> release_notes.txt
+          fi
       
       - name: Push commit changes
         script: |
@@ -75,6 +81,7 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
+      - release_notes.txt
     
     publishing:
       email:
@@ -83,10 +90,6 @@ workflows:
         notify:
           success: true
           failure: true
-        body: |
-          Build completed successfully!
-          
-          $(cat release_notes.txt)
 
   react-native-android-staging:
     name: E-Plantation Staging
@@ -143,6 +146,8 @@ workflows:
       
       - name: Generate release notes
         script: |
+          git fetch --all --tags
+          prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
           echo "E-Plantation Staging v$APP_VERSION" > release_notes.txt
           echo "" >> release_notes.txt
@@ -150,7 +155,11 @@ workflows:
           echo "Environment: Staging" >> release_notes.txt
           echo "" >> release_notes.txt
           echo "Recent changes:" >> release_notes.txt
-          git log -5 --pretty=format:"- %s" >> release_notes.txt
+          if [ -n "$prev_tag" ]; then
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+          else
+            git log -5 --pretty=format:"- %s" >> release_notes.txt
+          fi
       
       - name: Push commit changes
         script: |
@@ -163,6 +172,7 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
+      - release_notes.txt
     
     publishing:
       email:
@@ -171,10 +181,6 @@ workflows:
         notify:
           success: true
           failure: true
-        body: |
-          Build completed successfully!
-          
-          $(cat release_notes.txt)
 
   react-native-android-prod:
     name: E-Plantation Production
@@ -235,6 +241,8 @@ workflows:
       
       - name: Generate release notes
         script: |
+          git fetch --all --tags
+          prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
           echo "E-Plantation Production v$APP_VERSION" > release_notes.txt
           echo "" >> release_notes.txt
@@ -242,10 +250,18 @@ workflows:
           echo "Environment: Production" >> release_notes.txt
           echo "" >> release_notes.txt
           echo "Recent changes:" >> release_notes.txt
-          git log -5 --pretty=format:"- %s" >> release_notes.txt
+          if [ -n "$prev_tag" ]; then
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+          else
+            git log -5 --pretty=format:"- %s" >> release_notes.txt
+          fi
           
           echo "What's new in this version:" > whats_new.txt
-          git log -3 --pretty=format:"- %s" >> whats_new.txt
+          if [ -n "$prev_tag" ]; then
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> whats_new.txt
+          else
+            git log -3 --pretty=format:"- %s" >> whats_new.txt
+          fi
       
       - name: Push commit changes
         script: |
@@ -259,6 +275,7 @@ workflows:
     artifacts:
       - android/app/build/outputs/**/*.apk
       - android/app/build/outputs/**/*.aab
+      - release_notes.txt
     
     publishing:
       google_play:
@@ -274,7 +291,3 @@ workflows:
         notify:
           success: true
           failure: true
-        body: |
-          Build completed successfully!
-          
-          $(cat release_notes.txt)

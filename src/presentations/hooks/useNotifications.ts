@@ -21,18 +21,25 @@ export const useNotifications = () => {
   // Handle device registration success
   useEffect(() => {
     if (notification?.registerDevice?.data) {
+      console.log('Device registration success:', notification.registerDevice.data)
       showSuccessToast('Device registered for notifications')
       dispatch(actions.notification.clearNotificationStatus())
     }
-  }, [notification?.registerDevice?.data])
+  }, [notification?.registerDevice?.data, dispatch])
 
   // Handle device registration error
   useEffect(() => {
     if (notification?.registerDevice?.error) {
-      showErrorToast('Failed to register device for notifications')
+      console.log('Device registration error:', notification.registerDevice.error)
+      
+      // Suppress 502 error karena data tetap masuk DB
+      if (notification.registerDevice.error.code !== '502') {
+        showErrorToast('Failed to register device for notifications')
+      }
+      
       dispatch(actions.notification.clearNotificationStatus())
     }
-  }, [notification?.registerDevice?.error])
+  }, [notification?.registerDevice?.error, dispatch])
 
   const initializeNotifications = async () => {
     // Request permission
