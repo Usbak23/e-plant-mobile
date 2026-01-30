@@ -58,16 +58,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Development v$APP_VERSION" > release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
-          echo "Environment: Development" >> release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Recent changes:" >> release_notes.txt
+          echo "E-Plantation Development v$APP_VERSION" > .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
+          echo "Environment: Development" >> .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Recent changes:" >> .bin/release_notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
           fi
       
       - name: Push commit changes
@@ -81,7 +81,7 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
-      - release_notes.txt
+      - .bin/release_notes.txt
     
     publishing:
       email:
@@ -149,16 +149,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Staging v$APP_VERSION" > release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
-          echo "Environment: Staging" >> release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Recent changes:" >> release_notes.txt
+          echo "E-Plantation Staging v$APP_VERSION" > .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
+          echo "Environment: Staging" >> .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Recent changes:" >> .bin/release_notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
           fi
       
       - name: Push commit changes
@@ -172,7 +172,7 @@ workflows:
     
     artifacts:
       - android/app/build/outputs/**/*.apk
-      - release_notes.txt
+      - .bin/release_notes.txt
     
     publishing:
       email:
@@ -244,16 +244,16 @@ workflows:
           git fetch --all --tags
           prev_tag=$(git for-each-ref --sort=-creatordate --format '%(objectname)' refs/tags | sed -n 2p)
           APP_VERSION=$(node -p "require('./package.json').version")
-          echo "E-Plantation Production v$APP_VERSION" > release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Build: #$BUILD_NUMBER" >> release_notes.txt
-          echo "Environment: Production" >> release_notes.txt
-          echo "" >> release_notes.txt
-          echo "Recent changes:" >> release_notes.txt
+          echo "E-Plantation Production v$APP_VERSION" > .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Build: #$BUILD_NUMBER" >> .bin/release_notes.txt
+          echo "Environment: Production" >> .bin/release_notes.txt
+          echo "" >> .bin/release_notes.txt
+          echo "Recent changes:" >> .bin/release_notes.txt
           if [ -n "$prev_tag" ]; then
-            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> release_notes.txt
+            git log --pretty=format:"- %s" "$prev_tag"..HEAD >> .bin/release_notes.txt
           else
-            git log -5 --pretty=format:"- %s" >> release_notes.txt
+            git log -5 --pretty=format:"- %s" >> .bin/release_notes.txt
           fi
       
       - name: Push commit changes
@@ -280,7 +280,7 @@ workflows:
     artifacts:
       - android/app/build/outputs/**/*.apk
       - android/app/build/outputs/**/*.aab
-      - release_notes.txt
+      - .bin/release_notes.txt
     
     publishing:
       google_play:
