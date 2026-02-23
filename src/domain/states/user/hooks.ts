@@ -991,6 +991,17 @@ export const useWorkDay = () => {
   ]
 }
 
+// Approval/Persetujuan
+export const useIsAllowedToApproveRKT = () => {
+  const currentUser = useCurrentUserInfo()
+  if (currentUser?.role?.isSuperAdmin) {
+    return true
+  }
+  // Check if user has approvals assigned (user is an approver)
+  // Backend should handle the actual approval logic based on user's approval level
+  return currentUser?.approvals && currentUser.approvals.length > 0
+}
+
 
 
 
