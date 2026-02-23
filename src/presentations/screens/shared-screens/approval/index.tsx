@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { actions, RootStateType } from '@app/domain/states/store'
 import { showErrorToast, showSuccessToast } from '@app/presentations/_shared-components/Toast'
 import Feather from 'react-native-vector-icons/Feather'
+import { useIsAllowedToApproveRKT } from '@app/domain/states/user/hooks'
 
 interface ApprovalItem {
   id: string
@@ -37,7 +38,7 @@ interface ApprovalItem {
   createdAt: string
 }
 
-const ApprovalCard = ({ item, onApprove, onReject }: { item: ApprovalItem, onApprove: () => void, onReject: () => void }) => {
+const ApprovalCard = ({ item, onApprove, onReject, isAllowedToApprove }: { item: ApprovalItem, onApprove: () => void, onReject: () => void, isAllowedToApprove: boolean }) => {
   return (
     <View style={styles.card}>
       <TouchableOpacity>
@@ -104,15 +105,17 @@ const ApprovalCard = ({ item, onApprove, onReject }: { item: ApprovalItem, onApp
         </View>
       </TouchableOpacity>
       
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.approveButton} onPress={onApprove}>
-          <Text size={14} type="semibold" color={theme.colors.white}>Setuju</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.rejectButton} onPress={onReject}>
-          <Text size={14} type="semibold" color={theme.colors.white}>Tolak</Text>
-        </TouchableOpacity>
-      </View>
+      {isAllowedToApprove && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.approveButton} onPress={onApprove}>
+            <Text size={14} type="semibold" color={theme.colors.white}>Setuju</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.rejectButton} onPress={onReject}>
+            <Text size={14} type="semibold" color={theme.colors.white}>Tolak</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   )
 }
@@ -121,6 +124,7 @@ const ApprovalScreen = () => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const approval = useSelector((state: RootStateType) => state.approval)
+  const isAllowedToApprove = useIsAllowedToApproveRKT()
   const [searchText, setSearchText] = useState('')
   const [filteredApprovals, setFilteredApprovals] = useState<ApprovalItem[]>([])
   const [refreshing, setRefreshing] = useState(false)
@@ -132,7 +136,9 @@ const ApprovalScreen = () => {
   const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
-    fetchPendingApprovals()
+    if (isAllowedToApprove) {
+      fetchPendingApprovals()
+    }
   }, [])
 
   useEffect(() => {
@@ -182,13 +188,29 @@ const ApprovalScreen = () => {
     }
   }, [approval?.approve?.error, approval?.reject?.error, approval?.pendingApprovals?.error])
 
-  // Safety check for approval state
+  // Safety check for approval state and permission
   if (!approval) {
     return (
       <SafeAreaView style={styles.container}>
         <Header title="Persetujuan RKT" />
         <View style={styles.content}>
           <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  // Check if user has permission to access approval
+  if (!isAllowedToApprove) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header title="Persetujuan RKT" />
+        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Feather name="lock" size={48} color={theme.colors.grey} style={{ marginBottom: 16 }} />
+          <Text size={16} type="semibold" style={{ marginBottom: 8 }}>Akses Ditolak</Text>
+          <Text size={14} color={theme.colors.grey} style={{ textAlign: 'center' }}>
+            Anda tidak memiliki hak akses untuk melihat halaman persetujuan RKT
+          </Text>
         </View>
       </SafeAreaView>
     )
@@ -308,6 +330,7 @@ const ApprovalScreen = () => {
         item={item}
         onApprove={() => handleApprove(item)}
         onReject={() => handleReject(item)}
+        isAllowedToApprove={isAllowedToApprove}
       />
     )
   }
