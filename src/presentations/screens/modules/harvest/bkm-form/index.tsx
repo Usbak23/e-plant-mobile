@@ -1,5 +1,5 @@
 import { theme } from '@app/presentations/utils/styles'
-import { Button, Header, SelectInput, Text, TextInput } from '@app/presentations/_shared-components'
+import { Button, Header, SelectInput, Text, TextInput, ModalInfo } from '@app/presentations/_shared-components'
 import React, { useEffect, useState, useRef } from 'react'
 import { SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
@@ -67,6 +67,7 @@ const BKMForm = () => {
 
   const [selectedUser, setSelectedUser] = useState(item?.user?.id || '')
   const [defaultBlocks, setDefaultBlock] = useState([])
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [blockForm, setBlockForm] = useState([
     {
       blockId: item?.block?.id || item?.blockId,
@@ -259,20 +260,16 @@ const BKMForm = () => {
   useEffect(() => {
     const error = formBKMStatus?.error
     if (error) {
-      showErrorToast(error.message)
+      showErrorToast(error.message || 'Terjadi kesalahan')
     }
   }, [formBKMStatus?.error])
 
   useEffect(() => {
-    //TODO: not executed
     const data = formBKMStatus?.data?.data
-    if (data?.code == 200) {
-      showSuccessToast(`${isEdit ? 'Perubahan disimpan' : 'Berhasil disimpan'}`)
-      setTimeout(() => {
-        navigation.goBack()
-      }, 800)
+    if (data?.status == 'success') {
+      setShowSuccessModal(true)
     }
-  }, [formBKMStatus?.data])
+  }, [formBKMStatus?.data?.data])
 
   const HeaderView = () => <Header title={isEdit ? 'Ubah BKM' : 'Tambah BKM'} />
 
@@ -466,6 +463,21 @@ const BKMForm = () => {
           <Text color="white">{formBKMStatus?.loading ? 'Loading...' : 'Simpan BKM'}</Text>
         </Button>
       </View>
+
+      <ModalInfo
+        isOpen={showSuccessModal}
+        title={isEdit ? 'Perubahan Berhasil Disimpan' : 'BKM Berhasil Disimpan'}
+        description={`Data BKM telah ${isEdit ? 'diperbarui' : 'ditambahkan'} ke sistem`}
+        positiveButtonText="Oke"
+        onTouchOutside={() => {
+          setShowSuccessModal(false)
+          navigation.goBack()
+        }}
+        onPositiveButtonTap={() => {
+          setShowSuccessModal(false)
+          navigation.goBack()
+        }}
+      />
     </SafeAreaView>
   )
 }
