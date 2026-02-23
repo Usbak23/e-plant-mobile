@@ -60,7 +60,15 @@ const createBKM: StreamType = (action$, state$, api) => {
           actions.deleteBKMTemp(action.payload.data),
           actions.createBKM.success({ loading: false, data }),
           actions.clearFormBKMStatus(),
-          actions.getBKMMobile.request({ loading: true, data: action.payload.data }),
+          actions.getBKMMobile.request({ 
+            loading: true, 
+            data: {
+              divisionId: action.payload.data?.divisionId,
+              date: action.payload.data?.date,
+              foremanId: action.payload.data?.foremanId,
+              subActivityId: action.payload.data?.subActivityId,
+            }
+          }),
           actions.syncBKM(),
         ]),
         catchError(error => {
@@ -101,7 +109,13 @@ const editBKM: StreamType = (action$, state$, api) => {
       }
       return from(api.bkmService.editBKM(action.payload.data as IBKMFormDataUpdate)).pipe(
         concatMap((data: any) => [
-          actions.getBKMMobile.request({ loading: true, data: action.payload.data }),
+          actions.getBKMMobile.request({ 
+            loading: true, 
+            data: {
+              divisionId: action.payload.data?.divisionId,
+              date: action.payload.data?.date,
+            }
+          }),
           actions.editBKM.success({ loading: false, data }),
           actions.clearFormBKMStatus(),
         ]),
