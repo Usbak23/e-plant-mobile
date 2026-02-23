@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigation } from '@react-navigation/native'
+import notifee, { AndroidImportance } from '@notifee/react-native'
 import FirebaseNotificationService from '@app/domain/services/firebase/FirebaseNotificationService'
 import { actions, RootStateType } from '@app/domain/states/store'
 import Routes from '@app/presentations/navigation/Routes'
@@ -22,7 +23,6 @@ export const useNotifications = () => {
   useEffect(() => {
     if (notification?.registerDevice?.data) {
       console.log('Device registration success:', notification.registerDevice.data)
-      showSuccessToast('Device registered for notifications')
       dispatch(actions.notification.clearNotificationStatus())
     }
   }, [notification?.registerDevice?.data, dispatch])
@@ -32,16 +32,26 @@ export const useNotifications = () => {
     if (notification?.registerDevice?.error) {
       console.log('Device registration error:', notification.registerDevice.error)
       
-      // Suppress 502 error karena data tetap masuk DB
-      if (notification.registerDevice.error.code !== '502') {
-        showErrorToast('Failed to register device for notifications')
-      }
+      // Log error but don't show toast to user
+      console.error('Failed to register device:', notification.registerDevice.error)
       
       dispatch(actions.notification.clearNotificationStatus())
     }
   }, [notification?.registerDevice?.error, dispatch])
 
+  const createNotificationChannel = async () => {
+    await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+      importance: AndroidImportance.HIGH,
+      sound: 'default',
+    })
+  }
+
   const initializeNotifications = async () => {
+    // Create notification channel for Android
+    await createNotificationChannel()
+
     // Request permission
     const hasPermission = await FirebaseNotificationService.requestPermission()
     if (!hasPermission) {
@@ -66,7 +76,7 @@ export const useNotifications = () => {
         }
       }))
     } else {
-      showErrorToast('Failed to get FCM token')
+      console.error('Failed to get FCM token')
     }
 
     // Listen for token refresh
@@ -86,14 +96,20 @@ export const useNotifications = () => {
     })
 
     // Handle foreground messages
-    const unsubscribeForeground = FirebaseNotificationService.onMessage((message) => {
-      Alert.alert(
-        message.notification?.title || 'Notification',
-        message.notification?.body || 'You have a new message',
-        [
-          { text: 'OK', onPress: () => handleNotificationNavigation(message) }
-        ]
-      )
+    const unsubscribeForeground = FirebaseNotificationService.onMessage(async (message) => {
+      // Display notification using Notifee
+      await notifee.displayNotification({
+        title: message.notification?.title || 'Notification',
+        body: message.notification?.body || 'You have a new message',
+        data: message.data,
+        android: {
+          channelId: 'default',
+          smallIcon: 'ic_launcher',
+          pressAction: {
+            id: 'default',
+          },
+        },
+      })
       
       // Refresh unread count
       dispatch(actions.notification.getUnreadCount.request({ loading: false }))
