@@ -261,15 +261,16 @@ const BKMForm = () => {
     const error = formBKMStatus?.error
     if (error) {
       showErrorToast(error.message || 'Terjadi kesalahan')
+      dispatch(actions.clearFormBKMStatus())
     }
   }, [formBKMStatus?.error])
 
   useEffect(() => {
-    const data = formBKMStatus?.data?.data
-    if (data?.status == 'success') {
+    const data = formBKMStatus?.data
+    if (data && !formBKMStatus?.loading && !formBKMStatus?.error) {
       setShowSuccessModal(true)
     }
-  }, [formBKMStatus?.data?.data])
+  }, [formBKMStatus?.data, formBKMStatus?.loading])
 
   const HeaderView = () => <Header title={isEdit ? 'Ubah BKM' : 'Tambah BKM'} />
 
@@ -471,10 +472,12 @@ const BKMForm = () => {
         positiveButtonText="Oke"
         onTouchOutside={() => {
           setShowSuccessModal(false)
+          dispatch(actions.clearFormBKMStatus())
           navigation.goBack()
         }}
         onPositiveButtonTap={() => {
           setShowSuccessModal(false)
+          dispatch(actions.clearFormBKMStatus())
           navigation.goBack()
         }}
       />
