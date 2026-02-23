@@ -59,7 +59,6 @@ const createBKM: StreamType = (action$, state$, api) => {
         concatMap((data: any) => [
           actions.deleteBKMTemp(action.payload.data),
           actions.createBKM.success({ loading: false, data }),
-          actions.clearFormBKMStatus(),
           actions.getBKMMobile.request({ 
             loading: true, 
             data: {
@@ -81,10 +80,9 @@ const createBKM: StreamType = (action$, state$, api) => {
                 //@ts-ignore
                 data: { data: { status: 'success', code: 200, response: action.payload.data } },
               }),
-              actions.clearFormBKMStatus(),
             )
           }
-          return of(actions.createBKM.failure({ loading: false, error }), actions.clearFormBKMStatus())
+          return of(actions.createBKM.failure({ loading: false, error }))
         }),
       )
     }),
@@ -104,7 +102,6 @@ const editBKM: StreamType = (action$, state$, api) => {
             //@ts-ignore
             data: { data: { status: 'success', code: 200, response: action.payload.data } },
           }),
-          actions.clearFormBKMStatus(),
         ]
       }
       return from(api.bkmService.editBKM(action.payload.data as IBKMFormDataUpdate)).pipe(
@@ -117,9 +114,8 @@ const editBKM: StreamType = (action$, state$, api) => {
             }
           }),
           actions.editBKM.success({ loading: false, data }),
-          actions.clearFormBKMStatus(),
         ]),
-        catchError(error => of(actions.editBKM.failure({ loading: false, error }), actions.clearFormBKMStatus())),
+        catchError(error => of(actions.editBKM.failure({ loading: false, error }))),
       )
     }),
   )
