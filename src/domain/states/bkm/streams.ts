@@ -59,8 +59,15 @@ const createBKM: StreamType = (action$, state$, api) => {
         concatMap((data: any) => [
           actions.deleteBKMTemp(action.payload.data),
           actions.createBKM.success({ loading: false, data }),
-          actions.clearFormBKMStatus(),
-          actions.getBKMMobile.request({ loading: true, data: action.payload.data }),
+          actions.getBKMMobile.request({ 
+            loading: true, 
+            data: {
+              divisionId: action.payload.data?.divisionId,
+              date: action.payload.data?.date,
+              foremanId: action.payload.data?.foremanId,
+              subActivityId: action.payload.data?.subActivityId,
+            }
+          }),
           actions.syncBKM(),
         ]),
         catchError(error => {
@@ -73,10 +80,9 @@ const createBKM: StreamType = (action$, state$, api) => {
                 //@ts-ignore
                 data: { data: { status: 'success', code: 200, response: action.payload.data } },
               }),
-              actions.clearFormBKMStatus(),
             )
           }
-          return of(actions.createBKM.failure({ loading: false, error }), actions.clearFormBKMStatus())
+          return of(actions.createBKM.failure({ loading: false, error }))
         }),
       )
     }),
@@ -96,16 +102,20 @@ const editBKM: StreamType = (action$, state$, api) => {
             //@ts-ignore
             data: { data: { status: 'success', code: 200, response: action.payload.data } },
           }),
-          actions.clearFormBKMStatus(),
         ]
       }
       return from(api.bkmService.editBKM(action.payload.data as IBKMFormDataUpdate)).pipe(
         concatMap((data: any) => [
-          actions.getBKMMobile.request({ loading: true, data: action.payload.data }),
+          actions.getBKMMobile.request({ 
+            loading: true, 
+            data: {
+              divisionId: action.payload.data?.divisionId,
+              date: action.payload.data?.date,
+            }
+          }),
           actions.editBKM.success({ loading: false, data }),
-          actions.clearFormBKMStatus(),
         ]),
-        catchError(error => of(actions.editBKM.failure({ loading: false, error }), actions.clearFormBKMStatus())),
+        catchError(error => of(actions.editBKM.failure({ loading: false, error }))),
       )
     }),
   )
