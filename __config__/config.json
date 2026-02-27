@@ -1,6 +1,6 @@
 {
   "appName": "eplant",
-  "displayName": "E-Plantation",
+  "displayName": "E-Plantation Staging",
   "androidAppId": "com.eplantation.mobile.app",
   "iosBundleId": "com.eplantation.mobile.app",
   "googleSignInConfig": {
@@ -18,7 +18,7 @@
     "appId": "1:643199958313:android:6d607d0bb73b7fa78e4b38",
     "measurementId": "G-LD2H8VZNSF"
   },
-  "apiDomain": "https://sahabatagrogroup.com",
-  "crmDomain": "https://sahabatagrogroup.com",
-  "eplantDomain": "https://sahabatagrogroup.com"
+  "apiDomain": "https://eplant.sahabatagro.net",
+  "crmDomain": "https://eplant.sahabatagro.net",
+  "eplantDomain": "https://eplant.sahabatagro.net"
 }
