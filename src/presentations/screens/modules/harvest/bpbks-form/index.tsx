@@ -1,7 +1,7 @@
 import { theme } from '@app/presentations/utils/styles'
 import { Button, Header, SelectInput, Text, TextInput } from '@app/presentations/_shared-components'
 import React, { useEffect, useState, useRef } from 'react'
-import { SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
+import { Image, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
@@ -16,11 +16,14 @@ import { useRoute } from '@react-navigation/native'
 import * as schema from '@utils/validation/bpbks-form-validation'
 import { styles } from './style'
 import { IBPBKSFormDataCreate, IBPBKSFormDataUpdate } from '@app/models/eplant/BPBKS'
+import { ITonnageGardenDraftOption } from '@app/models/eplant/TonnageGarden'
 import { useBlockOptions, useBlocksWithPlantingYearByDivisionStd } from '@app/domain/states/block/hooks'
 import moment from 'moment'
 import { checkIfDuplicateExists } from '@app/presentations/utils/check'
 import IOption from '@app/models/commons/IOption'
 import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
+import System from '@app/domain/services/System'
+import Routes from '@app/presentations/navigation/Routes'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -74,6 +77,8 @@ const BPBKSForm = () => {
 
   const [selectedUser, setSelectedUser] = useState(item?.harvester?.id || item?.harvesterId || '')
   const [defaultTph, setDefaultTph] = useState([])
+  const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
+  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
   const [tphForm, setTphForm] = useState([
     {
       blockId: item?.tph?.block?.id || item?.blockId,
@@ -98,6 +103,17 @@ const BPBKSForm = () => {
   const blockAll = useSelector((state: RootStateType) => state.block?.blockAll?.data || [])
   const users = useUsersByDivision(bpbksData?.division?.id)
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
+
+  useEffect(() => {
+    if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
+      System.instance.tonnageGarderService.getDraftOptions({
+        organizationId: bpbksData.organization.value,
+        date: moment(bpbksData.date).format('YYYY-MM-DD'),
+      }).then((res: any) => {
+        setDraftOptions(res?.data?.response || [])
+      }).catch(() => setDraftOptions([]))
+    }
+  }, [bpbksData?.organization?.value, bpbksData?.date])
 
   useEffect(() => {
     if (!isEdit && selectedUser) {
@@ -207,6 +223,7 @@ const BPBKSForm = () => {
       cutNumber: value.cutNumber,
       foremanId: value.foremanId,
       date: moment(value.date).format('YYYY-MM-DD'),
+      gardenTonnageId: selectedGardenTonnageId || undefined,
       tphs: tphForm.map((e: any, index: number) => {
         const tph = tphAll.find(w => w.id === e.tphId)
         const block = blockAll.find(b => b.id === e.blockId)
@@ -237,20 +254,33 @@ const BPBKSForm = () => {
     return data
   }
 
-  const onSubmit = (value: any) => {
+  const onSubmit = async (value: any) => {
     if (!validateTPH()) {
       return
     }
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
-      // console.log('EDIT REQBODY:', JSON.stringify(requestBody))
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
     const requestBodyCreate = constructToFormDataCreate(value)
-    // console.log('REQBODY CR:', JSON.stringify(requestBodyCreate))
-    dispatch(actions.createBPBKS.request({ loading: true, data: requestBodyCreate }))
+    try {
+      const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
+      const createdTphs = res?.data?.response?.tphs || []
+      const allTphs = [...defaultTph, ...tphForm]
+      for (let i = 0; i < allTphs.length; i++) {
+        const tph = allTphs[i] as any
+        const createdTph = createdTphs[i]
+        if (createdTph?.id && (tph.photoFruit || tph.photoKrani)) {
+          await System.instance.bpbksService.uploadPhotos(createdTph.id, tph.photoFruit, tph.photoKrani)
+        }
+      }
+      showSuccessToast('Berhasil disimpan')
+      navigation.goBack()
+    } catch (e: any) {
+      showErrorToast(e?.response?.data?.message?.id || 'Gagal menyimpan')
+    }
   }
 
   const setFieldTphForm = (index: number, field: any, value: any) => {
@@ -354,6 +384,19 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
+        {!isEdit && draftOptions.length > 0 && (
+          <SelectInput
+            label="No. Kendaraan (Tonase Draft)"
+            placeholder="Pilih kendaraan dari tonase draft"
+            control={control}
+            name="gardenTonnageId"
+            items={draftOptions.map(d => ({
+              value: d.id,
+              label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
+            }))}
+            onChange={(v: string) => setSelectedGardenTonnageId(v)}
+          />
+        )}
 
         {defaultTph?.map((v, i) => (
           <TPHView
@@ -388,32 +431,34 @@ const BPBKSForm = () => {
         ))}
 
         {!isEdit && (
-          <Button
-            style={{ alignSelf: 'flex-start', marginBottom: 16, height: 40 }}
+          <TouchableOpacity
+            style={{ alignSelf: 'flex-start', marginBottom: 16, padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
             onPress={() => {
-              //@ts-ignore
-
-              setTphForm([
-                ...tphForm,
-                {
-                  blockId: '',
-                  plantingYear: '',
-                  tphId: '',
-                  numberOfLength: '',
-                  ripeFruitChecked: '',
-                  rawFruitChecked: '',
-                  lateRipeChecked: '',
-                  rottenFruitChecked: '',
-                  longHandleChecked: '',
-                  looseChecked: '',
+              navigation.navigate(Routes.QR_SCANNER, {
+                onScanSuccess: (data: any) => {
+                  setTphForm((prev: any) => [
+                    ...prev,
+                    {
+                      blockId: data.blockId,
+                      plantingYear: data.plantingYear?.[0]?.toString() || '',
+                      tphId: data.tphId,
+                      numberOfLength: '',
+                      ripeFruitChecked: '',
+                      rawFruitChecked: '',
+                      lateRipeChecked: '',
+                      rottenFruitChecked: '',
+                      longHandleChecked: '',
+                      looseChecked: '',
+                      photoFruit: null,
+                      photoKrani: null,
+                    },
+                  ])
                 },
-              ])
-              scrollViewRef?.current?.scrollToEnd({ animated: true })
+              })
             }}>
-            <Text style={{ fontSize: 12 }} color="white">
-              Tambah TPH
-            </Text>
-          </Button>
+            <Icon name="qr-code-scanner" size={20} color="white" />
+            <Text color="white" style={{ marginLeft: 8, fontSize: 13 }}>Scan QR TPH</Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
       <View style={styles.wrapSubmitButton}>
@@ -623,6 +668,28 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
+      {!item?.viewOnly && !isEdit && (
+        <View style={{ flexDirection: 'row', marginTop: 8, gap: 8 }}>
+          <PhotoField
+            label="Foto Buah"
+            photo={item?.photoFruit}
+            onPress={() => {
+              navigation.navigate(Routes.CAMERA_PHOTO, {
+                onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruit', photo),
+              })
+            }}
+          />
+          <PhotoField
+            label="Foto Krani"
+            photo={item?.photoKrani}
+            onPress={() => {
+              navigation.navigate(Routes.CAMERA_PHOTO, {
+                onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoKrani', photo),
+              })
+            }}
+          />
+        </View>
+      )}
     </View>
   )
 }
@@ -632,6 +699,21 @@ const Row = ({ children }: any) => (
     <View style={{ marginRight: 5, flex: 1 }}>{React.Children.toArray(children)[0]}</View>
     <View style={{ marginLeft: 5, flex: 1 }}>{React.Children.toArray(children)[1]}</View>
   </View>
+)
+
+const PhotoField = ({ label, photo, onPress }: { label: string; photo: any; onPress: () => void }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{ flex: 1, height: 100, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.light2, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.light2 }}>
+    {photo?.uri ? (
+      <Image source={{ uri: photo.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+    ) : (
+      <>
+        <Icon name="camera-alt" size={28} color={theme.colors.accent} />
+        <Text size={11} style={{ marginTop: 4 }}>{label}</Text>
+      </>
+    )}
+  </TouchableOpacity>
 )
 
 export const calculateRipeFruit = (item: any) => {

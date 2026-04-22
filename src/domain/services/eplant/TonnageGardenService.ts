@@ -7,6 +7,7 @@ import IStdResponse from '@app/models/commons/IStdResponse'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
 import {
   ITonnageGardenDetail,
+  ITonnageGardenDraftOption,
   ITonnageGardenFileFormData,
   ITonnageGardenFormData,
   ITonnageGardenRow,
@@ -74,5 +75,16 @@ export default class TonnageGardenService extends BaseService {
   downloadTemplateURL(): string {
     const url = `${this.d.eplantDomain}/api/eplant-server/web/v0/garden-tonnage/download-template`
     return url
+  }
+
+  getDraftOptions(param: {
+    organizationId: string
+    date: string
+  }): Promise<AxiosResponse<IRESTApiResponse<ITonnageGardenDraftOption[]>>> {
+    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/garden-tonnage/draft-options?${qs.stringify(param)}`)
+  }
+
+  getBpbksAggregate(gardenTonnageId: string): Promise<AxiosResponse<IRESTApiResponse<{ blockId: string; blockCode: string; totalJanjang: number }[]>>> {
+    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/garden-tonnage/${gardenTonnageId}/bpbks-aggregate`)
   }
 }

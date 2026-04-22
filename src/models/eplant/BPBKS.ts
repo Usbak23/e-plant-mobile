@@ -135,6 +135,7 @@ export interface IBPBKSFormDataCreate {
   foremanId: string
   harvesterId: string
   cutNumber: number | string
+  gardenTonnageId?: string
   tphs: {
     cutNumber: number | string
     tphId: string

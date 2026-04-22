@@ -68,4 +68,15 @@ export default class BKMService extends BaseService {
       responseType: 'blob',
     })
   }
+
+  scanQRCode(qrCode: string): Promise<AxiosResponse<IRESTApiResponse>> {
+    return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/scan-qr`, { qrCode })
+  }
+
+  uploadPhotos(bpbksTphId: string, photoFruit: any, photoKrani: any): Promise<AxiosResponse<IRESTApiResponse>> {
+    const formData = new FormData()
+    if (photoFruit) formData.append('photoFruit', { uri: photoFruit.uri, type: photoFruit.type || 'image/jpeg', name: photoFruit.fileName || 'photoFruit.jpg' } as any)
+    if (photoKrani) formData.append('photoKrani', { uri: photoKrani.uri, type: photoKrani.type || 'image/jpeg', name: photoKrani.fileName || 'photoKrani.jpg' } as any)
+    return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/upload-photos/${bpbksTphId}`, formData, { 'Content-Type': 'multipart/form-data' })
+  }
 }
