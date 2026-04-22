@@ -1,6 +1,10 @@
 {
   "name": "eplant",
+<<<<<<< HEAD
   "version": "5.1.0",
+=======
+  "version": "5.0.0",
+>>>>>>> b974344e4f2b33f55c4c03fc64c9b8fcaf86e52c
   "private": true,
   "scripts": {
     "android": "react-native run-android",

@@ -1,11 +1,11 @@
-E-Plantation Staging v5.1.0
+E-Plantation Production v5.0.0
 
-Build: #3
-Environment: Staging
+Build: #2
+Environment: Production
 
 Recent changes:
-- Merge branch 'development' into 'staging'
-- feat: add role-based access control to approval screen
-- feat(notification): improve notification handling with Notifee
-- Merge production v5.0.0 into staging - resolve conflicts
-- Merge branch 'production' into 'development'
+- change branch for release
+- > fix(bkm): handle success/error feedback and navigation after form submission
+- feat: add ScreenWrapper component for consistent SafeAreaView handling
+- change email participation
+- fix email participants
