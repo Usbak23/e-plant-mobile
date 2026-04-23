@@ -171,25 +171,24 @@ const TonnageGardenForm = () => {
         grossWeight: tonnageGardenDetail?.data?.grossWeight.toString(),
         tareWeight: tonnageGardenDetail?.data?.tareWeight?.toString(),
         netto: tonnageGardenDetail?.data?.netto?.toString(),
-        gardenTonnageBlocks: constructDefaultBlocks(tonnageGardenDetail?.data?.gardenTonnageBlocks),
+        gardenTonnageBlocks: isDraft ? [defaultBlockForm] : constructDefaultBlocks(tonnageGardenDetail?.data?.gardenTonnageBlocks),
       })
+
+      if (isDraft) {
+        System.instance.tonnageGarderService.getBpbksAggregate(item.id).then((res: any) => {
+          const blocks = (res?.data?.response || []).map((b: any) => ({
+            blockId: b.blockId,
+            totalJanjang: b.totalJanjang?.toString() || '0',
+          }))
+          if (blocks.length > 0) {
+            setValue('gardenTonnageBlocks', blocks)
+          }
+        }).catch(() => {})
+      }
     }
   }, [tonnageGardenDetail?.data])
 
-  // Load blok dari BPBKS aggregate saat edit draft
-  useEffect(() => {
-    if (isDraft && item?.id) {
-      System.instance.tonnageGarderService.getBpbksAggregate(item.id).then((res: any) => {
-        const blocks = (res?.data?.response || []).map((b: any) => ({
-          blockId: b.blockId,
-          totalJanjang: b.totalJanjang?.toString() || '0',
-        }))
-        if (blocks.length > 0) {
-          setValue('gardenTonnageBlocks', blocks)
-        }
-      }).catch(() => {})
-    }
-  }, [isDraft, item?.id])
+  // Load blok dari BPBKS aggregate saat edit draft - handled inside tonnageGardenDetail useEffect
 
   const buildForm = (form: ITonnageGardenFormData) => {
     const gross = parseFloat(form.grossWeight as any) || 0
