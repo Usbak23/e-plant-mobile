@@ -79,7 +79,7 @@ const BPBKSForm = () => {
   const [defaultTph, setDefaultTph] = useState([])
   const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
   const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
-  const [tphForm, setTphForm] = useState([
+  const [tphForm, setTphForm] = useState(isEdit ? [
     {
       blockId: item?.tph?.block?.id || item?.blockId,
       plantingYear: item?.plantingYear,
@@ -92,7 +92,7 @@ const BPBKSForm = () => {
       longHandleChecked: item?.longHandleChecked?.toString(),
       looseChecked: item?.looseChecked?.toString(),
     },
-  ])
+  ] : [])
 
   const formBPBKSStatus = useSelector((state: RootStateType) => state.bpbks.formBPBKSStatus)
   const userAll = useSelector((state: RootStateType) => state.user?.userAll?.data || [])
@@ -288,6 +288,15 @@ const BPBKSForm = () => {
     setTphForm(newTphForm)
   }
 
+  // Sync tphForm state to react-hook-form so SelectInput (controlled) shows correct values
+  useEffect(() => {
+    tphForm.forEach((tph: any, index: number) => {
+      setValue(`[${index}]blockId`, tph.blockId)
+      setValue(`[${index}]plantingYear`, tph.plantingYear?.toString())
+      setValue(`[${index}]tphId`, tph.tphId)
+    })
+  }, [tphForm])
+
   useEffect(() => {
     dispatch(actions.clearFormBPBKSStatus())
     dispatch(actions.getOrganizationAll.request({ loading: true }))
@@ -451,6 +460,7 @@ const BPBKSForm = () => {
                       looseChecked: '',
                       photoFruit: null,
                       photoKrani: null,
+                      fromScan: true,
                     },
                   ])
                 },
@@ -500,7 +510,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           items={blocks}
           value={item?.blockId}
-          disabled={item?.viewOnly || isEdit}
+          disabled={item?.viewOnly || isEdit || item?.fromScan}
           disabledText={blockDetail?.code}
           placeholder="Pilih Blok"
           name={`[${index}]blockId`}
@@ -514,8 +524,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isRequired
         />
         <SelectInput
-          disabled={item?.viewOnly}
-          disabledText={item?.plantingYear}
+          disabled={item?.viewOnly || item?.fromScan}
+          disabledText={item?.plantingYear?.toString()}
           isRequired
           items={transformPlantingYears() || []}
           value={item?.plantingYear != undefined ? item.plantingYear.toString() : ''}
@@ -536,7 +546,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           label={`TPH`}
           control={control}
           items={tphOptions}
-          disabled={item?.viewOnly}
+          disabled={item?.viewOnly || item?.fromScan}
           disabledText={tphDetail?.name}
           value={item?.tphId}
           defaultValue={item?.tphId}
