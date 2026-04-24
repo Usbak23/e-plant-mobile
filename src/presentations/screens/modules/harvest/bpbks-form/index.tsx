@@ -202,6 +202,11 @@ const BPBKSForm = () => {
         }
       }
     }
+    if (!isEdit && tphForm.some((e: any) => !e.photoFruit || !e.photoKrani)) {
+      showErrorToast('Foto Buah dan Foto Krani wajib diisi!')
+      return false
+    }
+
     const isRipeFruiteLessThanZero = tphForm.some((e: any) => {
       const ripeFruitChecked = calculateRipeFruit(e)
       if (ripeFruitChecked < 0) {
@@ -696,6 +701,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
                   onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruit', photo),
                 })
               }}
+              isRequired
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -708,6 +714,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
                   onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoKrani', photo),
                 })
               }}
+              isRequired
             />
           </View>
         </View>
@@ -723,16 +730,16 @@ const Row = ({ children }: any) => (
   </View>
 )
 
-const PhotoField = ({ label, photo, onPress }: { label: string; photo: any; onPress: () => void }) => (
+const PhotoField = ({ label, photo, onPress }: { label: string; photo: any; onPress: () => void; isRequired?: boolean }) => (
   <TouchableOpacity
     onPress={onPress}
-    style={{ flex: 1, height: 100, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.light2, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.light2 }}>
+    style={{ flex: 1, height: 100, borderRadius: 8, borderWidth: 1, borderColor: photo?.uri ? theme.colors.light2 : theme.colors.danger || 'red', overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.light2 }}>
     {photo?.uri ? (
       <Image source={{ uri: photo.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
     ) : (
       <>
         <Icon name="camera-alt" size={28} color={theme.colors.accent} />
-        <Text size={11} style={{ marginTop: 4 }}>{label}</Text>
+        <Text size={11} style={{ marginTop: 4 }}>{label} *</Text>
       </>
     )}
   </TouchableOpacity>
