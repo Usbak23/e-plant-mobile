@@ -139,6 +139,18 @@ const getTonnageGardenDetail: StreamType = (action$, state$, api) => {
   )
 }
 
+const getDraftOptionsStream: StreamType = (action$, state$, api) => {
+  return action$.pipe(
+    filter(isActionOf(actions.getDraftOptions.request)),
+    switchMap(action =>
+      from(api.tonnageGarderService.getDraftOptions(action.payload.data as any)).pipe(
+        map(({data}: any) => actions.getDraftOptions.success({loading: false, data: data?.response || []})),
+        catchError(() => of(actions.getDraftOptions.failure({loading: false, error: null}))),
+      ),
+    ),
+  )
+}
+
 export default [
   createTonnageGarden,
   editTonnageGarden,
@@ -148,4 +160,5 @@ export default [
   getTonnageGardenPaginated,
   uploadTonnageGarden,
   getTonnageGardenWithoutPKS,
+  getDraftOptionsStream,
 ]

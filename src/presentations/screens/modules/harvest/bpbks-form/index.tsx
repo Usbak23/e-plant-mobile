@@ -104,16 +104,29 @@ const BPBKSForm = () => {
   const users = useUsersByDivision(bpbksData?.division?.id)
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
 
+  const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
+  const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
+
+  useEffect(() => {
+    setDraftOptions(draftOptionsCache as any)
+  }, [draftOptionsCache])
+
   useEffect(() => {
     if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
-      System.instance.tonnageGarderService.getDraftOptions({
-        organizationId: bpbksData.organization.value,
-        date: moment(bpbksData.date).format('YYYY-MM-DD'),
-      }).then((res: any) => {
-        setDraftOptions(res?.data?.response || [])
-      }).catch(() => setDraftOptions([]))
+      if (isConnected) {
+        // online: fetch & cache ke Redux
+        dispatch(actions.getDraftOptions.request({
+          loading: true,
+          data: {
+            organizationId: bpbksData.organization.value,
+            date: moment(bpbksData.date).format('YYYY-MM-DD'),
+          },
+        }))
+      }
+      // offline: draftOptionsCache dari Redux persist otomatis dipakai
+      setDraftOptions(draftOptionsCache as any)
     }
-  }, [bpbksData?.organization?.value, bpbksData?.date])
+  }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
   useEffect(() => {
     if (!isEdit && selectedUser) {

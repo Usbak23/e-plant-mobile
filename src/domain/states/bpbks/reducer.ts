@@ -75,7 +75,7 @@ const bkmReducer = createReducer<IRSBPBKS, ActionsType>(DEFAULT_STATE)
     const payload = action.payload
     return {
       ...state,
-      bpbksListTemp: [payload, ...(state?.bpbksListTemp || [])],
+      bpbksListTemp: [{...payload, syncStatus: 'pending'}, ...(state?.bpbksListTemp || [])],
     }
   })
   .handleType(actions.editBPBKSTemp, (state: IRSBPBKS, action: any) => {
@@ -109,6 +109,15 @@ const bkmReducer = createReducer<IRSBPBKS, ActionsType>(DEFAULT_STATE)
     state.bpbksListTemp = state.bpbksListTemp?.filter((e: bkmTemp) => e.tempId !== payload.tempId)
     return {
       ...state,
+    }
+  })
+  .handleType(actions.updateBPBKSTempStatus, (state: IRSBPBKS, action: any) => {
+    const {tempId, syncStatus, syncError} = action.payload
+    return {
+      ...state,
+      bpbksListTemp: state.bpbksListTemp?.map((e: bkmTemp) =>
+        e.tempId === tempId ? {...e, syncStatus, syncError: syncError || undefined} : e,
+      ),
     }
   })
   .handleType(

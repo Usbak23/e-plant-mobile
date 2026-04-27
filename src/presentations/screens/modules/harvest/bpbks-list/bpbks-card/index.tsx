@@ -13,7 +13,7 @@ import PopupEditDelete from '@app/presentations/_shared-components/PopupEditDele
 import { useSelector } from 'react-redux'
 import { RootState } from '@app/domain/states/reducers'
 import { showErrorToast } from '@app/presentations/_shared-components/Toast'
-import { Doc } from '@app/models/eplant/BPBKS'
+import { Doc, BPBKSSyncStatus } from '@app/models/eplant/BPBKS'
 
 interface Props {
   isAllowedToOrganizeBPBKS?: boolean
@@ -23,10 +23,33 @@ interface Props {
     organization: IOrganizationRowAll
     date: string
   }
-  item: Doc & { isTemp: boolean }
+  item: Doc & { isTemp: boolean; syncStatus?: BPBKSSyncStatus; syncError?: string }
   onTap?: (item?: Doc) => void
   onPopupEdit?: (item?: Doc) => void
   onPopupDelete?: (item?: Doc) => void
+}
+
+const syncDotColor: Record<BPBKSSyncStatus, string> = {
+  pending: '#F5A623',
+  syncing: '#4A90E2',
+  synced: 'transparent',
+  failed: '#D0021B',
+}
+
+const SyncDot = ({ status }: { status?: BPBKSSyncStatus }) => {
+  if (!status || status === 'synced') return null
+  return (
+    <View
+      style={{
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: syncDotColor[status],
+        marginLeft: 6,
+        alignSelf: 'center',
+      }}
+    />
+  )
 }
 
 const BKMCard = ({ bpbksData, ...props }: Props) => {
@@ -103,10 +126,11 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
           </Text>
         )}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Text size={13} color={isDraft ? theme.colors.redDark : theme.colors.accent} type="semibold">
               {props?.item?.harvester?.name} - {props?.item?.harvester?.nip} - {props?.item?.harvester?.role?.name}
             </Text>
+            <SyncDot status={props.item?.syncStatus} />
           </View>
           {props.isAllowedToOrganizeBPBKS && <MenuButton />}
         </View>
