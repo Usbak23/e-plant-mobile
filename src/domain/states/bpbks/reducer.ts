@@ -18,7 +18,7 @@ const DEFAULT_STATE = {
   // bpbksAll: data,
 }
 
-const bkmReducer = createReducer<IRSBPBKS, ActionsType>(DEFAULT_STATE)
+const bkmReducer = createReducer<IRSBPBKS, ActionsType>(DEFAULT_STATE as IRSBPBKS)
   .handleAction(
     [
       actions.createBPBKS.request,

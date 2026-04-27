@@ -141,19 +141,32 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
       }
     },
   )
-  .handleAction(
-    [actions.getDraftOptions.request, actions.getDraftOptions.failure, actions.getDraftOptions.success],
-    (state, action) => {
-      const payload = (action as IEffectAction).payload
-      return {
-        ...state,
-        draftOptions: {
-          ...payload,
-          // pertahankan cache saat loading/error
-          data: payload?.data ?? state.draftOptions?.data,
-        },
-      }
-    },
-  )
+  .handleAction(actions.getDraftOptions.request, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: {
+        ...payload,
+        data: state.draftOptions?.data,
+      },
+    }
+  })
+  .handleAction(actions.getDraftOptions.failure, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: {
+        ...payload,
+        data: state.draftOptions?.data,
+      },
+    }
+  })
+  .handleAction(actions.getDraftOptions.success, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: payload,
+    }
+  })
 
 export default tonnageGardenReducer
