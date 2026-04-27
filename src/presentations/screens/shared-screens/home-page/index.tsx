@@ -21,6 +21,19 @@ import { ITPHRowAll } from '@app/models/eplant/TPH'
 const window = Dimensions.get('window')
 const screen = Dimensions.get('screen')
 
+const NetworkDot = ({ isConnected }: { isConnected: boolean }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+    <View style={{
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: isConnected ? '#4CD964' : '#FF3B30',
+      marginRight: 4,
+    }} />
+    <Text size={11} color="white">{isConnected ? 'Online' : 'Offline'}</Text>
+  </View>
+)
+
 const HomePage = () => {
   const db = database
   const tphCollections = db.collections.get('tphs')
@@ -35,6 +48,7 @@ const HomePage = () => {
   const [dimensions, setDimensions] = useState({ window, screen })
 
   const { tphAll } = useSelector((state: RootStateType) => state?.tph)
+  const isConnected = useSelector((state: RootStateType) => state?.network?.isConnected)
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
@@ -161,6 +175,7 @@ const HomePage = () => {
           <View style={styles.headerView}>
             <HeaderLeft />
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <NetworkDot isConnected={isConnected} />
               <ProfilePicView />
             </View>
           </View>

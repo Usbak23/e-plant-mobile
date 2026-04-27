@@ -9,9 +9,7 @@ export const useBPBKSLists = ({divisionId, foremanId, date}: any): {hasOffline: 
   const listTemp = bpbksListTemp
     ?.filter((item: any) => item.divisionId === divisionId && item.foremanId === foremanId && item.date === date)
     .map((item: any) => {
-      // const obj = {...item, cutNumber: item.cutNumber}
-      // return item.tphs
-      return item?.tphs?.map(t => ({...t, cutNumber: item.cutNumber}))
+      return item?.tphs?.map((t: any) => ({...t, cutNumber: item.cutNumber, syncStatus: item.syncStatus, syncError: item.syncError}))
     })
     .flat()
 

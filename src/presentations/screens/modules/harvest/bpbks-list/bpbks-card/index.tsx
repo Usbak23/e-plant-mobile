@@ -32,7 +32,7 @@ interface Props {
 const syncDotColor: Record<BPBKSSyncStatus, string> = {
   pending: '#F5A623',
   syncing: '#4A90E2',
-  synced: 'transparent',
+  synced: '#4ce24a',
   failed: '#D0021B',
 }
 
