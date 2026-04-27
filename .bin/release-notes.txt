@@ -1,11 +1,11 @@
-E-Plantation Staging v5.1.0
+E-Plantation Staging v5.3.0
 
-Build: #3
+Build: #7
 Environment: Staging
 
 Recent changes:
 - Merge branch 'development' into 'staging'
-- feat: add role-based access control to approval screen
-- feat(notification): improve notification handling with Notifee
-- Merge production v5.0.0 into staging - resolve conflicts
-- Merge branch 'production' into 'development'
+- Merge branch 'development' into 'staging'
+- feat(login): improve loading experience with spinner and descriptive text on sign in button
+- feat(home): add network status indicator on home page header
+- Merge branch 'development' into 'staging'
