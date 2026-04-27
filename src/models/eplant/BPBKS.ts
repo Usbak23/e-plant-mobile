@@ -128,6 +128,8 @@ export interface IBPBKSResponse {
   docs: Doc[]
 }
 
+export type BPBKSSyncStatus = 'pending' | 'syncing' | 'synced' | 'failed'
+
 export interface IBPBKSFormDataCreate {
   tempId?: string
   divisionId: string
