@@ -29,6 +29,28 @@ interface Props {
   onPopupDelete?: (item?: Doc) => void
 }
 
+const syncDotColor: Record<BPBKSSyncStatus, string> = {
+  pending: '#F5A623',
+  syncing: '#4A90E2',
+  synced: '#4ce24a',
+  failed: '#D0021B',
+}
+
+const SyncDot = ({ status }: { status?: BPBKSSyncStatus }) => {
+  if (!status || status === 'synced') return null
+  return (
+    <View
+      style={{
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: syncDotColor[status],
+        marginLeft: 6,
+        alignSelf: 'center',
+      }}
+    />
+  )
+}
 const BKMCard = ({ bpbksData, ...props }: Props) => {
   const navigation: any = useNavigation()
   const isConnected = useSelector((state: RootState) => state.network.isConnected)
