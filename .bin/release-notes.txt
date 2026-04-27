@@ -1,11 +1,16 @@
-E-Plantation Production v5.0.0
+E-Plantation Staging v5.0.0
 
 Build: #2
-Environment: Production
+Environment: Staging
 
 Recent changes:
+- Merge production v5.0.0 into staging
 - change branch for release
-- > fix(bkm): handle success/error feedback and navigation after form submission
+- fix(bkm): handle success/error feedback and navigation after form submission
 - feat: add ScreenWrapper component for consistent SafeAreaView handling
 - change email participation
 - fix email participants
+- Merge branch 'development' into 'staging'
+- fix email participants
+- Merge branch 'development' into 'staging'
+- Merge branch 'development' - accept CI version bumps
