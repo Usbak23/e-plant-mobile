@@ -180,6 +180,7 @@ workflows:
           - developer@sahabatagro.co.id
           - fredy.pm@sahabatagro.co.id
           - sys.analys@sahabatatagro.co.id
+          - cameliazen.qa@gmail.com
         notify:
           success: true
           failure: true

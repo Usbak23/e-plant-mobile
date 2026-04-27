@@ -128,6 +128,8 @@ export interface IBPBKSResponse {
   docs: Doc[]
 }
 
+export type BPBKSSyncStatus = 'pending' | 'syncing' | 'synced' | 'failed'
+
 export interface IBPBKSFormDataCreate {
   tempId?: string
   divisionId: string
@@ -135,6 +137,7 @@ export interface IBPBKSFormDataCreate {
   foremanId: string
   harvesterId: string
   cutNumber: number | string
+  gardenTonnageId?: string
   tphs: {
     cutNumber: number | string
     tphId: string

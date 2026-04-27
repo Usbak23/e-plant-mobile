@@ -18,8 +18,10 @@ export default class BKMService extends BaseService {
       foremanId: formData?.foremanId,
       harvesterId: formData?.harvesterId,
       cutNumber: formData?.cutNumber,
+      gardenTonnageId: formData?.gardenTonnageId,
       tphs: formData?.tphs?.map(e => ({
         tphId: e?.tphId,
+        blockId: e?.blockId,
         plantingYear: e?.plantingYear,
         numberOfLength: parseInt(e?.numberOfLength?.toString() || '0'),
         loose: parseInt(e?.loose?.toString() || '0'),
@@ -67,5 +69,17 @@ export default class BKMService extends BaseService {
     return GET(this.exportBPBKSURL(param), {
       responseType: 'blob',
     })
+  }
+
+  scanQRCode(qrCode: string): Promise<AxiosResponse<IRESTApiResponse>> {
+    return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/scan-qr`, { qrCode })
+  }
+
+  uploadPhotos(bpbksTphId: string, photoFruit: any, photoKrani: any): Promise<AxiosResponse<IRESTApiResponse>> {
+    const formData = new FormData()
+    formData.append('bpbksTphsId', bpbksTphId)
+    if (photoFruit) formData.append('photoFruit', { uri: photoFruit.uri, type: photoFruit.type || 'image/jpeg', name: photoFruit.fileName || 'photoFruit.jpg' } as any)
+    if (photoKrani) formData.append('photoKrani', { uri: photoKrani.uri, type: photoKrani.type || 'image/jpeg', name: photoKrani.fileName || 'photoKrani.jpg' } as any)
+    return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/upload-photos`, formData, { 'Content-Type': 'multipart/form-data' })
   }
 }

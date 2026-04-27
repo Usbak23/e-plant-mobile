@@ -21,7 +21,10 @@ const syncBPBKS: StreamType = (action$, state$) => {
       if (!allow) {
         return EMPTY
       }
-      return [actions.createBPBKS.request({loading: true, data: listTemporary[lastIndex]})]
+      return [
+        actions.updateBPBKSTempStatus({tempId: listTemporary[lastIndex].tempId!, syncStatus: 'syncing'}),
+        actions.createBPBKS.request({loading: true, data: listTemporary[lastIndex]}),
+      ]
     }),
   )
 }
@@ -39,7 +42,7 @@ const createBPBKS: StreamType = (action$, state$, api) => {
           tempId,
           employeeTempId: uuid.v4(),
         }))
-        Object.assign(action.payload.data, {tempId, tphs})
+        Object.assign(action.payload.data ?? {}, {tempId, tphs}) 
 
         return of(
           actions.addBPBKSTemp(action.payload.data),
@@ -53,16 +56,22 @@ const createBPBKS: StreamType = (action$, state$, api) => {
         )
       }
       return from(api.bpbksService.createBPBKS(action.payload.data as IBPBKSFormDataCreate)).pipe(
-        concatMap((data: any) => [
-          actions.deleteBPBKSTemp(action.payload.data),
-          actions.createBPBKS.success({loading: false, data}),
-          actions.clearFormBPBKSStatus(),
-          actions.getBPBKSAll.request({loading: true, data: action.payload.data}),
-          actions.syncBPBKS(),
-        ]),
+        concatMap((data: any) => {
+          const syncingTempId = action.payload.data?.tempId
+          const result = [
+            actions.createBPBKS.success({loading: false, data}),
+            actions.clearFormBPBKSStatus(),
+            actions.getBPBKSAll.request({loading: true, data: action.payload.data}),
+            actions.syncBPBKS(),
+          ]
+          // hapus dari temp setelah berhasil sync
+          if (syncingTempId) result.unshift(actions.deleteBPBKSTemp(action.payload.data) as any)
+          return result
+        }),
         catchError(error => {
+          const syncingTempId = action.payload.data?.tempId
           if (newData && error.message === 'Network Error') {
-            Object.assign(action.payload.data, {tempId: uuid.v4()})
+            Object.assign(action.payload.data ?? {}, {tempId: uuid.v4()})
             return of(
               actions.addBPBKSTemp(action.payload.data),
               actions.createBPBKS.success({
@@ -70,6 +79,14 @@ const createBPBKS: StreamType = (action$, state$, api) => {
                 //@ts-ignore
                 data: {data: {status: 'success', code: 200, response: action.payload.data}},
               }),
+              actions.clearFormBPBKSStatus(),
+            )
+          }
+          // kalau sync retry gagal, tandai failed
+          if (syncingTempId) {
+            return of(
+              actions.updateBPBKSTempStatus({tempId: syncingTempId, syncStatus: 'failed', syncError: error?.message}),
+              actions.createBPBKS.failure({loading: false, error}),
               actions.clearFormBPBKSStatus(),
             )
           }

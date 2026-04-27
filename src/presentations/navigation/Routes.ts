@@ -141,6 +141,8 @@ export default class Routes {
   static BPBKS_FORM = Routes.PLAN + '/bpbks-form'
   static BPBKS_DETAIL = Routes.PLAN + '/bpbks-detail'
   static BPBKS_EMPLOYEE_DETAIL = Routes.PLAN + '/bpbks-employee-detail'
+  static QR_SCANNER = Routes.PLAN + '/qr-scanner'
+  static CAMERA_PHOTO = Routes.PLAN + '/camera-photo'
 
   static BKM_TAKE_CARE_FILTER = Routes.TAKE_CARE + '/bkm-take-care-filter'
   static BKM_TAKE_CARE_LIST = Routes.TAKE_CARE + '/bkm-take-care-list'

@@ -1,7 +1,7 @@
 import { theme } from '@app/presentations/utils/styles'
 import { Button, Header, SelectInput, Text, TextInput } from '@app/presentations/_shared-components'
 import React, { useEffect, useState, useRef } from 'react'
-import { SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
+import { Image, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
@@ -16,11 +16,14 @@ import { useRoute } from '@react-navigation/native'
 import * as schema from '@utils/validation/bpbks-form-validation'
 import { styles } from './style'
 import { IBPBKSFormDataCreate, IBPBKSFormDataUpdate } from '@app/models/eplant/BPBKS'
+import { ITonnageGardenDraftOption } from '@app/models/eplant/TonnageGarden'
 import { useBlockOptions, useBlocksWithPlantingYearByDivisionStd } from '@app/domain/states/block/hooks'
 import moment from 'moment'
 import { checkIfDuplicateExists } from '@app/presentations/utils/check'
 import IOption from '@app/models/commons/IOption'
 import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
+import System from '@app/domain/services/System'
+import Routes from '@app/presentations/navigation/Routes'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -60,34 +63,36 @@ const BPBKSForm = () => {
       organizationId: bpbksData?.organization?.value,
       divisionId: bpbksData?.division?.id,
       foremanId: bpbksData?.foreman?.id,
-      numberOfLength: item?.tph[0]?.numberOfLength?.toString(),
-      loose: item?.tph[0]?.loose?.toString(),
-      ripeFruitChecked: item?.tph[0]?.ripeFruitChecked?.toString(),
-      rawFruitChecked: item?.tph[0]?.rawFruitChecked?.toString(),
-      lateRipeChecked: item?.tph[0]?.lateRipeChecked?.toString(),
-      rottenFruitChecked: item?.tph[0]?.rottenFruitChecked?.toString(),
-      longHandleChecked: item?.tph[0]?.longHandleChecked?.toString(),
-      looseChecked: item?.tph[0]?.looseChecked?.toString(),
+      numberOfLength: item?.tph[0]?.numberOfLength != null ? String(Number(item.tph[0].numberOfLength)) : '',
+      loose: item?.tph[0]?.loose != null ? String(Number(item.tph[0].loose)) : '',
+      ripeFruitChecked: item?.tph[0]?.ripeFruitChecked != null ? String(Number(item.tph[0].ripeFruitChecked)) : '',
+      rawFruitChecked: item?.tph[0]?.rawFruitChecked != null ? String(Number(item.tph[0].rawFruitChecked)) : '',
+      lateRipeChecked: item?.tph[0]?.lateRipeChecked != null ? String(Number(item.tph[0].lateRipeChecked)) : '',
+      rottenFruitChecked: item?.tph[0]?.rottenFruitChecked != null ? String(Number(item.tph[0].rottenFruitChecked)) : '',
+      longHandleChecked: item?.tph[0]?.longHandleChecked != null ? String(Number(item.tph[0].longHandleChecked)) : '',
+      looseChecked: item?.tph[0]?.looseChecked != null ? String(Number(item.tph[0].looseChecked)) : '',
       plantingYear: item?.tph[0]?.plantingYear != undefined ? item.tph[0].plantingYear.toString() : '2012'
     },
   })
 
   const [selectedUser, setSelectedUser] = useState(item?.harvester?.id || item?.harvesterId || '')
   const [defaultTph, setDefaultTph] = useState([])
-  const [tphForm, setTphForm] = useState([
+  const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
+  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
+  const [tphForm, setTphForm] = useState(isEdit ? [
     {
       blockId: item?.tph?.block?.id || item?.blockId,
       plantingYear: item?.plantingYear,
       tphId: item?.tph?.id || item?.tphId,
-      numberOfLength: item?.numberOfLength?.toString(),
-      ripeFruitChecked: item?.ripeFruitChecked?.toString(),
-      rawFruitChecked: item?.rawFruitChecked?.toString(),
-      lateRipeChecked: item?.lateRipeChecked?.toString(),
-      rottenFruitChecked: item?.rottenFruitChecked?.toString(),
-      longHandleChecked: item?.longHandleChecked?.toString(),
-      looseChecked: item?.looseChecked?.toString(),
+      numberOfLength: item?.numberOfLength != null ? String(Number(item.numberOfLength)) : '',
+      ripeFruitChecked: item?.ripeFruitChecked != null ? String(Number(item.ripeFruitChecked)) : '',
+      rawFruitChecked: item?.rawFruitChecked != null ? String(Number(item.rawFruitChecked)) : '',
+      lateRipeChecked: item?.lateRipeChecked != null ? String(Number(item.lateRipeChecked)) : '',
+      rottenFruitChecked: item?.rottenFruitChecked != null ? String(Number(item.rottenFruitChecked)) : '',
+      longHandleChecked: item?.longHandleChecked != null ? String(Number(item.longHandleChecked)) : '',
+      looseChecked: item?.looseChecked != null ? String(Number(item.looseChecked)) : '',
     },
-  ])
+  ] : [])
 
   const formBPBKSStatus = useSelector((state: RootStateType) => state.bpbks.formBPBKSStatus)
   const userAll = useSelector((state: RootStateType) => state.user?.userAll?.data || [])
@@ -98,6 +103,30 @@ const BPBKSForm = () => {
   const blockAll = useSelector((state: RootStateType) => state.block?.blockAll?.data || [])
   const users = useUsersByDivision(bpbksData?.division?.id)
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
+
+  const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
+  const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
+
+  useEffect(() => {
+    setDraftOptions(draftOptionsCache as any)
+  }, [draftOptionsCache])
+
+  useEffect(() => {
+    if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
+      if (isConnected) {
+        // online: fetch & cache ke Redux
+        dispatch(actions.getDraftOptions.request({
+          loading: true,
+          data: {
+            organizationId: bpbksData.organization.value,
+            date: moment(bpbksData.date).format('YYYY-MM-DD'),
+          },
+        }))
+      }
+      // offline: draftOptionsCache dari Redux persist otomatis dipakai
+      setDraftOptions(draftOptionsCache as any)
+    }
+  }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
   useEffect(() => {
     if (!isEdit && selectedUser) {
@@ -127,7 +156,7 @@ const BPBKSForm = () => {
   const checkIsBlockAndPlantingYearIsSame = (arr: any[]) => {
     for (let i = 0; i < arr.length; i++) {
       const isFound = arr.find((a, j) => {
-        return a.blockId == arr[i].blockId && a?.plantingYear == arr[i]?.plantingYear && j != i
+        return a.tphId == arr[i].tphId && j != i
       })
       if (isFound) {
         return true
@@ -149,7 +178,7 @@ const BPBKSForm = () => {
     const all = [...tphForm, ...defaultTph]
 
     if (checkIsBlockAndPlantingYearIsSame(all)) {
-      showErrorToast('Tidak boleh ada Blok dan Tahun Tanam yang sama!')
+      showErrorToast('Tidak boleh ada TPH yang sama!')
       return false
     }
 
@@ -186,6 +215,11 @@ const BPBKSForm = () => {
         }
       }
     }
+    if (!isEdit && tphForm.some((e: any) => !e.photoFruit || !e.photoKrani)) {
+      showErrorToast('Foto Buah dan Foto Krani wajib diisi!')
+      return false
+    }
+
     const isRipeFruiteLessThanZero = tphForm.some((e: any) => {
       const ripeFruitChecked = calculateRipeFruit(e)
       if (ripeFruitChecked < 0) {
@@ -207,6 +241,7 @@ const BPBKSForm = () => {
       cutNumber: value.cutNumber,
       foremanId: value.foremanId,
       date: moment(value.date).format('YYYY-MM-DD'),
+      gardenTonnageId: selectedGardenTonnageId || undefined,
       tphs: tphForm.map((e: any, index: number) => {
         const tph = tphAll.find(w => w.id === e.tphId)
         const block = blockAll.find(b => b.id === e.blockId)
@@ -237,26 +272,49 @@ const BPBKSForm = () => {
     return data
   }
 
-  const onSubmit = (value: any) => {
+  const onSubmit = async (value: any) => {
     if (!validateTPH()) {
       return
     }
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
-      // console.log('EDIT REQBODY:', JSON.stringify(requestBody))
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
     const requestBodyCreate = constructToFormDataCreate(value)
-    // console.log('REQBODY CR:', JSON.stringify(requestBodyCreate))
-    dispatch(actions.createBPBKS.request({ loading: true, data: requestBodyCreate }))
+    try {
+      const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
+      const createdTphs = res?.data?.response?.tphs || []
+      for (let i = 0; i < tphForm.length; i++) {
+        const tph = tphForm[i] as any
+        const createdTph = createdTphs[i]
+        if (createdTph?.id && (tph.photoFruit || tph.photoKrani)) {
+          try {
+            await System.instance.bpbksService.uploadPhotos(createdTph.id, tph.photoFruit, tph.photoKrani)
+          } catch (_) {}
+        }
+      }
+      showSuccessToast('Berhasil disimpan')
+      navigation.goBack()
+    } catch (e: any) {
+      showErrorToast(e?.response?.data?.message?.id || 'Gagal menyimpan')
+    }
   }
 
   const setFieldTphForm = (index: number, field: any, value: any) => {
     const newTphForm = tphForm.map((e, i) => (i === index ? { ...e, [field]: value } : e))
     setTphForm(newTphForm)
   }
+
+  // Sync tphForm state to react-hook-form so SelectInput (controlled) shows correct values
+  useEffect(() => {
+    tphForm.forEach((tph: any, index: number) => {
+      setValue(`[${index}]blockId`, tph.blockId)
+      setValue(`[${index}]plantingYear`, tph.plantingYear?.toString())
+      setValue(`[${index}]tphId`, tph.tphId)
+    })
+  }, [tphForm])
 
   useEffect(() => {
     dispatch(actions.clearFormBPBKSStatus())
@@ -354,6 +412,19 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
+        {!isEdit && draftOptions.length > 0 && (
+          <SelectInput
+            label="No. Kendaraan (Tonase Draft)"
+            placeholder="Pilih kendaraan dari tonase draft"
+            control={control}
+            name="gardenTonnageId"
+            items={draftOptions.map(d => ({
+              value: d.id,
+              label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
+            }))}
+            onChange={(v: string) => setSelectedGardenTonnageId(v)}
+          />
+        )}
 
         {defaultTph?.map((v, i) => (
           <TPHView
@@ -388,32 +459,35 @@ const BPBKSForm = () => {
         ))}
 
         {!isEdit && (
-          <Button
-            style={{ alignSelf: 'flex-start', marginBottom: 16, height: 40 }}
+          <TouchableOpacity
+            style={{ alignSelf: 'flex-start', marginBottom: 16, padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
             onPress={() => {
-              //@ts-ignore
-
-              setTphForm([
-                ...tphForm,
-                {
-                  blockId: '',
-                  plantingYear: '',
-                  tphId: '',
-                  numberOfLength: '',
-                  ripeFruitChecked: '',
-                  rawFruitChecked: '',
-                  lateRipeChecked: '',
-                  rottenFruitChecked: '',
-                  longHandleChecked: '',
-                  looseChecked: '',
+              navigation.navigate(Routes.QR_SCANNER, {
+                onScanSuccess: (data: any) => {
+                  setTphForm((prev: any) => [
+                    ...prev,
+                    {
+                      blockId: data.blockId,
+                      plantingYear: data.plantingYear?.[0]?.toString() || '',
+                      tphId: data.tphId,
+                      numberOfLength: '0',
+                      ripeFruitChecked: '0',
+                      rawFruitChecked: '0',
+                      lateRipeChecked: '0',
+                      rottenFruitChecked: '0',
+                      longHandleChecked: '0',
+                      looseChecked: '0',
+                      photoFruit: null,
+                      photoKrani: null,
+                      fromScan: true,
+                    },
+                  ])
                 },
-              ])
-              scrollViewRef?.current?.scrollToEnd({ animated: true })
+              })
             }}>
-            <Text style={{ fontSize: 12 }} color="white">
-              Tambah TPH
-            </Text>
-          </Button>
+            <Icon name="qr-code-scanner" size={20} color="white" />
+            <Text color="white" style={{ marginLeft: 8, fontSize: 13 }}>Scan QR TPH</Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
       <View style={styles.wrapSubmitButton}>
@@ -429,6 +503,7 @@ const BPBKSForm = () => {
 }
 
 const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tphAll, onDelete, item }: any) => {
+  const navigation: any = useNavigation()
   const blockDetail = blockAll.find((e: any) => e.id === item?.blockId)
   const ripeFruitChecked = `${calculateRipeFruit(item)}`
   const tphByBlock = tphAll?.filter((e: any) => e.block?.id === item?.blockId)
@@ -455,7 +530,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           items={blocks}
           value={item?.blockId}
-          disabled={item?.viewOnly || isEdit}
+          disabled={item?.viewOnly || isEdit || item?.fromScan}
           disabledText={blockDetail?.code}
           placeholder="Pilih Blok"
           name={`[${index}]blockId`}
@@ -469,8 +544,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isRequired
         />
         <SelectInput
-          disabled={item?.viewOnly}
-          disabledText={item?.plantingYear}
+          disabled={item?.viewOnly || item?.fromScan}
+          disabledText={item?.plantingYear?.toString()}
           isRequired
           items={transformPlantingYears() || []}
           value={item?.plantingYear != undefined ? item.plantingYear.toString() : ''}
@@ -491,7 +566,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           label={`TPH`}
           control={control}
           items={tphOptions}
-          disabled={item?.viewOnly}
+          disabled={item?.viewOnly || item?.fromScan}
           disabledText={tphDetail?.name}
           value={item?.tphId}
           defaultValue={item?.tphId}
@@ -511,6 +586,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.numberOfLength}
           placeholder="Contoh: 1"
           name={`[${index}]numberOfLength`}
+          defaultValue=""
           errorText={item?.numberOfLength?.length === 0 ? 'Jumlah Janjang harus diisi' : undefined}
           value={item?.numberOfLength}
           onChangeText={(value: any) => {
@@ -532,11 +608,9 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={ripeFruitChecked}
           value={ripeFruitChecked}
           errorText={
-            item?.ripeFruitChecked?.length === 0
-              ? 'Buah Matang (Janjang)'
-              : item?.ripeFruitChecked < 0
-                ? 'Buah Matang (Janjang) tidak boleh kurang dari 0'
-                : undefined
+            parseInt(ripeFruitChecked) < 0
+              ? 'Buah Matang (Janjang) tidak boleh kurang dari 0'
+              : undefined
           }
           disabled
           isRequired
@@ -549,6 +623,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.rawFruitChecked}
           placeholder="Contoh: 1"
           name={`[${index}]rawFruitChecked`}
+          defaultValue=""
           errorText={item?.rawFruitChecked?.length === 0 ? 'Buah Mentah harus diisi' : undefined}
           value={item?.rawFruitChecked}
           onChangeText={(value: any) => {
@@ -567,6 +642,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.lateRipeChecked}
           placeholder="Contoh: 1"
           name={`[${index}]lateRipeChecked`}
+          defaultValue=""
           errorText={item?.lateRipeChecked?.length === 0 ? 'Lewat Matang harus diisi' : undefined}
           value={item?.lateRipeChecked}
           onChangeText={(value: any) => {
@@ -582,6 +658,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.rottenFruitChecked}
           placeholder="Contoh: 1"
           name={`[${index}]rottenFruitChecked`}
+          defaultValue=""
           errorText={item?.rottenFruitChecked?.length === 0 ? 'Buah Busuk harus diisi' : undefined}
           value={item?.rottenFruitChecked}
           onChangeText={(value: any) => {
@@ -599,6 +676,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.longHandleChecked}
           placeholder="Contoh: 1"
           name={`[${index}]longHandleChecked`}
+          defaultValue=""
           errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
           value={item?.longHandleChecked}
           onChangeText={(value: any) => {
@@ -614,6 +692,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           disabledText={item?.looseChecked}
           placeholder="Contoh: 1"
           name={`[${index}]looseChecked`}
+          defaultValue=""
           errorText={item?.looseChecked?.length === 0 ? 'Brondolan harus diisi' : undefined}
           value={item?.looseChecked}
           onChangeText={(value: any) => {
@@ -623,6 +702,36 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
+      {!item?.viewOnly && !isEdit && (
+        <View style={{ flexDirection: 'row', marginTop: 8, gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Buah</Text>
+            <PhotoField
+              label="Foto Buah"
+              photo={item?.photoFruit}
+              onPress={() => {
+                navigation.navigate(Routes.CAMERA_PHOTO, {
+                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruit', photo),
+                })
+              }}
+              isRequired
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
+            <PhotoField
+              label="Foto Krani"
+              photo={item?.photoKrani}
+              onPress={() => {
+                navigation.navigate(Routes.CAMERA_PHOTO, {
+                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoKrani', photo),
+                })
+              }}
+              isRequired
+            />
+          </View>
+        </View>
+      )}
     </View>
   )
 }
@@ -632,6 +741,21 @@ const Row = ({ children }: any) => (
     <View style={{ marginRight: 5, flex: 1 }}>{React.Children.toArray(children)[0]}</View>
     <View style={{ marginLeft: 5, flex: 1 }}>{React.Children.toArray(children)[1]}</View>
   </View>
+)
+
+const PhotoField = ({ label, photo, onPress }: { label: string; photo: any; onPress: () => void; isRequired?: boolean }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{ flex: 1, height: 100, borderRadius: 8, borderWidth: 1, borderColor: photo?.uri ? theme.colors.light2 : theme.colors.danger || 'red', overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.light2 }}>
+    {photo?.uri ? (
+      <Image source={{ uri: photo.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+    ) : (
+      <>
+        <Icon name="camera-alt" size={28} color={theme.colors.accent} />
+        <Text size={11} style={{ marginTop: 4 }}>{label} *</Text>
+      </>
+    )}
+  </TouchableOpacity>
 )
 
 export const calculateRipeFruit = (item: any) => {
