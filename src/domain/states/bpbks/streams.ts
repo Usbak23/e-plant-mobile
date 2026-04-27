@@ -39,7 +39,7 @@ const createBPBKS: StreamType = (action$, state$, api) => {
           tempId,
           employeeTempId: uuid.v4(),
         }))
-        Object.assign(action.payload.data, {tempId, tphs})
+        Object.assign(action.payload.data ?? {}, {tempId, tphs}) 
 
         return of(
           actions.addBPBKSTemp(action.payload.data),
@@ -62,7 +62,7 @@ const createBPBKS: StreamType = (action$, state$, api) => {
         ]),
         catchError(error => {
           if (newData && error.message === 'Network Error') {
-            Object.assign(action.payload.data, {tempId: uuid.v4()})
+            Object.assign(action.payload.data ?? {}, {tempId: uuid.v4()})
             return of(
               actions.addBPBKSTemp(action.payload.data),
               actions.createBPBKS.success({
