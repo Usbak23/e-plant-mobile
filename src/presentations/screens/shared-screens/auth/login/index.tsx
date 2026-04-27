@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {StyleSheet, Image, View, StatusBar, TouchableOpacity} from 'react-native'
+import {StyleSheet, Image, View, StatusBar, TouchableOpacity, ActivityIndicator} from 'react-native'
 
 import flux, {actions, RootStateType} from '@domain/states/store'
 import {useDispatch, useSelector} from 'react-redux'
@@ -153,9 +153,14 @@ const Login = () => {
         </View>
 
         <Button style={styles.signInButton} disabled={loading} onPress={handleSubmit(signIn)}>
-          <Text type="semibold" style={styles.signInButtonText}>
-            {loading ? 'Loading...' : 'Sign in'}
-          </Text>
+          {loading ? (
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+              <ActivityIndicator size="small" color="white" />
+              <Text type="semibold" style={styles.signInButtonText}>Sedang masuk...</Text>
+            </View>
+          ) : (
+            <Text type="semibold" style={styles.signInButtonText}>Sign in</Text>
+          )}
         </Button>
       </View>
     </SafeAreaView>
