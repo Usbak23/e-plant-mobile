@@ -273,6 +273,10 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
+    if (!isEdit && !selectedGardenTonnageId) {
+      showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
+      return
+    }
     if (!validateTPH()) {
       return
     }
@@ -417,10 +421,10 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
-        {!isEdit && draftOptions.length > 0 && (
+        {!isEdit && (
           <SelectInput
             label="No. Kendaraan (Tonase Draft)"
-            placeholder="Pilih kendaraan dari tonase draft"
+            placeholder={draftOptions.length === 0 ? 'Tidak ada kendaraan tersedia' : 'Pilih kendaraan dari tonase draft'}
             control={control}
             name="gardenTonnageId"
             items={draftOptions.map(d => ({
@@ -428,6 +432,7 @@ const BPBKSForm = () => {
               label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
             }))}
             onChange={(v: string) => setSelectedGardenTonnageId(v)}
+            isRequired
           />
         )}
 

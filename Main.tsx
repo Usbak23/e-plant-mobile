@@ -7,7 +7,7 @@ import {StatusBar} from 'react-native'
 import {PersistGate} from 'redux-persist/integration/react'
 import Toast from 'react-native-toast-message'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
-// import {ReduxNetworkProvider} from 'react-native-offline'
+import {ReduxNetworkProvider} from 'react-native-offline'
 import {MenuProvider} from 'react-native-popup-menu'
 // import notifee, {EventType} from '@notifee/react-native'
 // import FileViewer from 'react-native-file-viewer'
@@ -40,16 +40,15 @@ export default function Main() {
   return (
     <MenuProvider>
       <ReduxProvider store={flux.store}>
-        {/* <ReduxNetworkProvider
-          shouldPing
-          pingInBackground
-          pingInterval={600}
-          // pingTimeout={1000} 
-          // children={} 
-          // pingServerUrl={''} 
-          // pingOnlyIfOffline={false} 
-          // httpMethod={'HEAD'}          // pingServerUrl={'http://192.168.1.8:5011'}
-        > */}
+        <ReduxNetworkProvider
+          shouldPing={true}
+          pingInBackground={false}
+          pingOnlyIfOffline={true}
+          pingInterval={30000}
+          pingTimeout={3000}
+          pingServerUrl="https://www.google.com"
+          httpMethod="HEAD"
+        >
           <PersistGate persistor={flux.persistor}>
             <SafeAreaProvider>
               <StatusBar backgroundColor={'white'} barStyle="dark-content" />
@@ -57,7 +56,7 @@ export default function Main() {
               <Toast />
             </SafeAreaProvider>
           </PersistGate>
-        {/* </ReduxNetworkProvider> */}
+        </ReduxNetworkProvider>
       </ReduxProvider>
     </MenuProvider>
   )
