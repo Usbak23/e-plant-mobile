@@ -75,11 +75,19 @@ export default class BKMService extends BaseService {
     return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/scan-qr`, { qrCode })
   }
 
-  uploadPhotos(bpbksTphId: string, photoFruit: any, photoKrani: any): Promise<AxiosResponse<IRESTApiResponse>> {
+  uploadPhotos(bpbksTphId: string, photos: {
+    photoFruitFront?: any
+    photoFruitBack?: any
+    photoFruitSide?: any
+    photoKrani?: any
+  }): Promise<AxiosResponse<IRESTApiResponse>> {
     const formData = new FormData()
     formData.append('bpbksTphsId', bpbksTphId)
-    if (photoFruit) formData.append('photoFruit', { uri: photoFruit.uri, type: photoFruit.type || 'image/jpeg', name: photoFruit.fileName || 'photoFruit.jpg' } as any)
-    if (photoKrani) formData.append('photoKrani', { uri: photoKrani.uri, type: photoKrani.type || 'image/jpeg', name: photoKrani.fileName || 'photoKrani.jpg' } as any)
+    const fields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
+    for (const field of fields) {
+      const photo = photos[field]
+      if (photo) formData.append(field, { uri: photo.uri, type: photo.type || 'image/jpeg', name: photo.fileName || `${field}.jpg` } as any)
+    }
     return POST(`${this.d.eplantDomain}/api/eplant-server/web/v0/bpbks/upload-photos`, formData, { 'Content-Type': 'multipart/form-data' })
   }
 }
