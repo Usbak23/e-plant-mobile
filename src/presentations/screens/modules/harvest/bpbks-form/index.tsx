@@ -430,6 +430,19 @@ const BPBKSForm = () => {
             onChange={(v: string) => setSelectedGardenTonnageId(v)}
           />
         )}
+        {isEdit && (
+          <TextInput
+            label="No. Kendaraan"
+            control={control}
+            name="gardenTonnageId"
+            disabled
+            disabledText={
+              item?.bpbks?.gardenTonnage?.item?.name
+                ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
+                : '-'
+            }
+          />
+        )}
 
         {defaultTph?.map((v, i) => (
           <TPHView
