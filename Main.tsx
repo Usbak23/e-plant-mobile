@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message'
 import {SafeAreaProvider} from 'react-native-safe-area-context'
 import {ReduxNetworkProvider} from 'react-native-offline'
 import {MenuProvider} from 'react-native-popup-menu'
+import Config from './Config'
 // import notifee, {EventType} from '@notifee/react-native'
 // import FileViewer from 'react-native-file-viewer'
 // import * as c from '@utils/notifications/constantsNotificationt'
@@ -43,10 +44,10 @@ export default function Main() {
         <ReduxNetworkProvider
           shouldPing={true}
           pingInBackground={false}
-          pingOnlyIfOffline={true}
+          pingOnlyIfOffline={false}
           pingInterval={30000}
           pingTimeout={3000}
-          pingServerUrl="https://www.google.com"
+          pingServerUrl={`${Config.eplantDomain}/health/live`}
           httpMethod="HEAD"
         >
           <PersistGate persistor={flux.persistor}>
