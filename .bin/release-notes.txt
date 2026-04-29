@@ -1,11 +1,11 @@
-E-Plantation Staging v5.3.0
+E-Plantation Staging v5.4.0
 
-Build: #7
+Build: #8
 Environment: Staging
 
 Recent changes:
-- Merge branch 'development' into 'staging'
-- Merge branch 'development' into 'staging'
-- feat(login): improve loading experience with spinner and descriptive text on sign in button
-- feat(home): add network status indicator on home page header
-- Merge branch 'development' into 'staging'
+- fix(bpbks): separate bpbks records per vehicle and show all in list fix(bpbks): show vehicle field on edit mode fix(mobile): fix network indicator always showing offline feat(mobile): enable network detection and make garden tonnage required in BPBKS form fix(mobile): fix network indicator always showing offline
+- fix(mobile): fix network indicator always showing offline
+- fix(bpbks): show vehicle field on edit mode
+- feat(mobile): enable network detection and make garden tonnage required in BPBKS form
+- feat(bpbks): update fruit photo upload to 3 photos (front, back, side) with krani first layout
