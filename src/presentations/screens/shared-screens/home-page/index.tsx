@@ -11,6 +11,7 @@ import {
   useIsAllowedToSeeFieldReport
 } from '@app/domain/states/user/hooks'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNetInfo } from '@react-native-community/netinfo'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { ROLE_ACCESS_SLUG } from '@app/models/eplant/Role'
 import Routes from '@app/presentations/navigation/Routes'
@@ -48,7 +49,8 @@ const HomePage = () => {
   const [dimensions, setDimensions] = useState({ window, screen })
 
   const { tphAll } = useSelector((state: RootStateType) => state?.tph)
-  const isConnected = useSelector((state: RootStateType) => state?.network?.isConnected)
+  const netInfo = useNetInfo()
+  const isConnected = netInfo.isConnected && netInfo.isInternetReachable !== false
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {

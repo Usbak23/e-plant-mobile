@@ -215,8 +215,8 @@ const BPBKSForm = () => {
         }
       }
     }
-    if (!isEdit && tphForm.some((e: any) => !e.photoFruit || !e.photoKrani)) {
-      showErrorToast('Foto Buah dan Foto Krani wajib diisi!')
+    if (!isEdit && tphForm.some((e: any) => !e.photoFruitFront || !e.photoFruitBack || !e.photoFruitSide || !e.photoKrani)) {
+      showErrorToast('Foto Buah (depan, belakang, samping) dan Foto Krani wajib diisi!')
       return false
     }
 
@@ -273,6 +273,10 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
+    if (!isEdit && !selectedGardenTonnageId) {
+      showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
+      return
+    }
     if (!validateTPH()) {
       return
     }
@@ -289,9 +293,14 @@ const BPBKSForm = () => {
       for (let i = 0; i < tphForm.length; i++) {
         const tph = tphForm[i] as any
         const createdTph = createdTphs[i]
-        if (createdTph?.id && (tph.photoFruit || tph.photoKrani)) {
+        if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
           try {
-            await System.instance.bpbksService.uploadPhotos(createdTph.id, tph.photoFruit, tph.photoKrani)
+            await System.instance.bpbksService.uploadPhotos(createdTph.id, {
+              photoFruitFront: tph.photoFruitFront,
+              photoFruitBack: tph.photoFruitBack,
+              photoFruitSide: tph.photoFruitSide,
+              photoKrani: tph.photoKrani,
+            })
           } catch (_) {}
         }
       }
@@ -412,10 +421,10 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
-        {!isEdit && draftOptions.length > 0 && (
+        {!isEdit && (
           <SelectInput
             label="No. Kendaraan (Tonase Draft)"
-            placeholder="Pilih kendaraan dari tonase draft"
+            placeholder={draftOptions.length === 0 ? 'Tidak ada kendaraan tersedia' : 'Pilih kendaraan dari tonase draft'}
             control={control}
             name="gardenTonnageId"
             items={draftOptions.map(d => ({
@@ -423,6 +432,20 @@ const BPBKSForm = () => {
               label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
             }))}
             onChange={(v: string) => setSelectedGardenTonnageId(v)}
+            isRequired
+          />
+        )}
+        {isEdit && (
+          <TextInput
+            label="No. Kendaraan"
+            control={control}
+            name="gardenTonnageId"
+            disabled
+            disabledText={
+              item?.bpbks?.gardenTonnage?.item?.name
+                ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
+                : '-'
+            }
           />
         )}
 
@@ -703,32 +726,52 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
         />
       </Row>
       {!item?.viewOnly && !isEdit && (
-        <View style={{ flexDirection: 'row', marginTop: 8, gap: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Buah</Text>
-            <PhotoField
-              label="Foto Buah"
-              photo={item?.photoFruit}
-              onPress={() => {
-                navigation.navigate(Routes.CAMERA_PHOTO, {
-                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruit', photo),
-                })
-              }}
-              isRequired
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
-            <PhotoField
-              label="Foto Krani"
-              photo={item?.photoKrani}
-              onPress={() => {
-                navigation.navigate(Routes.CAMERA_PHOTO, {
+        <View style={{ marginTop: 8 }}>
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
+              <PhotoField
+                label="Krani"
+                photo={item?.photoKrani}
+                onPress={() => navigation.navigate(Routes.CAMERA_PHOTO, {
                   onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoKrani', photo),
-                })
-              }}
-              isRequired
-            />
+                })}
+                isRequired
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Buah</Text>
+              <PhotoField
+                label="Depan"
+                photo={item?.photoFruitFront}
+                onPress={() => navigation.navigate(Routes.CAMERA_PHOTO, {
+                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruitFront', photo),
+                })}
+                isRequired
+              />
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <PhotoField
+                label="Belakang"
+                photo={item?.photoFruitBack}
+                onPress={() => navigation.navigate(Routes.CAMERA_PHOTO, {
+                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruitBack', photo),
+                })}
+                isRequired
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <PhotoField
+                label="Samping"
+                photo={item?.photoFruitSide}
+                onPress={() => navigation.navigate(Routes.CAMERA_PHOTO, {
+                  onPhotoCaptured: (photo: any) => setFieldTphForm(index, 'photoFruitSide', photo),
+                })}
+                isRequired
+              />
+            </View>
           </View>
         </View>
       )}

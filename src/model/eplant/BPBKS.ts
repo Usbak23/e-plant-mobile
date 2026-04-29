@@ -56,6 +56,10 @@ export interface Bpbks {
   totalLength: number
   division: Division
   foreman: Foreman
+  gardenTonnage?: {
+    id?: string
+    item?: { id?: string; name?: string; serialNumber?: string }
+  }
 }
 
 export interface Harvester {
