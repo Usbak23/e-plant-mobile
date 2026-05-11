@@ -1,11 +1,11 @@
-E-Plantation Staging v5.4.0
+E-Plantation Staging v5.5.0
 
-Build: #8
+Build: #9
 Environment: Staging
 
 Recent changes:
-- fix(bpbks): separate bpbks records per vehicle and show all in list fix(bpbks): show vehicle field on edit mode fix(mobile): fix network indicator always showing offline feat(mobile): enable network detection and make garden tonnage required in BPBKS form fix(mobile): fix network indicator always showing offline
-- fix(mobile): fix network indicator always showing offline
-- fix(bpbks): show vehicle field on edit mode
-- feat(mobile): enable network detection and make garden tonnage required in BPBKS form
-- feat(bpbks): update fruit photo upload to 3 photos (front, back, side) with krani first layout
+- Merge branch 'feat/offline-first' into 'staging'
+- fix: add sync id
+- feat(offline): integrate sync queue into Redux store
+- feat(offline): add sync progress notification to app root
+- feat(ui): add sync progress notification component
