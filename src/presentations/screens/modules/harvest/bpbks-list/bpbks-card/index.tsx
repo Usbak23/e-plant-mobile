@@ -170,6 +170,19 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
             </Text>
           </View>
         </View>
+        <View style={{ flexDirection: 'row', marginTop: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text color={theme.colors.label} size={11}>
+              No. Kendaraan
+            </Text>
+            <Text color={theme.colors.textThinBlack} size={12}>
+              {props.item?.bpbks?.gardenTonnage?.item?.name
+                ? `${props.item.bpbks.gardenTonnage.item.name} - ${props.item.bpbks.gardenTonnage.item.serialNumber || ''}`
+                : '-'}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }} />
+        </View>
       </View>
     </TouchableOpacity>
   )
