@@ -73,12 +73,27 @@ const AKPDetailInfo = ({bpbksData}: any) => {
           <View style={styles.smallIconView}>
             <IconGroupWork width={ICON_SIZE} height={ICON_SIZE} />
           </View>
-          <View style={styles.leftSpacer}>
+          <View style={[styles.leftSpacer, {flex: 1}]}>
             <Text style={styles.itemTitle} size={11}>
               Jumlah Janjang
             </Text>
             <Text color={theme.colors.textThinBlack} size={12}>
               {bpbksData?.totalLength || '0'}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.itemWrapper}>
+          <View style={styles.smallIconView}>
+            <IconGroupWork width={ICON_SIZE} height={ICON_SIZE} />
+          </View>
+          <View style={[styles.leftSpacer, {flex: 1}]}>
+            <Text style={styles.itemTitle} size={11}>
+              No. Kendaraan
+            </Text>
+            <Text color={theme.colors.textThinBlack} size={12}>
+              {bpbksData?.gardenTonnage?.item?.name
+                ? `${bpbksData.gardenTonnage.item.name} - ${bpbksData.gardenTonnage.item.serialNumber || ''}`
+                : '-'}
             </Text>
           </View>
         </View>
