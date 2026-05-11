@@ -107,6 +107,17 @@ const BPBKSForm = () => {
   const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
   const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
 
+  // DEBUG: Log untuk cek data
+  useEffect(() => {
+    console.log('🔍 DEBUG BPBKS Form:')
+    console.log('- users length:', users.length)
+    console.log('- users data:', JSON.stringify(users.slice(0, 2)))
+    console.log('- draftOptions length:', draftOptions.length)
+    console.log('- draftOptions data:', JSON.stringify(draftOptions.slice(0, 2)))
+    console.log('- isConnected:', isConnected)
+    console.log('- bpbksData:', JSON.stringify(bpbksData))
+  }, [users, draftOptions, isConnected])
+
   useEffect(() => {
     setDraftOptions(draftOptionsCache as any)
   }, [draftOptionsCache])
@@ -123,8 +134,7 @@ const BPBKSForm = () => {
           },
         }))
       }
-      // offline: draftOptionsCache dari Redux persist otomatis dipakai
-      setDraftOptions(draftOptionsCache as any)
+      // offline: draftOptionsCache dari Redux persist otomatis dipakai (sudah di-handle di useEffect draftOptionsCache)
     }
   }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
@@ -326,12 +336,28 @@ const BPBKSForm = () => {
   }, [tphForm])
 
   useEffect(() => {
+    console.log('🚀 Initializing BPBKS Form - Fetching master data...')
     dispatch(actions.clearFormBPBKSStatus())
+    
+    // Force refresh master data setiap kali form dibuka
     dispatch(actions.getOrganizationAll.request({ loading: true }))
     dispatch(actions.getAllDivision.request({ loading: true }))
     dispatch(actions.getAllUser.request({ loading: true }))
     dispatch(actions.getTPHAll.request({ loading: true }))
     dispatch(actions.getAllBlock.request({ loading: true }))
+    
+    // Force refresh draft options jika ada organization dan date
+    if (bpbksData?.organization?.value && bpbksData?.date) {
+      dispatch(actions.getDraftOptions.request({
+        loading: true,
+        data: {
+          organizationId: bpbksData.organization.value,
+          date: moment(bpbksData.date).format('YYYY-MM-DD'),
+        },
+      }))
+    }
+    
+    console.log('✅ Master data fetch dispatched')
   }, [])
 
   useEffect(() => {
@@ -402,7 +428,7 @@ const BPBKSForm = () => {
         <Row>
           <SelectInput
             label="Nama Karyawan"
-            placeholder="Contoh : Dedi"
+            placeholder={users.length === 0 ? 'Loading karyawan...' : 'Contoh : Dedi'}
             control={control}
             items={users}
             disabled={isEdit}
@@ -410,6 +436,7 @@ const BPBKSForm = () => {
             name="harvesterId"
             onChange={v => setSelectedUser(v)}
             isRequired
+            noItemsText="Tidak ada karyawan di divisi ini"
           />
           <TextInput
             isFloat={false}
@@ -424,15 +451,16 @@ const BPBKSForm = () => {
         {!isEdit && (
           <SelectInput
             label="No. Kendaraan (Tonase Draft)"
-            placeholder={draftOptions.length === 0 ? 'Tidak ada kendaraan tersedia' : 'Pilih kendaraan dari tonase draft'}
+            placeholder={draftOptions.length === 0 ? 'Loading kendaraan...' : 'Pilih kendaraan dari tonase draft'}
             control={control}
             name="gardenTonnageId"
             items={draftOptions.map(d => ({
               value: d.id,
-              label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
+              label: d.item ? `${d.item.name} - ${d.item.serialNumber} (${d.driver || 'Tanpa Supir'})` : d.id,
             }))}
             onChange={(v: string) => setSelectedGardenTonnageId(v)}
             isRequired
+            noItemsText="Tidak ada kendaraan tersedia untuk tanggal ini"
           />
         )}
         {isEdit && (
