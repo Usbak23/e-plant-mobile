@@ -1,5 +1,7 @@
 import { theme } from '@app/presentations/utils/styles'
 import { Button, Header, SelectInput, Text, TextInput } from '@app/presentations/_shared-components'
+import SyncIndicatorBadge from '@app/presentations/_shared-components/SyncIndicatorBadge'
+import SyncStatusModal from '@app/presentations/_shared-components/SyncStatusModal'
 import React, { useEffect, useState, useRef } from 'react'
 import { Image, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
@@ -79,6 +81,7 @@ const BPBKSForm = () => {
   const [defaultTph, setDefaultTph] = useState([])
   const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
   const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
+  const [syncModalVisible, setSyncModalVisible] = useState(false)
   const [tphForm, setTphForm] = useState(isEdit ? [
     {
       blockId: item?.tph?.block?.id || item?.blockId,
@@ -110,31 +113,57 @@ const BPBKSForm = () => {
   // DEBUG: Log untuk cek data
   useEffect(() => {
     console.log('🔍 DEBUG BPBKS Form:')
-    console.log('- users length:', users.length)
-    console.log('- users data:', JSON.stringify(users.slice(0, 2)))
-    console.log('- draftOptions length:', draftOptions.length)
-    console.log('- draftOptions data:', JSON.stringify(draftOptions.slice(0, 2)))
     console.log('- isConnected:', isConnected)
-    console.log('- bpbksData:', JSON.stringify(bpbksData))
-  }, [users, draftOptions, isConnected])
+    console.log('- users length:', users.length)
+    console.log('- draftOptions length:', draftOptions.length)
+    console.log('- blocks length:', blocks.length)
+    console.log('- tphAll length:', tphAll.length)
+    console.log('- draftOptionsCache length:', draftOptionsCache.length)
+    
+    if (!isConnected) {
+      console.log('⚠️ OFFLINE MODE: Using cached data')
+      console.log('  - Cached users:', users.length)
+      console.log('  - Cached draft options:', draftOptionsCache.length)
+      console.log('  - Cached blocks:', blocks.length)
+      console.log('  - Cached TPH:', tphAll.length)
+    }
+  }, [users, draftOptions, isConnected, blocks, tphAll, draftOptionsCache])
 
   useEffect(() => {
-    setDraftOptions(draftOptionsCache as any)
+    // Set draft options dari cache
+    // Ini akan tersedia bahkan saat offline karena Redux Persist
+    if (draftOptionsCache && draftOptionsCache.length > 0) {
+      console.log('✅ Loading draft options from cache:', draftOptionsCache.length)
+      setDraftOptions(draftOptionsCache as any)
+    }
   }, [draftOptionsCache])
 
   useEffect(() => {
     if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
-      if (isConnected) {
-        // online: fetch & cache ke Redux
-        dispatch(actions.getDraftOptions.request({
-          loading: true,
-          data: {
-            organizationId: bpbksData.organization.value,
-            date: moment(bpbksData.date).format('YYYY-MM-DD'),
-          },
-        }))
+      const dateStr = moment(bpbksData.date).format('YYYY-MM-DD')
+      
+      console.log('🔄 Fetching draft options...')
+      console.log('  - Organization:', bpbksData.organization.value)
+      console.log('  - Date:', dateStr)
+      console.log('  - Is Connected:', isConnected)
+      
+      // Selalu coba fetch saat form dibuka
+      // - Online: akan fetch data terbaru dari server (REFRESH) ✅
+      // - Offline: akan gagal, tapi data cache tetap tersedia
+      dispatch(actions.getDraftOptions.request({
+        loading: !isConnected, // Hanya show loading jika online
+        data: {
+          organizationId: bpbksData.organization.value,
+          date: dateStr,
+        },
+      }))
+      
+      if (!isConnected) {
+        console.log('⚠️ Offline: Will use cached draft options')
+        console.log('⚠️ WARNING: Data mungkin tidak up-to-date!')
+      } else {
+        console.log('🌐 Online: Fetching fresh draft options from server')
       }
-      // offline: draftOptionsCache dari Redux persist otomatis dipakai (sudah di-handle di useEffect draftOptionsCache)
     }
   }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
@@ -283,23 +312,58 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
+    // Validasi No. Kendaraan (wajib)
     if (!isEdit && !selectedGardenTonnageId) {
       showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
       return
     }
+    
+    // Validasi TPH
     if (!validateTPH()) {
       return
     }
+    
+    // Mode Edit
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
+    // Mode Create
     const requestBodyCreate = constructToFormDataCreate(value)
+    
+    // OFFLINE MODE: Save to sync queue
+    if (!isConnected) {
+      const syncId = `BPBKS_${Date.now()}`
+      
+      console.log('💾 OFFLINE: Saving BPBKS to sync queue')
+      console.log('  - Sync ID:', syncId)
+      console.log('  - Harvester:', selectedUser)
+      console.log('  - Vehicle:', selectedGardenTonnageId)
+      console.log('  - TPH count:', tphForm.length)
+      console.log('  - Has photos:', tphForm.some((t: any) => t.photoKrani))
+      
+      dispatch(actions.syncQueue.addToSyncQueue({
+        id: syncId,
+        type: 'BPBKS',
+        data: requestBodyCreate,
+        timestamp: Date.now(),
+        status: 'pending',
+      }))
+      
+      showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
+      navigation.goBack()
+      return
+    }
+
+    // ONLINE MODE: Direct API call
     try {
+      console.log('🌐 ONLINE: Submitting BPBKS to server')
       const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
       const createdTphs = res?.data?.response?.tphs || []
+      
+      // Upload photos untuk setiap TPH
       for (let i = 0; i < tphForm.length; i++) {
         const tph = tphForm[i] as any
         const createdTph = createdTphs[i]
@@ -311,12 +375,16 @@ const BPBKSForm = () => {
               photoFruitSide: tph.photoFruitSide,
               photoKrani: tph.photoKrani,
             })
-          } catch (_) {}
+          } catch (photoError) {
+            console.error('Failed to upload photo:', photoError)
+          }
         }
       }
-      showSuccessToast('Berhasil disimpan')
+      
+      showSuccessToast('✅ Berhasil disimpan')
       navigation.goBack()
     } catch (e: any) {
+      console.error('❌ Failed to submit BPBKS:', e)
       showErrorToast(e?.response?.data?.message?.id || 'Gagal menyimpan')
     }
   }
@@ -346,7 +414,8 @@ const BPBKSForm = () => {
     dispatch(actions.getTPHAll.request({ loading: true }))
     dispatch(actions.getAllBlock.request({ loading: true }))
     
-    // Force refresh draft options jika ada organization dan date
+    // Pre-fetch draft options jika ada organization dan date
+    // Ini akan di-cache untuk offline access
     if (bpbksData?.organization?.value && bpbksData?.date) {
       dispatch(actions.getDraftOptions.request({
         loading: true,
@@ -375,11 +444,19 @@ const BPBKSForm = () => {
     }
   }, [formBPBKSStatus?.data])
 
-  const HeaderView = () => <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+  const HeaderView = () => (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+      <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+      <TouchableOpacity onPress={() => setSyncModalVisible(true)}>
+        <SyncIndicatorBadge size="small" showLabel={false} />
+      </TouchableOpacity>
+    </View>
+  )
 
   return (
     <SafeAreaView style={styles.root}>
       <HeaderView />
+      <SyncStatusModal visible={syncModalVisible} onClose={() => setSyncModalVisible(false)} />
       <ScrollView
         style={styles.container}
         ref={scrollViewRef}
