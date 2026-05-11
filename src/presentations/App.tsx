@@ -4,38 +4,34 @@ import {useSelector} from 'react-redux'
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack'
 import Routes from '@navigation/Routes'
 import RegisterScreen from '@screens/shared-screens/auth/register'
-// import SplashScreen from '@screens/shared-screens/auth/splash'
 import LoginScreen from '@screens/shared-screens/auth/login'
 import BottomTabs from '@navigation/bottom-tabs'
 import {RootStateType} from '@domain/states/store'
-// import useSyncData from './hooks/useSyncData'
-// import useHeadlessTask from './hooks/useHeadlessTask'
 import ForgotPassword from '@screens/shared-screens/auth/forgot-password'
 import ResetPassword from '@screens/shared-screens/auth/reset-password'
-// your entry point
 import MapsPreview from './screens/preview-maps'
 import {authNavigationRef} from '@navigation/services/auth'
-
 import { useNotifications } from './hooks/useNotifications'
-// import {useNavigateDeeplink} from './utils/deeplink/useNavigateDeeplink'
-// import {Linking} from 'react-native'
 import {appNavigationRef} from './navigation/services/app'
-// import {Text} from './_shared-components'
+import SyncProgressNotification from './_shared-components/SyncProgressNotification'
 
 const MainStack = () => {
   const Stack = createStackNavigator()
   useNotifications()
   
   return (
-    <Stack.Navigator
-      screenOptions={{
-        ...TransitionPresets.SlideFromRightIOS,
-        headerShown: false,
-      }}
-      initialRouteName={Routes.HOME_PAGE}>
-      <Stack.Screen name={Routes.HOME_PAGE} component={BottomTabs} />
-      <Stack.Screen name={Routes.MAPS_PREVIEW} component={MapsPreview} />
-    </Stack.Navigator>
+    <>
+      <SyncProgressNotification />
+      <Stack.Navigator
+        screenOptions={{
+          ...TransitionPresets.SlideFromRightIOS,
+          headerShown: false,
+        }}
+        initialRouteName={Routes.HOME_PAGE}>
+        <Stack.Screen name={Routes.HOME_PAGE} component={BottomTabs} />
+        <Stack.Screen name={Routes.MAPS_PREVIEW} component={MapsPreview} />
+      </Stack.Navigator>
+    </>
   )
 }
 
