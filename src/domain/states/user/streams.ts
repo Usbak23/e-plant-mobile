@@ -1,29 +1,57 @@
-import { map, catchError, filter, switchMap, tap, concatMap } from 'rxjs/operators'
+import { map, catchError, filter, switchMap, tap, concatMap, mergeMap } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import { isActionOf } from 'typesafe-actions'
 import * as actions from '@app/domain/states/user/actions'
 import { StreamType } from '@app/domain/states/types'
 import flux from '@app/domain/states/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import moment from 'moment'
 
 const login: StreamType = (action$, state$, api) => {
   return action$.pipe(
     filter(isActionOf(actions.login.request)),
     switchMap(action =>
       from(api.authService.login(action.payload.data)).pipe(
-        map(({ data }) => {
-          return actions.login.success({ loading: false, data: data.response })
+        concatMap(({ data }) => {
+          console.log('✅ Login successful! Pre-fetching master data for offline access...')
+          
+          // Return login success + pre-fetch all master data
+          return [
+            actions.login.success({ loading: false, data: data.response }),
+            
+            // Get current user (ini akan trigger pre-fetch draft options)
+            actions.getCurrentUser.request({ loading: false }),
+            
+            // Pre-fetch master data untuk offline access
+            flux.actions.getOrganizationAll.request({ loading: false }),
+            flux.actions.getAllDivision.request({ loading: false }),
+            flux.actions.getAllUser.request({ loading: false }),
+            flux.actions.getTPHAll.request({ loading: false }),
+            flux.actions.getAllBlock.request({ loading: false }),
+            flux.actions.getSubActivityAll.request({ loading: false }),
+            flux.actions.getRoleAll.request({ loading: false }),
+            flux.actions.getCategoryItemAll.request({ loading: false }),
+            flux.actions.getMasterItemAll.request({ loading: false }),
+            flux.actions.getItemAll.request({ loading: false }),
+            flux.actions.getRawMaterialAll.request({ loading: false }),
+            
+            // Fetch master data lainnya
+            flux.actions.getMinimumAkp.request({ loading: false }),
+            flux.actions.getUoms.request({ loading: false }),
+            flux.actions.getSupervisions.request({ loading: false }),
+            flux.actions.getWorkStatuses.request({ loading: false }),
+          ]
         }),
         catchError(error => {
+          console.error('❌ Login failed:', error)
           return of(
             actions.login.failure({ loading: false, error }),
             actions.clearUserProfile(),
-            // actions.clearUserLoginForm(),
           )
         }),
       ),
     ),
-    tap(next => console.log({ login: next })),
+    tap(next => console.log({ loginStream: next.type })),
   )
 }
 
@@ -119,10 +147,37 @@ const getCurrentUserInfo: StreamType = (action$, state$, api) => {
     switchMap(action =>
       from(api.authService.getCurrentUser()).pipe(
         concatMap(({ data }: any) => {
-          if (action?.payload?.next) {
-            return [actions.getCurrentUser.success({ loading: false, data: data.response }), action?.payload?.next]
+          const currentUser = data.response
+          const actionsToDispatch: any[] = [
+            actions.getCurrentUser.success({ loading: false, data: currentUser })
+          ]
+          
+          // Pre-fetch draft options untuk 3 hari (hari ini + 2 hari ke depan)
+          // Hanya jika user punya organization
+          if (currentUser?.organization?.id) {
+            console.log('📦 Pre-fetching draft options for next 3 days...')
+            const today = moment()
+            
+            for (let i = 0; i < 3; i++) {
+              const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
+              actionsToDispatch.push(
+                flux.actions.getDraftOptions.request({
+                  loading: false,
+                  data: {
+                    organizationId: currentUser.organization.id,
+                    date: date,
+                  },
+                })
+              )
+            }
+            console.log('✅ Dispatched draft options fetch for 3 days')
           }
-          return [actions.getCurrentUser.success({ loading: false, data: data.response })]
+          
+          if (action?.payload?.next) {
+            actionsToDispatch.push(action.payload.next)
+          }
+          
+          return actionsToDispatch
         }),
         catchError(error => {
           if (action?.payload?.next) {
