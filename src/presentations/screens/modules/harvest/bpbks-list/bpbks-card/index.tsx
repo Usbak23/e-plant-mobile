@@ -13,7 +13,8 @@ import PopupEditDelete from '@app/presentations/_shared-components/PopupEditDele
 import { useSelector } from 'react-redux'
 import { RootState } from '@app/domain/states/reducers'
 import { showErrorToast } from '@app/presentations/_shared-components/Toast'
-import { Doc } from '@app/models/eplant/BPBKS'
+import { Doc, BPBKSSyncStatus } from '@app/models/eplant/BPBKS'
+import { useSyncQueueById } from '@app/domain/states/sync-queue/hooks'
 
 interface Props {
   isAllowedToOrganizeBPBKS?: boolean
@@ -23,38 +24,83 @@ interface Props {
     organization: IOrganizationRowAll
     date: string
   }
-  item: Doc & { isTemp: boolean }
+  item: Doc & { isTemp: boolean; syncStatus?: BPBKSSyncStatus; syncError?: string }
   onTap?: (item?: Doc) => void
   onPopupEdit?: (item?: Doc) => void
   onPopupDelete?: (item?: Doc) => void
 }
 
-const syncDotColor: Record<BPBKSSyncStatus, string> = {
-  pending: '#F5A623',
-  syncing: '#4A90E2',
-  synced: '#4ce24a',
-  failed: '#D0021B',
+const syncDotColor: Record<string, string> = {
+  pending: '#F5A623',   // Orange
+  syncing: '#4A90E2',   // Blue
+  success: '#4ce24a',   // Green
+  error: '#D0021B',     // Red
 }
 
-const SyncDot = ({ status }: { status?: BPBKSSyncStatus }) => {
-  if (!status || status === 'synced') return null
+const SyncDot = ({ status }: { status?: string }) => {
+  if (!status) return null
   return (
     <View
       style={{
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: syncDotColor[status],
+        backgroundColor: syncDotColor[status] || theme.colors.gray,
         marginLeft: 6,
         alignSelf: 'center',
       }}
     />
   )
 }
+
+const SyncStatusBadge = ({ status, error }: { status?: string; error?: string }) => {
+  if (!status) return null
+
+  const getStatusLabel = () => {
+    switch (status) {
+      case 'pending':
+        return 'Pending'
+      case 'syncing':
+        return 'Syncing...'
+      case 'success':
+        return 'Synced'
+      case 'error':
+        return 'Error'
+      default:
+        return status
+    }
+  }
+
+  return (
+    <View
+      style={{
+        backgroundColor: syncDotColor[status] || theme.colors.gray,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        marginTop: 8,
+      }}>
+      <Text size={10} color="white" type="semibold">
+        {getStatusLabel()}
+      </Text>
+      {error && (
+        <Text size={9} color="white" style={{ marginTop: 2 }}>
+          {error}
+        </Text>
+      )}
+    </View>
+  )
+}
+
 const BKMCard = ({ bpbksData, ...props }: Props) => {
   const navigation: any = useNavigation()
   const isConnected = useSelector((state: RootState) => state.network.isConnected)
   const isDraft = props.item?.isTemp
+  
+  // Get sync status from sync-queue
+  const syncQueueItem = useSyncQueueById(`BPBKS_${props.item?.id}`)
+  const syncStatus = syncQueueItem?.status
+  const syncError = syncQueueItem?.error
   const onEdit = () => {
     if (!isDraft && !isConnected) {
       showErrorToast('Anda tidak dapat edit data dalam mode offline')
@@ -125,10 +171,11 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
           </Text>
         )}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Text size={13} color={isDraft ? theme.colors.redDark : theme.colors.accent} type="semibold">
               {props?.item?.harvester?.name} - {props?.item?.harvester?.nip} - {props?.item?.harvester?.role?.name}
             </Text>
+            <SyncDot status={props.item?.syncStatus} />
           </View>
           {props.isAllowedToOrganizeBPBKS && <MenuButton />}
         </View>
@@ -181,6 +228,7 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
           </View>
           <View style={{ flex: 1 }} />
         </View>
+        {syncStatus && <SyncStatusBadge status={syncStatus} error={syncError} />}
       </View>
     </TouchableOpacity>
   )
