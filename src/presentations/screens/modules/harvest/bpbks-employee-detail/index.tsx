@@ -32,6 +32,9 @@ const BPBKSEmployeeDetail = () => {
     ['Divisi', divisionName],
     ['Blok', item?.tph?.block?.code || '-'],
     ['Mandor', foremanName],
+    ['No. Kendaraan', item?.bpbks?.gardenTonnage?.item?.name
+      ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
+      : '-'],
     ['Status', item?.absent ? 'Absen' : 'Tidak Absen'],
   ]
 

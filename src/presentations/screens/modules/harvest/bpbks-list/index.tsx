@@ -277,7 +277,13 @@ const BPBKSList = () => {
 
   const ListHeaderComponent = () => (
     <View style={{marginHorizontal: 18, marginTop: 16, marginBottom: 6}}>
-      <DetailInfo bpbksData={{...bpbksData, totalLength: bpbksAll?.data?.bpbks?.totalLength}} />
+      <DetailInfo 
+        bpbksData={{
+          ...bpbksData, 
+          totalLength: bpbksAll?.data?.bpbks?.totalLength,
+          gardenTonnage: bpbksAll?.data?.bpbks?.gardenTonnage
+        }} 
+      />
       {hasOffline ? <OfflineView /> : null}
     </View>
   )
