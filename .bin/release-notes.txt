@@ -1,11 +1,11 @@
-E-Plantation Staging v5.5.0
+E-Plantation Staging v5.6.0
 
-Build: #9
+Build: #10
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
+- fix(offline): resolve undefined actions error in login stream
+- [skip ci] bump version 5.5.0
+- Merge branch 'feat/offline-first' into 'staging'
 - fix: add sync id
-- feat(offline): integrate sync queue into Redux store
-- feat(offline): add sync progress notification to app root
-- feat(ui): add sync progress notification component
