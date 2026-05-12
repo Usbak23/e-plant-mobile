@@ -7,40 +7,121 @@ import flux from '@app/domain/states/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import moment from 'moment'
 
+// Import actions directly untuk pre-fetch
+import * as organizationActions from '@app/domain/states/organization/actions'
+import * as divisionActions from '@app/domain/states/division/actions'
+import * as blockActions from '@app/domain/states/block/actions'
+import * as tphActions from '@app/domain/states/tph/actions'
+import * as subActivityActions from '@app/domain/states/subactivity/actions'
+import * as roleActions from '@app/domain/states/role/actions'
+import * as categoryItemActions from '@app/domain/states/category-item/actions'
+import * as masterItemActions from '@app/domain/states/master-item/actions'
+import * as itemActions from '@app/domain/states/item/actions'
+import * as rawMaterialActions from '@app/domain/states/raw-material/actions'
+import * as masterActions from '@app/domain/states/master/actions'
+import * as tonnageGardenActions from '@app/domain/states/tonnage-garden/actions'
+
 const login: StreamType = (action$, state$, api) => {
   return action$.pipe(
     filter(isActionOf(actions.login.request)),
     switchMap(action =>
       from(api.authService.login(action.payload.data)).pipe(
         concatMap(({ data }) => {
-          console.log('✅ Login successful! Pre-fetching master data for offline access...')
+          console.log('✅ Login successful!')
+          console.log('🔍 Checking available actions...')
+          console.log('- organizationActions:', !!organizationActions)
+          console.log('- divisionActions:', !!divisionActions)
+          console.log('- blockActions:', !!blockActions)
+          console.log('- tphActions:', !!tphActions)
+          console.log('- tonnageGardenActions:', !!tonnageGardenActions)
           
-          // Return login success + pre-fetch all master data
-          return [
+          const actionsToDispatch: any[] = [
             actions.login.success({ loading: false, data: data.response }),
-            
-            // Get current user (ini akan trigger pre-fetch draft options)
             actions.getCurrentUser.request({ loading: false }),
-            
-            // Pre-fetch master data untuk offline access
-            flux.actions.getOrganizationAll.request({ loading: false }),
-            flux.actions.getAllDivision.request({ loading: false }),
-            flux.actions.getAllUser.request({ loading: false }),
-            flux.actions.getTPHAll.request({ loading: false }),
-            flux.actions.getAllBlock.request({ loading: false }),
-            flux.actions.getSubActivityAll.request({ loading: false }),
-            flux.actions.getRoleAll.request({ loading: false }),
-            flux.actions.getCategoryItemAll.request({ loading: false }),
-            flux.actions.getMasterItemAll.request({ loading: false }),
-            flux.actions.getItemAll.request({ loading: false }),
-            flux.actions.getRawMaterialAll.request({ loading: false }),
-            
-            // Fetch master data lainnya
-            flux.actions.getMinimumAkp.request({ loading: false }),
-            flux.actions.getUoms.request({ loading: false }),
-            flux.actions.getSupervisions.request({ loading: false }),
-            flux.actions.getWorkStatuses.request({ loading: false }),
           ]
+          
+          // Pre-fetch master data dengan error handling
+          console.log('📦 Pre-fetching master data for offline access...')
+          
+          try {
+            // Organizations
+            if (organizationActions?.getOrganizationAll?.request) {
+              actionsToDispatch.push(organizationActions.getOrganizationAll.request({ loading: false }))
+            }
+            
+            // Divisions
+            if (divisionActions?.getAllDivision?.request) {
+              actionsToDispatch.push(divisionActions.getAllDivision.request({ loading: false }))
+            }
+            
+            // Users
+            if (actions?.getAllUser?.request) {
+              actionsToDispatch.push(actions.getAllUser.request({ loading: false }))
+            }
+            
+            // TPH
+            if (tphActions?.getTPHAll?.request) {
+              actionsToDispatch.push(tphActions.getTPHAll.request({ loading: false }))
+            }
+            
+            // Blocks
+            if (blockActions?.getAllBlock?.request) {
+              actionsToDispatch.push(blockActions.getAllBlock.request({ loading: false }))
+            }
+            
+            // Sub Activities
+            if (subActivityActions?.getSubActivityAll?.request) {
+              actionsToDispatch.push(subActivityActions.getSubActivityAll.request({ loading: false }))
+            }
+            
+            // Roles
+            if (roleActions?.getRoleAll?.request) {
+              actionsToDispatch.push(roleActions.getRoleAll.request({ loading: false }))
+            }
+            
+            // Category Items
+            if (categoryItemActions?.getCategoryItemAll?.request) {
+              actionsToDispatch.push(categoryItemActions.getCategoryItemAll.request({ loading: false }))
+            }
+            
+            // Master Items
+            if (masterItemActions?.getMasterItemAll?.request) {
+              actionsToDispatch.push(masterItemActions.getMasterItemAll.request({ loading: false }))
+            }
+            
+            // Items
+            if (itemActions?.getItemAll?.request) {
+              actionsToDispatch.push(itemActions.getItemAll.request({ loading: false }))
+            }
+            
+            // Raw Materials
+            if (rawMaterialActions?.getRawMaterialAll?.request) {
+              actionsToDispatch.push(rawMaterialActions.getRawMaterialAll.request({ loading: false }))
+            }
+            
+            // Master data lainnya
+            if (masterActions?.getMinimumAkp?.request) {
+              actionsToDispatch.push(masterActions.getMinimumAkp.request({ loading: false }))
+            }
+            
+            if (masterActions?.getUoms?.request) {
+              actionsToDispatch.push(masterActions.getUoms.request({ loading: false }))
+            }
+            
+            if (masterActions?.getSupervisions?.request) {
+              actionsToDispatch.push(masterActions.getSupervisions.request({ loading: false }))
+            }
+            
+            if (masterActions?.getWorkStatuses?.request) {
+              actionsToDispatch.push(masterActions.getWorkStatuses.request({ loading: false }))
+            }
+            
+            console.log(`✅ Dispatched ${actionsToDispatch.length} pre-fetch actions`)
+          } catch (error) {
+            console.error('❌ Error preparing pre-fetch actions:', error)
+          }
+          
+          return actionsToDispatch
         }),
         catchError(error => {
           console.error('❌ Login failed:', error)
@@ -156,21 +237,30 @@ const getCurrentUserInfo: StreamType = (action$, state$, api) => {
           // Hanya jika user punya organization
           if (currentUser?.organization?.id) {
             console.log('📦 Pre-fetching draft options for next 3 days...')
-            const today = moment()
             
-            for (let i = 0; i < 3; i++) {
-              const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
-              actionsToDispatch.push(
-                flux.actions.getDraftOptions.request({
-                  loading: false,
-                  data: {
-                    organizationId: currentUser.organization.id,
-                    date: date,
-                  },
-                })
-              )
+            try {
+              if (tonnageGardenActions?.getDraftOptions?.request) {
+                const today = moment()
+                
+                for (let i = 0; i < 3; i++) {
+                  const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
+                  actionsToDispatch.push(
+                    tonnageGardenActions.getDraftOptions.request({
+                      loading: false,
+                      data: {
+                        organizationId: currentUser.organization.id,
+                        date: date,
+                      },
+                    })
+                  )
+                }
+                console.log('✅ Dispatched draft options fetch for 3 days')
+              } else {
+                console.warn('⚠️ getDraftOptions action not available')
+              }
+            } catch (error) {
+              console.error('❌ Error dispatching draft options:', error)
             }
-            console.log('✅ Dispatched draft options fetch for 3 days')
           }
           
           if (action?.payload?.next) {
