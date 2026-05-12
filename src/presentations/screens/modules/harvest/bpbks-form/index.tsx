@@ -26,6 +26,7 @@ import IOption from '@app/models/commons/IOption'
 import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
 import System from '@app/domain/services/System'
 import Routes from '@app/presentations/navigation/Routes'
+import NetInfo from '@react-native-community/netinfo'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -130,13 +131,26 @@ const BPBKSForm = () => {
   }, [users, draftOptions, isConnected, blocks, tphAll, draftOptionsCache])
 
   useEffect(() => {
-    // Set draft options dari cache
-    // Ini akan tersedia bahkan saat offline karena Redux Persist
-    if (draftOptionsCache && draftOptionsCache.length > 0) {
+    // Set draft options dari cache dengan FILTER TANGGAL
+    // Hanya tampilkan draft options yang sesuai dengan tanggal form
+    if (draftOptionsCache && draftOptionsCache.length > 0 && bpbksData?.date) {
+      const formDate = moment(bpbksData.date).format('YYYY-MM-DD')
+      
+      // Filter: hanya ambil draft options yang tanggalnya sama dengan form
+      const filteredByDate = draftOptionsCache.filter((draft: any) => {
+        const draftDate = moment(draft.date).format('YYYY-MM-DD')
+        return draftDate === formDate
+      })
+      
       console.log('✅ Loading draft options from cache:', draftOptionsCache.length)
-      setDraftOptions(draftOptionsCache as any)
+      console.log('📅 Filtered by date:', formDate, '→', filteredByDate.length, 'items')
+      
+      setDraftOptions(filteredByDate as any)
+    } else if (bpbksData?.date) {
+      // Jika tidak ada cache atau cache kosong, reset draft options
+      setDraftOptions([])
     }
-  }, [draftOptionsCache])
+  }, [draftOptionsCache, bpbksData?.date])
 
   useEffect(() => {
     if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
@@ -312,6 +326,17 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
+    // Double-check koneksi langsung dari device
+    const netInfoState = await NetInfo.fetch()
+    const isActuallyConnected = netInfoState.isConnected && netInfoState.isInternetReachable !== false
+    
+    console.log('🔍 Network Debug:')
+    console.log('  - isConnected from Redux:', isConnected)
+    console.log('  - isConnected from NetInfo:', netInfoState.isConnected)
+    console.log('  - isInternetReachable:', netInfoState.isInternetReachable)
+    console.log('  - Connection type:', netInfoState.type)
+    console.log('  - Actually connected:', isActuallyConnected)
+    
     // Validasi No. Kendaraan (wajib)
     if (!isEdit && !selectedGardenTonnageId) {
       showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
@@ -333,8 +358,8 @@ const BPBKSForm = () => {
     // Mode Create
     const requestBodyCreate = constructToFormDataCreate(value)
     
-    // OFFLINE MODE: Save to sync queue
-    if (!isConnected) {
+    // GUNAKAN NetInfo langsung untuk deteksi koneksi yang lebih akurat
+    if (!isActuallyConnected) {
       const syncId = `BPBKS_${Date.now()}`
       
       console.log('💾 OFFLINE: Saving BPBKS to sync queue')
@@ -380,6 +405,17 @@ const BPBKSForm = () => {
           }
         }
       }
+      
+      // Refresh list BPBKS setelah create berhasil
+      dispatch(actions.getBPBKSAll.request({
+        loading: false,
+        data: {
+          organizationId: params.organizationId,
+          divisionId: params.divisionId,
+          foremanId: params.foremanId,
+          date: params.date,
+        },
+      }))
       
       showSuccessToast('✅ Berhasil disimpan')
       navigation.goBack()
