@@ -1,11 +1,11 @@
-E-Plantation Staging v5.6.0
+E-Plantation Staging v5.7.0
 
-Build: #10
+Build: #11
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
-- fix(offline): resolve undefined actions error in login stream
-- [skip ci] bump version 5.5.0
+- feat: offline BPBKS with accurate network detection
+- [skip ci] bump version 5.6.0
 - Merge branch 'feat/offline-first' into 'staging'
-- fix: add sync id
+- fix(offline): resolve undefined actions error in login stream
