@@ -97,10 +97,9 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
   const isConnected = useSelector((state: RootState) => state.network.isConnected)
   const isDraft = props.item?.isTemp
   
-  // Get sync status from sync-queue
-  const syncQueueItem = useSyncQueueById(`BPBKS_${props.item?.id}`)
-  const syncStatus = syncQueueItem?.status
-  const syncError = syncQueueItem?.error
+  // Gunakan syncStatus dari item (untuk data temp/offline)
+  const syncStatus = props.item?.syncStatus
+  const syncError = props.item?.syncError
   const onEdit = () => {
     if (!isDraft && !isConnected) {
       showErrorToast('Anda tidak dapat edit data dalam mode offline')

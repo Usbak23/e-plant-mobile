@@ -360,21 +360,19 @@ const BPBKSForm = () => {
     
     // GUNAKAN NetInfo langsung untuk deteksi koneksi yang lebih akurat
     if (!isActuallyConnected) {
-      const syncId = `BPBKS_${Date.now()}`
+      const tempId = `BPBKS_${Date.now()}`
       
-      console.log('💾 OFFLINE: Saving BPBKS to sync queue')
-      console.log('  - Sync ID:', syncId)
+      console.log('💾 OFFLINE: Saving BPBKS locally')
+      console.log('  - Temp ID:', tempId)
       console.log('  - Harvester:', selectedUser)
       console.log('  - Vehicle:', selectedGardenTonnageId)
       console.log('  - TPH count:', tphForm.length)
-      console.log('  - Has photos:', tphForm.some((t: any) => t.photoKrani))
       
-      dispatch(actions.syncQueue.addToSyncQueue({
-        id: syncId,
-        type: 'BPBKS',
-        data: requestBodyCreate,
-        timestamp: Date.now(),
-        status: 'pending',
+      // Simpan ke local state (bpbksListTemp) agar muncul di list
+      dispatch(actions.addBPBKSTemp({
+        ...requestBodyCreate,
+        tempId: tempId,
+        syncStatus: 'pending',
       }))
       
       showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
