@@ -121,5 +121,11 @@ const bkmReducer = createReducer<IRSBPBKS, ActionsType>(DEFAULT_STATE)
       }
     },
   )
+  .handleType(actions.clearBPBKSAll, (state: IRSBPBKS) => {
+    return {
+      ...state,
+      bpbksAll: undefined,
+    }
+  })
 
 export default bkmReducer

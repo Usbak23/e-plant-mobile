@@ -233,17 +233,30 @@ const getCurrentUserInfo: StreamType = (action$, state$, api) => {
             actions.getCurrentUser.success({ loading: false, data: currentUser })
           ]
           
+          console.log('🔍 Current user data:', {
+            hasUser: !!currentUser,
+            hasOrg: !!currentUser?.organization,
+            orgId: currentUser?.organization?.id,
+          })
+          
           // Pre-fetch draft options untuk 3 hari (hari ini + 2 hari ke depan)
           // Hanya jika user punya organization
           if (currentUser?.organization?.id) {
             console.log('📦 Pre-fetching draft options for next 3 days...')
+            console.log('- Organization ID:', currentUser.organization.id)
             
             try {
+              console.log('- Checking tonnageGardenActions:', !!tonnageGardenActions)
+              console.log('- Checking getDraftOptions:', !!tonnageGardenActions?.getDraftOptions)
+              console.log('- Checking request:', !!tonnageGardenActions?.getDraftOptions?.request)
+              
               if (tonnageGardenActions?.getDraftOptions?.request) {
                 const today = moment()
+                console.log('- Today:', today.format('YYYY-MM-DD'))
                 
                 for (let i = 0; i < 3; i++) {
                   const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
+                  console.log(`- Fetching draft options for day ${i}: ${date}`)
                   actionsToDispatch.push(
                     tonnageGardenActions.getDraftOptions.request({
                       loading: false,
@@ -261,6 +274,8 @@ const getCurrentUserInfo: StreamType = (action$, state$, api) => {
             } catch (error) {
               console.error('❌ Error dispatching draft options:', error)
             }
+          } else {
+            console.warn('⚠️ User has no organization, skipping draft options fetch')
           }
           
           if (action?.payload?.next) {

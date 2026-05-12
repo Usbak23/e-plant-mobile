@@ -42,13 +42,9 @@ export default function Main() {
     <MenuProvider>
       <ReduxProvider store={flux.store}>
         <ReduxNetworkProvider
-          shouldPing={true}
+          shouldPing={false}
           pingInBackground={false}
           pingOnlyIfOffline={false}
-          pingInterval={30000}
-          pingTimeout={3000}
-          pingServerUrl={`${Config.eplantDomain}/health/live`}
-          httpMethod="HEAD"
         >
           <PersistGate persistor={flux.persistor}>
             <SafeAreaProvider>

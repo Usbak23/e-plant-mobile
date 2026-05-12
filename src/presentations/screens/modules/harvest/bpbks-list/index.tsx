@@ -106,8 +106,10 @@ const BPBKSList = () => {
   const filteredData = withSort(withFilter(docs, query.search))
 
   const getData = useCallback(() => {
+    // Clear state lama sebelum fetch data baru
+    dispatch(actions.clearBPBKSAll())
     dispatch(actions.getBPBKSAll.request({loading: true, data: params}))
-  }, [])
+  }, [params.organizationId, params.divisionId, params.foremanId, params.date])
 
   const handleSearch = (search: string) => {
     setQuery({...query, search})
