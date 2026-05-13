@@ -369,10 +369,20 @@ const BPBKSForm = () => {
       console.log('  - TPH count:', tphForm.length)
       
       // Simpan ke local state (bpbksListTemp) agar muncul di list
+      const selectedDraft = draftOptions.find((d: any) => d.id === selectedGardenTonnageId)
+      const firstTph = requestBodyCreate.tphs?.[0]
       dispatch(actions.addBPBKSTemp({
         ...requestBodyCreate,
         tempId: tempId,
         syncStatus: 'pending',
+        // Mapping agar cocok dengan struktur yang dibaca card
+        tph: firstTph?.tph ? { ...firstTph.tph, block: firstTph.block } : null,
+        plantingYear: firstTph?.plantingYear,
+        harvester: user,
+        cutNumber: requestBodyCreate.cutNumber,
+        bpbks: {
+          gardenTonnage: selectedDraft || null,
+        },
       }))
       
       showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
