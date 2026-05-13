@@ -1,11 +1,11 @@
-E-Plantation Staging v5.8.0
+E-Plantation Staging v5.9.0
 
-Build: #13
+Build: #14
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
-- fix: show list qeue BPBKS
-- feat: offline QR scanning for TPH
-- [skip ci] bump version 5.7.0
+- fix: map offline BPBKS temp data structure to match card display fields
+- feat: pre-fetch draft options on home page pull-to-refresh
+- [skip ci] bump version 5.8.0
 - Merge branch 'feat/offline-first' into 'staging'
