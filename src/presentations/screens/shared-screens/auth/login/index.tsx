@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {StyleSheet, Image, View, StatusBar, TouchableOpacity} from 'react-native'
+import {StyleSheet, Image, View, StatusBar, TouchableOpacity, ActivityIndicator} from 'react-native'
 
 import flux, {actions, RootStateType} from '@domain/states/store'
 import {useDispatch, useSelector} from 'react-redux'
@@ -31,6 +31,13 @@ const Login = () => {
   const dispatch = useDispatch()
   const auth = useSelector((state: RootStateType) => state?.user)
   const loading = Boolean(auth?.userCredential?.loading)
+  const isLoggedIn = Boolean(auth?.userCredential?.data)
+  
+  // Track pre-fetching progress
+  const [preFetchStatus, setPreFetchStatus] = useState<string>('')
+  const organizationLoading = useSelector((state: RootStateType) => state?.organization?.organizationAll?.loading)
+  const divisionLoading = useSelector((state: RootStateType) => state?.division?.divisionAll?.loading)
+  const userLoading = useSelector((state: RootStateType) => state?.user?.userAll?.loading)
 
   const [rememberMe, setRememberMe] = useState<boolean>(auth.userDataLogin?.rememberMe || false)
   const resolver = useYupValidationResolver(validationSchema)
@@ -103,6 +110,15 @@ const Login = () => {
       showErrorToast(errorCred.message)
     }
   }, [auth?.userCredential?.error])
+  
+  // Track pre-fetching status
+  useEffect(() => {
+    if (isLoggedIn && (organizationLoading || divisionLoading || userLoading)) {
+      setPreFetchStatus('📦 Menyiapkan data untuk mode offline...')
+    } else if (isLoggedIn && !organizationLoading && !divisionLoading && !userLoading) {
+      setPreFetchStatus('')
+    }
+  }, [isLoggedIn, organizationLoading, divisionLoading, userLoading])
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -153,10 +169,22 @@ const Login = () => {
         </View>
 
         <Button style={styles.signInButton} disabled={loading} onPress={handleSubmit(signIn)}>
-          <Text type="semibold" style={styles.signInButtonText}>
-            {loading ? 'Loading...' : 'Sign in'}
-          </Text>
+          {loading ? (
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+              <ActivityIndicator size="small" color="white" />
+              <Text type="semibold" style={styles.signInButtonText}>Sedang masuk...</Text>
+            </View>
+          ) : (
+            <Text type="semibold" style={styles.signInButtonText}>Sign in</Text>
+          )}
         </Button>
+        
+        {preFetchStatus && (
+          <View style={{marginTop: 16, padding: 12, backgroundColor: 'rgba(240, 177, 13, 0.2)', borderRadius: 8, alignItems: 'center'}}>
+            <ActivityIndicator size="small" color="#F0B10D" />
+            <Text style={{color: 'white', fontSize: 12, marginTop: 8, textAlign: 'center'}}>{preFetchStatus}</Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   )

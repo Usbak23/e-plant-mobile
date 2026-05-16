@@ -18,6 +18,19 @@ export interface ITonnageGardenFormData {
   //phase 3
   janjang?: number
   bjr?: number
+  status?: 'draft' | 'submitted'
+}
+
+export interface ITonnageGardenDraftOption {
+  id: string
+  item: {
+    id: string
+    name: string
+    serialNumber: string
+  }
+  date: string
+  poNumber: string
+  driver: string
 }
 
 export interface ITonnageGardenBlockFormData {

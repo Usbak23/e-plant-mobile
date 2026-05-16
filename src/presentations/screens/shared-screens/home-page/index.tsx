@@ -1,7 +1,8 @@
 import { theme } from '@app/presentations/utils/styles'
+import moment from 'moment'
 import { Menu, Text } from '@app/presentations/_shared-components'
 import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native'
+import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, Dimensions, RefreshControl } from 'react-native'
 import { Menus } from './menu-list'
 import MenuWrapper from '@app/presentations/_shared-components/Menu/wrapper'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -11,6 +12,7 @@ import {
   useIsAllowedToSeeFieldReport
 } from '@app/domain/states/user/hooks'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNetInfo } from '@react-native-community/netinfo'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { ROLE_ACCESS_SLUG } from '@app/models/eplant/Role'
 import Routes from '@app/presentations/navigation/Routes'
@@ -20,6 +22,19 @@ import { ITPHRowAll } from '@app/models/eplant/TPH'
 
 const window = Dimensions.get('window')
 const screen = Dimensions.get('screen')
+
+const NetworkDot = ({ isConnected }: { isConnected: boolean }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+    <View style={{
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: isConnected ? '#4CD964' : '#FF3B30',
+      marginRight: 4,
+    }} />
+    <Text size={11} color="white">{isConnected ? 'Online' : 'Offline'}</Text>
+  </View>
+)
 
 const HomePage = () => {
   const db = database
@@ -33,8 +48,32 @@ const HomePage = () => {
   const dispatch = useDispatch()
   const isFocused = useIsFocused() // using is focused because we need latest data on BE
   const [dimensions, setDimensions] = useState({ window, screen })
+  const [refreshing, setRefreshing] = useState(false)
 
   const { tphAll } = useSelector((state: RootStateType) => state?.tph)
+  const netInfo = useNetInfo()
+  const isConnected = netInfo.isConnected && netInfo.isInternetReachable !== false
+
+  const onRefresh = () => {
+    setRefreshing(true)
+    dispatch(actions.fetchAllDataForOfflineMode())
+
+    // Pre-fetch draft options untuk semua organisasi user dengan tanggal hari ini
+    const today = moment().format('YYYY-MM-DD')
+    const orgIds = [...new Set(
+      (currentUser?.userDivisions || [])
+        .map((d: any) => d.division?.organization?.id)
+        .filter(Boolean)
+    )]
+    orgIds.forEach((orgId: any) => {
+      dispatch(actions.getDraftOptions.request({
+        loading: false,
+        data: { organizationId: orgId, date: today },
+      }))
+    })
+
+    setTimeout(() => setRefreshing(false), 1500)
+  }
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
@@ -155,12 +194,13 @@ const HomePage = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.backgroundDark }}>
-      <ScrollView style={{ backgroundColor: 'white', marginBottom: -100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ backgroundColor: 'white', marginBottom: -100 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.backgroundDark]} tintColor={theme.colors.backgroundDark} />}>
         <StatusBar animated={true} backgroundColor={theme.colors.backgroundDark} barStyle="light-content" />
         <View style={styles.headerBg}>
           <View style={styles.headerView}>
             <HeaderLeft />
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <NetworkDot isConnected={isConnected} />
               <ProfilePicView />
             </View>
           </View>

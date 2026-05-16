@@ -1,0 +1,6 @@
+export const ADD_TO_SYNC_QUEUE = 'sync-queue/ADD_TO_SYNC_QUEUE'
+export const REMOVE_FROM_SYNC_QUEUE = 'sync-queue/REMOVE_FROM_SYNC_QUEUE'
+export const SYNC_QUEUE_SUCCESS = 'sync-queue/SYNC_QUEUE_SUCCESS'
+export const SYNC_QUEUE_FAILURE = 'sync-queue/SYNC_QUEUE_FAILURE'
+export const CLEAR_SYNC_QUEUE = 'sync-queue/CLEAR_SYNC_QUEUE'
+export const UPDATE_SYNC_STATUS = 'sync-queue/UPDATE_SYNC_STATUS'

@@ -1,11 +1,11 @@
-E-Plantation Production v5.0.0
+E-Plantation Staging v5.9.0
 
-Build: #2
-Environment: Production
+Build: #14
+Environment: Staging
 
 Recent changes:
-- change branch for release
-- > fix(bkm): handle success/error feedback and navigation after form submission
-- feat: add ScreenWrapper component for consistent SafeAreaView handling
-- change email participation
-- fix email participants
+- Merge branch 'feat/offline-first' into 'staging'
+- fix: map offline BPBKS temp data structure to match card display fields
+- feat: pre-fetch draft options on home page pull-to-refresh
+- [skip ci] bump version 5.8.0
+- Merge branch 'feat/offline-first' into 'staging'

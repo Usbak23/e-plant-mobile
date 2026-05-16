@@ -6,6 +6,7 @@ import clearAction from '@domain/states/utils/clearAction'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
 import {
   ITonnageGardenDetail,
+  ITonnageGardenDraftOption,
   ITonnageGardenFileFormData,
   ITonnageGardenFormData,
   ITonnageGardenRow,
@@ -77,3 +78,9 @@ export const getTonnageGardenDetail = createAsyncAction(
 
 export const clearFormTonnageGardenStatus = createAction(c.CREATE_OR_EDIT_TONNAGE_GARDEN_CLEAR, clearAction)()
 export const clearDeleteTonnageGardenStatus = createAction(c.DELETE_TONNAGE_GARDEN_CLEAR, clearAction)()
+
+export const getDraftOptions = createAsyncAction(
+  c.GET_DRAFT_OPTIONS_REQUEST,
+  c.GET_DRAFT_OPTIONS_SUCCESS,
+  c.GET_DRAFT_OPTIONS_FAILURE,
+)<IEffectPayload<{organizationId: string; date: string}, boolean>, IEffectPayload<ITonnageGardenDraftOption[], false>, IEffectPayload<null, false, IError>>()

@@ -40,6 +40,8 @@ export const editBPBKSTemp = createAction(c.EDIT_BPBKS_TEMP, payload => payload)
 export const deleteBPBKSTemp = createAction(c.DELETE_BPBKS_TEMP, payload => payload)()
 export const deleteBPBKSEmployeeTemp = createAction(c.DELETE_BPBKS_EMPLOYEE_TEMP, payload => payload)()
 export const syncBPBKS = createAction(c.SYNC_BPBKS_REQUEST)()
+export const updateBPBKSTempStatus = createAction(c.UPDATE_BPBKS_TEMP_STATUS, payload => payload)<{tempId: string; syncStatus: import('@app/models/eplant/BPBKS').BPBKSSyncStatus; syncError?: string}>()
 
 export const clearFormBPBKSStatus = createAction(c.CREATE_OR_EDIT_BPBKS_CLEAR, clearAction)()
 export const clearDeleteBPBKSStatus = createAction(c.DELETE_BPBKS_CLEAR, clearAction)()
+export const clearBPBKSAll = createAction(c.CLEAR_BPBKS_ALL, clearAction)()

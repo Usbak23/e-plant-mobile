@@ -3,7 +3,7 @@ import * as actions from '@app/domain/states/tonnage-garden/actions'
 import {ActionsType} from '@app/domain/states/store'
 import {IEffectAction, IEffectPayload} from '@app/domain/states/types'
 import IPagingDocs from '@app/models/commons/IPagingDocs'
-import {ITonnageGardenDetail, ITonnageGardenRow} from '@app/models/eplant/TonnageGarden'
+import {ITonnageGardenDetail, ITonnageGardenDraftOption, ITonnageGardenRow} from '@app/models/eplant/TonnageGarden'
 
 export interface IRSTonnageGarden {
   formTonnageGardenStatus?: IEffectPayload
@@ -12,6 +12,7 @@ export interface IRSTonnageGarden {
   tonnageGardenAll?: IEffectPayload<ITonnageGardenRow[]>
   tonnageGardenWithoutPKS?: IEffectPayload<ITonnageGardenRow[]>
   tonnageGardenDetail?: IEffectPayload<ITonnageGardenDetail>
+  draftOptions?: IEffectPayload<ITonnageGardenDraftOption[]>
 }
 
 const DEFAULT_STATE = {}
@@ -140,5 +141,32 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
       }
     },
   )
+  .handleAction(actions.getDraftOptions.request, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: {
+        ...payload,
+        data: state.draftOptions?.data,
+      },
+    }
+  })
+  .handleAction(actions.getDraftOptions.failure, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: {
+        ...payload,
+        data: state.draftOptions?.data,
+      },
+    }
+  })
+  .handleAction(actions.getDraftOptions.success, (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      draftOptions: payload,
+    }
+  })
 
 export default tonnageGardenReducer

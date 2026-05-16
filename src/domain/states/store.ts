@@ -43,6 +43,7 @@ import * as warehouseActions from '@domain/states/warehouse-management/actions'
 import * as realizationFertilizationActions from '@domain/states/realization-fertilization/actions'
 import * as approvalActions from '@domain/states/approval/actions'
 import * as notificationActions from '@domain/states/notification/actions'
+import * as syncQueueActions from '@domain/states/sync-queue/actions'
 import leadStreams from '@domain/states/leads/streams'
 import organizationStreams from '@domain/states/organization/streams'
 import masterStreams from '@domain/states/master/streams'
@@ -77,6 +78,7 @@ import warehouseStreams from '@domain/states/warehouse-management/streams'
 import realizationFertilizationStreams from '@domain/states/realization-fertilization/streams'
 import approvalStreams from '@domain/states/approval/streams'
 import notificationStreams from '@domain/states/notification/streams'
+import syncQueueStreams from '@domain/states/sync-queue/streams'
 
 export const actions = {
   ...userActions,
@@ -115,6 +117,7 @@ export const actions = {
   ...realizationFertilizationActions,
   approval: approvalActions,
   notification: notificationActions,
+  syncQueue: syncQueueActions,
 }
 
 const streams = [
@@ -154,6 +157,7 @@ const streams = [
   ...realizationFertilizationStreams,
   ...approvalStreams,
   ...notificationStreams,
+  ...syncQueueStreams,
 ]
 
 const persistConfig = {
