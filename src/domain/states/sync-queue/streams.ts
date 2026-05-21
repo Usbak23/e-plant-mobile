@@ -35,12 +35,27 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
               // Attempt to sync based on type
               if (item.type === 'BPBKS') {
                 return from(api.bpbksService.createBPBKS(item.data)).pipe(
-                  map((response: any) => {
-                    console.log(`✅ BPBKS synced: ${item.id}`)
-                    return actions.updateSyncStatus({
-                      id: item.id,
-                      status: 'success',
+                  switchMap((response: any) => {
+                    const createdTphs = response?.data?.response?.tphs || []
+                    const tphForms = item.data?.tphs || []
+                    const uploadPromises = tphForms.map((tph: any, i: number) => {
+                      const createdTph = createdTphs[i]
+                      if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
+                        return api.bpbksService.uploadPhotos(createdTph.id, {
+                          photoFruitFront: tph.photoFruitFront,
+                          photoFruitBack: tph.photoFruitBack,
+                          photoFruitSide: tph.photoFruitSide,
+                          photoKrani: tph.photoKrani,
+                        }).catch((e: any) => console.warn('Photo upload failed:', e?.message))
+                      }
+                      return Promise.resolve()
                     })
+                    return from(Promise.all(uploadPromises)).pipe(
+                      map(() => {
+                        console.log(`✅ BPBKS synced: ${item.id}`)
+                        return actions.updateSyncStatus({ id: item.id, status: 'success' })
+                      }),
+                    )
                   }),
                   catchError((error: any) => {
                     console.error(`❌ BPBKS sync failed: ${item.id}`, error.message)

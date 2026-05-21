@@ -27,6 +27,7 @@ import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
 import System from '@app/domain/services/System'
 import Routes from '@app/presentations/navigation/Routes'
 import NetInfo from '@react-native-community/netinfo'
+import RNFS from 'react-native-fs'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -362,20 +363,35 @@ const BPBKSForm = () => {
     if (!isActuallyConnected) {
       const tempId = `BPBKS_${Date.now()}`
       
-      console.log('💾 OFFLINE: Saving BPBKS locally')
-      console.log('  - Temp ID:', tempId)
-      console.log('  - Harvester:', selectedUser)
-      console.log('  - Vehicle:', selectedGardenTonnageId)
-      console.log('  - TPH count:', tphForm.length)
-      
+      // Persist foto ke DocumentDirectory agar URI tetap valid setelah restart
+      const persistedTphs = await Promise.all(
+        requestBodyCreate.tphs.map(async (tph: any) => {
+          const photoFields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
+          const persisted: any = { ...tph }
+          for (const field of photoFields) {
+            const photo = tph[field]
+            if (photo?.uri) {
+              try {
+                const destPath = `${RNFS.DocumentDirectoryPath}/bpbks_${tempId}_${field}.jpg`
+                await RNFS.copyFile(photo.uri, destPath)
+                persisted[field] = { ...photo, uri: `file://${destPath}` }
+              } catch (_) {
+                // Jika gagal copy, tetap pakai URI asli
+              }
+            }
+          }
+          return persisted
+        })
+      )
+
       // Simpan ke local state (bpbksListTemp) agar muncul di list
       const selectedDraft = draftOptions.find((d: any) => d.id === selectedGardenTonnageId)
-      const firstTph = requestBodyCreate.tphs?.[0]
+      const firstTph = persistedTphs?.[0]
       dispatch(actions.addBPBKSTemp({
         ...requestBodyCreate,
+        tphs: persistedTphs,
         tempId: tempId,
         syncStatus: 'pending',
-        // Mapping agar cocok dengan struktur yang dibaca card
         tph: firstTph?.tph ? { ...firstTph.tph, block: firstTph.block } : null,
         plantingYear: firstTph?.plantingYear,
         harvester: user,
@@ -383,6 +399,15 @@ const BPBKSForm = () => {
         bpbks: {
           gardenTonnage: selectedDraft || null,
         },
+      }))
+
+      // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status
+      dispatch(actions.addToSyncQueue({
+        id: tempId,
+        type: 'BPBKS',
+        data: { ...requestBodyCreate, tphs: persistedTphs, tempId },
+        timestamp: Date.now(),
+        status: 'pending',
       }))
       
       showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
@@ -649,7 +674,9 @@ const BPBKSForm = () => {
                       rottenFruitChecked: '0',
                       longHandleChecked: '0',
                       looseChecked: '0',
-                      photoFruit: null,
+                      photoFruitFront: null,
+                      photoFruitBack: null,
+                      photoFruitSide: null,
                       photoKrani: null,
                       fromScan: true,
                     },
