@@ -18,7 +18,6 @@ import { useRoute } from '@react-navigation/native'
 import * as schema from '@utils/validation/bpbks-form-validation'
 import { styles } from './style'
 import { IBPBKSFormDataCreate, IBPBKSFormDataUpdate } from '@app/models/eplant/BPBKS'
-import { ITonnageGardenDraftOption } from '@app/models/eplant/TonnageGarden'
 import { useBlockOptions, useBlocksWithPlantingYearByDivisionStd } from '@app/domain/states/block/hooks'
 import moment from 'moment'
 import { checkIfDuplicateExists } from '@app/presentations/utils/check'
@@ -80,8 +79,6 @@ const BPBKSForm = () => {
 
   const [selectedUser, setSelectedUser] = useState(item?.harvester?.id || item?.harvesterId || '')
   const [defaultTph, setDefaultTph] = useState([])
-  const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
-  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
   const [syncModalVisible, setSyncModalVisible] = useState(false)
   const [tphForm, setTphForm] = useState(isEdit ? [
     {
@@ -109,77 +106,6 @@ const BPBKSForm = () => {
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
 
   const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
-  const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
-
-  // DEBUG: Log untuk cek data
-  useEffect(() => {
-    console.log('🔍 DEBUG BPBKS Form:')
-    console.log('- isConnected:', isConnected)
-    console.log('- users length:', users.length)
-    console.log('- draftOptions length:', draftOptions.length)
-    console.log('- blocks length:', blocks.length)
-    console.log('- tphAll length:', tphAll.length)
-    console.log('- draftOptionsCache length:', draftOptionsCache.length)
-    
-    if (!isConnected) {
-      console.log('⚠️ OFFLINE MODE: Using cached data')
-      console.log('  - Cached users:', users.length)
-      console.log('  - Cached draft options:', draftOptionsCache.length)
-      console.log('  - Cached blocks:', blocks.length)
-      console.log('  - Cached TPH:', tphAll.length)
-    }
-  }, [users, draftOptions, isConnected, blocks, tphAll, draftOptionsCache])
-
-  useEffect(() => {
-    // Set draft options dari cache dengan FILTER TANGGAL
-    // Hanya tampilkan draft options yang sesuai dengan tanggal form
-    if (draftOptionsCache && draftOptionsCache.length > 0 && bpbksData?.date) {
-      const formDate = moment(bpbksData.date).format('YYYY-MM-DD')
-      
-      // Filter: hanya ambil draft options yang tanggalnya sama dengan form
-      const filteredByDate = draftOptionsCache.filter((draft: any) => {
-        const draftDate = moment(draft.date).format('YYYY-MM-DD')
-        return draftDate === formDate
-      })
-      
-      console.log('✅ Loading draft options from cache:', draftOptionsCache.length)
-      console.log('📅 Filtered by date:', formDate, '→', filteredByDate.length, 'items')
-      
-      setDraftOptions(filteredByDate as any)
-    } else if (bpbksData?.date) {
-      // Jika tidak ada cache atau cache kosong, reset draft options
-      setDraftOptions([])
-    }
-  }, [draftOptionsCache, bpbksData?.date])
-
-  useEffect(() => {
-    if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
-      const dateStr = moment(bpbksData.date).format('YYYY-MM-DD')
-      
-      console.log('🔄 Fetching draft options...')
-      console.log('  - Organization:', bpbksData.organization.value)
-      console.log('  - Date:', dateStr)
-      console.log('  - Is Connected:', isConnected)
-      
-      // Selalu coba fetch saat form dibuka
-      // - Online: akan fetch data terbaru dari server (REFRESH) ✅
-      // - Offline: akan gagal, tapi data cache tetap tersedia
-      dispatch(actions.getDraftOptions.request({
-        loading: !isConnected, // Hanya show loading jika online
-        data: {
-          organizationId: bpbksData.organization.value,
-          date: dateStr,
-        },
-      }))
-      
-      if (!isConnected) {
-        console.log('⚠️ Offline: Will use cached draft options')
-        console.log('⚠️ WARNING: Data mungkin tidak up-to-date!')
-      } else {
-        console.log('🌐 Online: Fetching fresh draft options from server')
-      }
-    }
-  }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
   useEffect(() => {
     if (!isEdit && selectedUser) {
@@ -268,10 +194,10 @@ const BPBKSForm = () => {
         }
       }
     }
-    if (!isEdit && tphForm.some((e: any) => !e.photoFruitFront || !e.photoFruitBack || !e.photoFruitSide || !e.photoKrani)) {
-      showErrorToast('Foto Buah (depan, belakang, samping) dan Foto Krani wajib diisi!')
-      return false
-    }
+    // if (!isEdit && tphForm.some((e: any) => !e.photoFruitFront || !e.photoFruitBack || !e.photoFruitSide || !e.photoKrani)) {
+    //   showErrorToast('Foto Buah (depan, belakang, samping) dan Foto Krani wajib diisi!')
+    //   return false
+    // }
 
     const isRipeFruiteLessThanZero = tphForm.some((e: any) => {
       const ripeFruitChecked = calculateRipeFruit(e)
@@ -294,7 +220,6 @@ const BPBKSForm = () => {
       cutNumber: value.cutNumber,
       foremanId: value.foremanId,
       date: moment(value.date).format('YYYY-MM-DD'),
-      gardenTonnageId: selectedGardenTonnageId || undefined,
       tphs: tphForm.map((e: any, index: number) => {
         const tph = tphAll.find(w => w.id === e.tphId)
         const block = blockAll.find(b => b.id === e.blockId)
@@ -326,77 +251,42 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
-    // Double-check koneksi langsung dari device
     const netInfoState = await NetInfo.fetch()
     const isActuallyConnected = netInfoState.isConnected && netInfoState.isInternetReachable !== false
-    
-    console.log('🔍 Network Debug:')
-    console.log('  - isConnected from Redux:', isConnected)
-    console.log('  - isConnected from NetInfo:', netInfoState.isConnected)
-    console.log('  - isInternetReachable:', netInfoState.isInternetReachable)
-    console.log('  - Connection type:', netInfoState.type)
-    console.log('  - Actually connected:', isActuallyConnected)
-    
-    // Validasi No. Kendaraan (wajib)
-    if (!isEdit && !selectedGardenTonnageId) {
-      showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
-      return
-    }
-    
-    // Validasi TPH
+
     if (!validateTPH()) {
       return
     }
-    
-    // Mode Edit
+
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
-    // Mode Create
     const requestBodyCreate = constructToFormDataCreate(value)
-    
-    // GUNAKAN NetInfo langsung untuk deteksi koneksi yang lebih akurat
+
     if (!isActuallyConnected) {
       const tempId = `BPBKS_${Date.now()}`
-      
-      console.log('💾 OFFLINE: Saving BPBKS locally')
-      console.log('  - Temp ID:', tempId)
-      console.log('  - Harvester:', selectedUser)
-      console.log('  - Vehicle:', selectedGardenTonnageId)
-      console.log('  - TPH count:', tphForm.length)
-      
-      // Simpan ke local state (bpbksListTemp) agar muncul di list
-      const selectedDraft = draftOptions.find((d: any) => d.id === selectedGardenTonnageId)
       const firstTph = requestBodyCreate.tphs?.[0]
       dispatch(actions.addBPBKSTemp({
         ...requestBodyCreate,
-        tempId: tempId,
+        tempId,
         syncStatus: 'pending',
-        // Mapping agar cocok dengan struktur yang dibaca card
         tph: firstTph?.tph ? { ...firstTph.tph, block: firstTph.block } : null,
         plantingYear: firstTph?.plantingYear,
         harvester: user,
         cutNumber: requestBodyCreate.cutNumber,
-        bpbks: {
-          gardenTonnage: selectedDraft || null,
-        },
       }))
-      
       showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
       navigation.goBack()
       return
     }
 
-    // ONLINE MODE: Direct API call
     try {
-      console.log('🌐 ONLINE: Submitting BPBKS to server')
       const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
       const createdTphs = res?.data?.response?.tphs || []
-      
-      // Upload photos untuk setiap TPH
+
       for (let i = 0; i < tphForm.length; i++) {
         const tph = tphForm[i] as any
         const createdTph = createdTphs[i]
@@ -413,8 +303,7 @@ const BPBKSForm = () => {
           }
         }
       }
-      
-      // Refresh list BPBKS setelah create berhasil
+
       dispatch(actions.getBPBKSAll.request({
         loading: false,
         data: {
@@ -450,27 +339,11 @@ const BPBKSForm = () => {
   useEffect(() => {
     console.log('🚀 Initializing BPBKS Form - Fetching master data...')
     dispatch(actions.clearFormBPBKSStatus())
-    
-    // Force refresh master data setiap kali form dibuka
     dispatch(actions.getOrganizationAll.request({ loading: true }))
     dispatch(actions.getAllDivision.request({ loading: true }))
     dispatch(actions.getAllUser.request({ loading: true }))
     dispatch(actions.getTPHAll.request({ loading: true }))
     dispatch(actions.getAllBlock.request({ loading: true }))
-    
-    // Pre-fetch draft options jika ada organization dan date
-    // Ini akan di-cache untuk offline access
-    if (bpbksData?.organization?.value && bpbksData?.date) {
-      dispatch(actions.getDraftOptions.request({
-        loading: true,
-        data: {
-          organizationId: bpbksData.organization.value,
-          date: moment(bpbksData.date).format('YYYY-MM-DD'),
-        },
-      }))
-    }
-    
-    console.log('✅ Master data fetch dispatched')
   }, [])
 
   useEffect(() => {
@@ -569,35 +442,6 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
-        {!isEdit && (
-          <SelectInput
-            label="No. Kendaraan (Tonase Draft)"
-            placeholder={draftOptions.length === 0 ? 'Loading kendaraan...' : 'Pilih kendaraan dari tonase draft'}
-            control={control}
-            name="gardenTonnageId"
-            items={draftOptions.map(d => ({
-              value: d.id,
-              label: d.item ? `${d.item.name} - ${d.item.serialNumber} (${d.driver || 'Tanpa Supir'})` : d.id,
-            }))}
-            onChange={(v: string) => setSelectedGardenTonnageId(v)}
-            isRequired
-            noItemsText="Tidak ada kendaraan tersedia untuk tanggal ini"
-          />
-        )}
-        {isEdit && (
-          <TextInput
-            label="No. Kendaraan"
-            control={control}
-            name="gardenTonnageId"
-            disabled
-            disabledText={
-              item?.bpbks?.gardenTonnage?.item?.name
-                ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
-                : '-'
-            }
-          />
-        )}
-
         {defaultTph?.map((v, i) => (
           <TPHView
             item={v}
@@ -631,35 +475,28 @@ const BPBKSForm = () => {
         ))}
 
         {!isEdit && (
-          <TouchableOpacity
-            style={{ alignSelf: 'flex-start', marginBottom: 16, padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+          <Button
+            style={{ alignSelf: 'flex-start', marginBottom: 16, height: 40 }}
             onPress={() => {
-              navigation.navigate(Routes.QR_SCANNER, {
-                onScanSuccess: (data: any) => {
-                  setTphForm((prev: any) => [
-                    ...prev,
-                    {
-                      blockId: data.blockId,
-                      plantingYear: data.plantingYear?.[0]?.toString() || '',
-                      tphId: data.tphId,
-                      numberOfLength: '0',
-                      ripeFruitChecked: '0',
-                      rawFruitChecked: '0',
-                      lateRipeChecked: '0',
-                      rottenFruitChecked: '0',
-                      longHandleChecked: '0',
-                      looseChecked: '0',
-                      photoFruit: null,
-                      photoKrani: null,
-                      fromScan: true,
-                    },
-                  ])
+              setTphForm([
+                ...tphForm,
+                {
+                  blockId: '',
+                  plantingYear: '',
+                  tphId: '',
+                  numberOfLength: '',
+                  ripeFruitChecked: '0',
+                  rawFruitChecked: '0',
+                  lateRipeChecked: '0',
+                  rottenFruitChecked: '0',
+                  longHandleChecked: '0',
+                  looseChecked: '0',
                 },
-              })
+              ])
+              scrollViewRef?.current?.scrollToEnd({ animated: true })
             }}>
-            <Icon name="qr-code-scanner" size={20} color="white" />
-            <Text color="white" style={{ marginLeft: 8, fontSize: 13 }}>Scan QR TPH</Text>
-          </TouchableOpacity>
+            <Text style={{ fontSize: 12 }} color="white">Tambah TPH</Text>
+          </Button>
         )}
       </ScrollView>
       <View style={styles.wrapSubmitButton}>
@@ -874,7 +711,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
-      {!item?.viewOnly && !isEdit && (
+      {/* {!item?.viewOnly && !isEdit && (
         <View style={{ marginTop: 8 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 1 }}>
@@ -923,7 +760,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
             </View>
           </View>
         </View>
-      )}
+      )} */}
     </View>
   )
 }
