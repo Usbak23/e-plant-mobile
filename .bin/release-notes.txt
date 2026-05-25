@@ -1,11 +1,11 @@
-E-Plantation Production v5.0.0
+E-Plantation Production v6.0.0
 
-Build: #2
+Build: #5
 Environment: Production
 
 Recent changes:
-- change branch for release
-- > fix(bkm): handle success/error feedback and navigation after form submission
-- feat: add ScreenWrapper component for consistent SafeAreaView handling
-- change email participation
-- fix email participants
+- fix(bpbks): remove scan QR, tonase draft, and photo fields; set default 0 for fruit fields
+- chore: update api domain and bump versionCode to 18
+- fix: map offline BPBKS temp data structure to match card display fields
+- fix: show list qeue BPBKS
+- feat: offline BPBKS with accurate network detection
