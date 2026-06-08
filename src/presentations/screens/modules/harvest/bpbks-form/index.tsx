@@ -18,7 +18,6 @@ import { useRoute } from '@react-navigation/native'
 import * as schema from '@utils/validation/bpbks-form-validation'
 import { styles } from './style'
 import { IBPBKSFormDataCreate, IBPBKSFormDataUpdate } from '@app/models/eplant/BPBKS'
-import { ITonnageGardenDraftOption } from '@app/models/eplant/TonnageGarden'
 import { useBlockOptions, useBlocksWithPlantingYearByDivisionStd } from '@app/domain/states/block/hooks'
 import moment from 'moment'
 import { checkIfDuplicateExists } from '@app/presentations/utils/check'
@@ -81,8 +80,6 @@ const BPBKSForm = () => {
 
   const [selectedUser, setSelectedUser] = useState(item?.harvester?.id || item?.harvesterId || '')
   const [defaultTph, setDefaultTph] = useState([])
-  const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
-  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
   const [syncModalVisible, setSyncModalVisible] = useState(false)
   const [tphForm, setTphForm] = useState(isEdit ? [
     {
@@ -110,69 +107,10 @@ const BPBKSForm = () => {
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
 
   const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
-  const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
 
   // DEBUG: Log untuk cek data
   useEffect(() => {
-    console.log('🔍 DEBUG BPBKS Form:')
-    console.log('- isConnected:', isConnected)
-    console.log('- users length:', users.length)
-    console.log('- draftOptions length:', draftOptions.length)
-    console.log('- blocks length:', blocks.length)
-    console.log('- tphAll length:', tphAll.length)
-    console.log('- draftOptionsCache length:', draftOptionsCache.length)
-    
-    if (!isConnected) {
-      console.log('⚠️ OFFLINE MODE: Using cached data')
-      console.log('  - Cached users:', users.length)
-      console.log('  - Cached draft options:', draftOptionsCache.length)
-      console.log('  - Cached blocks:', blocks.length)
-      console.log('  - Cached TPH:', tphAll.length)
-    }
-  }, [users, draftOptions, isConnected, blocks, tphAll, draftOptionsCache])
-
-  useEffect(() => {
-    // Set draft options dari cache dengan FILTER TANGGAL
-    // Hanya tampilkan draft options yang sesuai dengan tanggal form
-    if (draftOptionsCache && draftOptionsCache.length > 0 && bpbksData?.date) {
-      const formDate = moment(bpbksData.date).format('YYYY-MM-DD')
-      
-      // Filter: hanya ambil draft options yang tanggalnya sama dengan form
-      const filteredByDate = draftOptionsCache.filter((draft: any) => {
-        const draftDate = moment(draft.date).format('YYYY-MM-DD')
-        return draftDate === formDate
-      })
-      
-      console.log('✅ Loading draft options from cache:', draftOptionsCache.length)
-      console.log('📅 Filtered by date:', formDate, '→', filteredByDate.length, 'items')
-      
-      setDraftOptions(filteredByDate as any)
-    } else if (bpbksData?.date) {
-      // Jika tidak ada cache atau cache kosong, reset draft options
-      setDraftOptions([])
-    }
-  }, [draftOptionsCache, bpbksData?.date])
-
-  useEffect(() => {
     if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
-      const dateStr = moment(bpbksData.date).format('YYYY-MM-DD')
-      
-      console.log('🔄 Fetching draft options...')
-      console.log('  - Organization:', bpbksData.organization.value)
-      console.log('  - Date:', dateStr)
-      console.log('  - Is Connected:', isConnected)
-      
-      // Selalu coba fetch saat form dibuka
-      // - Online: akan fetch data terbaru dari server (REFRESH) ✅
-      // - Offline: akan gagal, tapi data cache tetap tersedia
-      dispatch(actions.getDraftOptions.request({
-        loading: !isConnected, // Hanya show loading jika online
-        data: {
-          organizationId: bpbksData.organization.value,
-          date: dateStr,
-        },
-      }))
-      
       if (!isConnected) {
         console.log('⚠️ Offline: Will use cached draft options')
         console.log('⚠️ WARNING: Data mungkin tidak up-to-date!')
@@ -295,7 +233,6 @@ const BPBKSForm = () => {
       cutNumber: value.cutNumber,
       foremanId: value.foremanId,
       date: moment(value.date).format('YYYY-MM-DD'),
-      gardenTonnageId: selectedGardenTonnageId || undefined,
       tphs: tphForm.map((e: any, index: number) => {
         const tph = tphAll.find(w => w.id === e.tphId)
         const block = blockAll.find(b => b.id === e.blockId)
@@ -338,11 +275,6 @@ const BPBKSForm = () => {
     console.log('  - Connection type:', netInfoState.type)
     console.log('  - Actually connected:', isActuallyConnected)
     
-    // Validasi No. Kendaraan (wajib)
-    if (!isEdit && !selectedGardenTonnageId) {
-      showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
-      return
-    }
     
     // Validasi TPH
     if (!validateTPH()) {
@@ -385,7 +317,6 @@ const BPBKSForm = () => {
       )
 
       // Simpan ke local state (bpbksListTemp) agar muncul di list
-      const selectedDraft = draftOptions.find((d: any) => d.id === selectedGardenTonnageId)
       const firstTph = persistedTphs?.[0]
       dispatch(actions.addBPBKSTemp({
         ...requestBodyCreate,
@@ -396,9 +327,7 @@ const BPBKSForm = () => {
         plantingYear: firstTph?.plantingYear,
         harvester: user,
         cutNumber: requestBodyCreate.cutNumber,
-        bpbks: {
-          gardenTonnage: selectedDraft || null,
-        },
+        bpbks: {},
       }))
 
       // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status
@@ -484,17 +413,6 @@ const BPBKSForm = () => {
     dispatch(actions.getAllBlock.request({ loading: true }))
     
     // Pre-fetch draft options jika ada organization dan date
-    // Ini akan di-cache untuk offline access
-    if (bpbksData?.organization?.value && bpbksData?.date) {
-      dispatch(actions.getDraftOptions.request({
-        loading: true,
-        data: {
-          organizationId: bpbksData.organization.value,
-          date: moment(bpbksData.date).format('YYYY-MM-DD'),
-        },
-      }))
-    }
-    
     console.log('✅ Master data fetch dispatched')
   }, [])
 
@@ -594,35 +512,6 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
-        {!isEdit && (
-          <SelectInput
-            label="No. Kendaraan (Tonase Draft)"
-            placeholder={draftOptions.length === 0 ? 'Loading kendaraan...' : 'Pilih kendaraan dari tonase draft'}
-            control={control}
-            name="gardenTonnageId"
-            items={draftOptions.map(d => ({
-              value: d.id,
-              label: d.item ? `${d.item.name} - ${d.item.serialNumber} (${d.driver || 'Tanpa Supir'})` : d.id,
-            }))}
-            onChange={(v: string) => setSelectedGardenTonnageId(v)}
-            isRequired
-            noItemsText="Tidak ada kendaraan tersedia untuk tanggal ini"
-          />
-        )}
-        {isEdit && (
-          <TextInput
-            label="No. Kendaraan"
-            control={control}
-            name="gardenTonnageId"
-            disabled
-            disabledText={
-              item?.bpbks?.gardenTonnage?.item?.name
-                ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
-                : '-'
-            }
-          />
-        )}
-
         {defaultTph?.map((v, i) => (
           <TPHView
             item={v}
