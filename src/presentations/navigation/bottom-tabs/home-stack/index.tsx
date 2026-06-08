@@ -77,8 +77,13 @@ import BPBKSFilter from '@app/presentations/screens/modules/harvest/bpbks-filter
 import BPBKSList from '@app/presentations/screens/modules/harvest/bpbks-list'
 import BPBKSForm from '@app/presentations/screens/modules/harvest/bpbks-form'
 import BPBKSEmployeeDetail from '@app/presentations/screens/modules/harvest/bpbks-employee-detail'
+import MonitoringTphList from '@app/presentations/screens/modules/harvest/monitoring-tph-list'
+import MonitoringTphFilter from '@app/presentations/screens/modules/harvest/monitoring-tph-filter'
 import QRScannerScreen from '@app/presentations/screens/modules/harvest/qr-scanner'
 import CameraPhotoScreen from '@app/presentations/screens/modules/harvest/camera-photo'
+import SPBLocalFilter from '@app/presentations/screens/modules/harvest/spb-local-filter'
+import SPBLocalList from '@app/presentations/screens/modules/harvest/spb-local-list'
+import SPBLocalForm from '@app/presentations/screens/modules/harvest/spb-local-form'
 
 import BKMTakeCareFilter from '@app/presentations/screens/modules/take-care/bkm-take-care-filter'
 import BKMTakeCareList from '@app/presentations/screens/modules/take-care/bkm-take-care-list'
@@ -247,8 +252,13 @@ const HomeStack: React.FC<HomeStackProps> = ({}) => {
       <Stack.Screen name={Routes.BPBKS_LIST} component={BPBKSList} />
       <Stack.Screen name={Routes.BPBKS_FORM} component={BPBKSForm} />
       <Stack.Screen name={Routes.BPBKS_EMPLOYEE_DETAIL} component={BPBKSEmployeeDetail} />
+      <Stack.Screen name={Routes.MONITORING_TPH_FILTER} component={MonitoringTphFilter} />
+      <Stack.Screen name={Routes.MONITORING_TPH_LIST} component={MonitoringTphList} />
       <Stack.Screen name={Routes.QR_SCANNER} component={QRScannerScreen} options={{ headerShown: false }} />
       <Stack.Screen name={Routes.CAMERA_PHOTO} component={CameraPhotoScreen} options={{ headerShown: false }} />
+      <Stack.Screen name={Routes.SPB_LOCAL_FILTER} component={SPBLocalFilter} />
+      <Stack.Screen name={Routes.SPB_LOCAL_LIST} component={SPBLocalList} />
+      <Stack.Screen name={Routes.SPB_LOCAL_FORM} component={SPBLocalForm} />
 
       {/* TAKE CARE */}
       <Stack.Screen name={Routes.TAKE_CARE} component={TakeCareModulePage} />

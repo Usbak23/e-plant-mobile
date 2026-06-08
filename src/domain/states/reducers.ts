@@ -38,6 +38,8 @@ import realizationFertilizationReducer, {IRSRealizationFertilization} from './re
 import approvalReducer, {ApprovalState} from './approval/reducers'
 import notificationReducer, {INotificationState} from './notification/reducer'
 import syncQueueReducer, {IRSSyncQueue} from './sync-queue/reducer'
+import monitoringTphReducer, {IRSMonitoringTph} from './monitoring-tph/reducer'
+import spbLocalReducer, {IRSSpbLocal} from './spb-local/reducer'
 
 export type RootState = {
   user: IRSUser
@@ -79,6 +81,8 @@ export type RootState = {
   approval: ApprovalState
   notification: INotificationState
   syncQueue: IRSSyncQueue
+  monitoringTph: IRSMonitoringTph
+  spbLocal: IRSSpbLocal
 }
 
 const defaultConfig = {
@@ -379,6 +383,8 @@ const reducers = combineReducers({
     },
     syncQueueReducer,
   ),
+  monitoringTph: monitoringTphReducer,
+  spbLocal: spbLocalReducer,
 })
 
 export default reducers
