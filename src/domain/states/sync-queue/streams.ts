@@ -39,7 +39,8 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
                     const createdTphs = response?.data?.response?.tphs || []
                     const tphForms = item.data?.tphs || []
                     const uploadPromises = tphForms.map((tph: any, i: number) => {
-                      const createdTph = createdTphs[i]
+                      // Match by tphId to ensure correct photo-to-record mapping
+                      const createdTph = createdTphs.find((ct: any) => ct.tph?.id === tph.tphId || ct.tphId === tph.tphId) || createdTphs[i]
                       if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
                         return api.bpbksService.uploadPhotos(createdTph.id, {
                           photoFruitFront: tph.photoFruitFront,
@@ -52,7 +53,7 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
                     })
                     return from(Promise.all(uploadPromises)).pipe(
                       map(() => {
-                        console.log(`✅ BPBKS synced: ${item.id}`)
+                        console.log(`✅ BPBKS synced with photos: ${item.id}`)
                         return actions.updateSyncStatus({ id: item.id, status: 'success' })
                       }),
                     )
