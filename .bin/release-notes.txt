@@ -1,11 +1,11 @@
-E-Plantation Staging v5.4.0
+E-Plantation Production v6.0.0
 
-Build: #8
-Environment: Staging
+Build: #3
+Environment: Production
 
 Recent changes:
-- fix(bpbks): separate bpbks records per vehicle and show all in list fix(bpbks): show vehicle field on edit mode fix(mobile): fix network indicator always showing offline feat(mobile): enable network detection and make garden tonnage required in BPBKS form fix(mobile): fix network indicator always showing offline
-- fix(mobile): fix network indicator always showing offline
-- fix(bpbks): show vehicle field on edit mode
-- feat(mobile): enable network detection and make garden tonnage required in BPBKS form
-- feat(bpbks): update fruit photo upload to 3 photos (front, back, side) with krani first layout
+- Merge branch 'staging' into 'production'
+- [skip ci] bump version 5.9.0
+- Merge branch 'feat/offline-first' into 'staging'
+- fix: map offline BPBKS temp data structure to match card display fields
+- feat: pre-fetch draft options on home page pull-to-refresh

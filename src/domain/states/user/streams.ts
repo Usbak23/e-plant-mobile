@@ -1,29 +1,138 @@
-import { map, catchError, filter, switchMap, tap, concatMap } from 'rxjs/operators'
+import { map, catchError, filter, switchMap, tap, concatMap, mergeMap } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import { isActionOf } from 'typesafe-actions'
 import * as actions from '@app/domain/states/user/actions'
 import { StreamType } from '@app/domain/states/types'
 import flux from '@app/domain/states/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import moment from 'moment'
+
+// Import actions directly untuk pre-fetch
+import * as organizationActions from '@app/domain/states/organization/actions'
+import * as divisionActions from '@app/domain/states/division/actions'
+import * as blockActions from '@app/domain/states/block/actions'
+import * as tphActions from '@app/domain/states/tph/actions'
+import * as subActivityActions from '@app/domain/states/subactivity/actions'
+import * as roleActions from '@app/domain/states/role/actions'
+import * as categoryItemActions from '@app/domain/states/category-item/actions'
+import * as masterItemActions from '@app/domain/states/master-item/actions'
+import * as itemActions from '@app/domain/states/item/actions'
+import * as rawMaterialActions from '@app/domain/states/raw-material/actions'
+import * as masterActions from '@app/domain/states/master/actions'
+import * as tonnageGardenActions from '@app/domain/states/tonnage-garden/actions'
 
 const login: StreamType = (action$, state$, api) => {
   return action$.pipe(
     filter(isActionOf(actions.login.request)),
     switchMap(action =>
       from(api.authService.login(action.payload.data)).pipe(
-        map(({ data }) => {
-          return actions.login.success({ loading: false, data: data.response })
+        concatMap(({ data }) => {
+          console.log('✅ Login successful!')
+          console.log('🔍 Checking available actions...')
+          console.log('- organizationActions:', !!organizationActions)
+          console.log('- divisionActions:', !!divisionActions)
+          console.log('- blockActions:', !!blockActions)
+          console.log('- tphActions:', !!tphActions)
+          console.log('- tonnageGardenActions:', !!tonnageGardenActions)
+          
+          const actionsToDispatch: any[] = [
+            actions.login.success({ loading: false, data: data.response }),
+            actions.getCurrentUser.request({ loading: false }),
+          ]
+          
+          // Pre-fetch master data dengan error handling
+          console.log('📦 Pre-fetching master data for offline access...')
+          
+          try {
+            // Organizations
+            if (organizationActions?.getOrganizationAll?.request) {
+              actionsToDispatch.push(organizationActions.getOrganizationAll.request({ loading: false }))
+            }
+            
+            // Divisions
+            if (divisionActions?.getAllDivision?.request) {
+              actionsToDispatch.push(divisionActions.getAllDivision.request({ loading: false }))
+            }
+            
+            // Users
+            if (actions?.getAllUser?.request) {
+              actionsToDispatch.push(actions.getAllUser.request({ loading: false }))
+            }
+            
+            // TPH
+            if (tphActions?.getTPHAll?.request) {
+              actionsToDispatch.push(tphActions.getTPHAll.request({ loading: false }))
+            }
+            
+            // Blocks
+            if (blockActions?.getAllBlock?.request) {
+              actionsToDispatch.push(blockActions.getAllBlock.request({ loading: false }))
+            }
+            
+            // Sub Activities
+            if (subActivityActions?.getSubActivityAll?.request) {
+              actionsToDispatch.push(subActivityActions.getSubActivityAll.request({ loading: false }))
+            }
+            
+            // Roles
+            if (roleActions?.getRoleAll?.request) {
+              actionsToDispatch.push(roleActions.getRoleAll.request({ loading: false }))
+            }
+            
+            // Category Items
+            if (categoryItemActions?.getCategoryItemAll?.request) {
+              actionsToDispatch.push(categoryItemActions.getCategoryItemAll.request({ loading: false }))
+            }
+            
+            // Master Items
+            if (masterItemActions?.getMasterItemAll?.request) {
+              actionsToDispatch.push(masterItemActions.getMasterItemAll.request({ loading: false }))
+            }
+            
+            // Items
+            if (itemActions?.getItemAll?.request) {
+              actionsToDispatch.push(itemActions.getItemAll.request({ loading: false }))
+            }
+            
+            // Raw Materials
+            if (rawMaterialActions?.getRawMaterialAll?.request) {
+              actionsToDispatch.push(rawMaterialActions.getRawMaterialAll.request({ loading: false }))
+            }
+            
+            // Master data lainnya
+            if (masterActions?.getMinimumAkp?.request) {
+              actionsToDispatch.push(masterActions.getMinimumAkp.request({ loading: false }))
+            }
+            
+            if (masterActions?.getUoms?.request) {
+              actionsToDispatch.push(masterActions.getUoms.request({ loading: false }))
+            }
+            
+            if (masterActions?.getSupervisions?.request) {
+              actionsToDispatch.push(masterActions.getSupervisions.request({ loading: false }))
+            }
+            
+            if (masterActions?.getWorkStatuses?.request) {
+              actionsToDispatch.push(masterActions.getWorkStatuses.request({ loading: false }))
+            }
+            
+            console.log(`✅ Dispatched ${actionsToDispatch.length} pre-fetch actions`)
+          } catch (error) {
+            console.error('❌ Error preparing pre-fetch actions:', error)
+          }
+          
+          return actionsToDispatch
         }),
         catchError(error => {
+          console.error('❌ Login failed:', error)
           return of(
             actions.login.failure({ loading: false, error }),
             actions.clearUserProfile(),
-            // actions.clearUserLoginForm(),
           )
         }),
       ),
     ),
-    tap(next => console.log({ login: next })),
+    tap(next => console.log({ loginStream: next.type })),
   )
 }
 
@@ -119,10 +228,61 @@ const getCurrentUserInfo: StreamType = (action$, state$, api) => {
     switchMap(action =>
       from(api.authService.getCurrentUser()).pipe(
         concatMap(({ data }: any) => {
-          if (action?.payload?.next) {
-            return [actions.getCurrentUser.success({ loading: false, data: data.response }), action?.payload?.next]
+          const currentUser = data.response
+          const actionsToDispatch: any[] = [
+            actions.getCurrentUser.success({ loading: false, data: currentUser })
+          ]
+          
+          console.log('🔍 Current user data:', {
+            hasUser: !!currentUser,
+            hasOrg: !!currentUser?.organization,
+            orgId: currentUser?.organization?.id,
+          })
+          
+          // Pre-fetch draft options untuk 3 hari (hari ini + 2 hari ke depan)
+          // Hanya jika user punya organization
+          if (currentUser?.organization?.id) {
+            console.log('📦 Pre-fetching draft options for next 3 days...')
+            console.log('- Organization ID:', currentUser.organization.id)
+            
+            try {
+              console.log('- Checking tonnageGardenActions:', !!tonnageGardenActions)
+              console.log('- Checking getDraftOptions:', !!tonnageGardenActions?.getDraftOptions)
+              console.log('- Checking request:', !!tonnageGardenActions?.getDraftOptions?.request)
+              
+              if (tonnageGardenActions?.getDraftOptions?.request) {
+                const today = moment()
+                console.log('- Today:', today.format('YYYY-MM-DD'))
+                
+                for (let i = 0; i < 3; i++) {
+                  const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
+                  console.log(`- Fetching draft options for day ${i}: ${date}`)
+                  actionsToDispatch.push(
+                    tonnageGardenActions.getDraftOptions.request({
+                      loading: false,
+                      data: {
+                        organizationId: currentUser.organization.id,
+                        date: date,
+                      },
+                    })
+                  )
+                }
+                console.log('✅ Dispatched draft options fetch for 3 days')
+              } else {
+                console.warn('⚠️ getDraftOptions action not available')
+              }
+            } catch (error) {
+              console.error('❌ Error dispatching draft options:', error)
+            }
+          } else {
+            console.warn('⚠️ User has no organization, skipping draft options fetch')
           }
-          return [actions.getCurrentUser.success({ loading: false, data: data.response })]
+          
+          if (action?.payload?.next) {
+            actionsToDispatch.push(action.payload.next)
+          }
+          
+          return actionsToDispatch
         }),
         catchError(error => {
           if (action?.payload?.next) {

@@ -81,12 +81,22 @@ const BPBKSList = () => {
     return datas
   }
 
-  const {deleteBPBKSStatus, formBPBKSStatus, bpbksAll}: IRSBPBKS = useSelector(
+  const {deleteBPBKSStatus, formBPBKSStatus, bpbksAll, bpbksListTemp}: IRSBPBKS = useSelector(
     (state: RootStateType) => state?.bpbks || {},
   )
   const isConnected = useSelector((state: RootStateType) => state?.network.isConnected)
 
   const {docs, hasOffline} = useBPBKSLists(params)
+
+  // Gabungkan data dari server dengan data offline (temp)
+  const allDocs = [
+    ...(bpbksListTemp || []).map((temp: any) => ({
+      ...temp,
+      isTemp: true,
+      syncStatus: temp.syncStatus || 'pending',
+    })),
+    ...docs,
+  ].filter(item => item && (item.id || item.tempId)) // Filter item yang valid
 
   const withFilter = (d: any[] = [], option = '', sortBy = '') => {
     const filtered = d.filter(item => {
@@ -103,11 +113,13 @@ const BPBKSList = () => {
     return filtered
   }
 
-  const filteredData = withSort(withFilter(docs, query.search))
+  const filteredData = withSort(withFilter(allDocs, query.search))
 
   const getData = useCallback(() => {
+    // Clear state lama sebelum fetch data baru
+    dispatch(actions.clearBPBKSAll())
     dispatch(actions.getBPBKSAll.request({loading: true, data: params}))
-  }, [])
+  }, [params.organizationId, params.divisionId, params.foremanId, params.date])
 
   const handleSearch = (search: string) => {
     setQuery({...query, search})
@@ -277,7 +289,13 @@ const BPBKSList = () => {
 
   const ListHeaderComponent = () => (
     <View style={{marginHorizontal: 18, marginTop: 16, marginBottom: 6}}>
-      <DetailInfo bpbksData={{...bpbksData, totalLength: bpbksAll?.data?.bpbks?.totalLength}} />
+      <DetailInfo 
+        bpbksData={{
+          ...bpbksData, 
+          totalLength: bpbksAll?.data?.bpbks?.totalLength,
+          gardenTonnage: bpbksAll?.data?.bpbks?.gardenTonnage
+        }} 
+      />
       {hasOffline ? <OfflineView /> : null}
     </View>
   )

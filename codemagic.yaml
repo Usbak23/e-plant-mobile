@@ -178,7 +178,7 @@ workflows:
       email:
         recipients:
           - developer@sahabatagro.co.id
-          - fredy.pm@sahabatagro.co.id
+          - freddy.pm@sahabatagro.co.id
           - sys.analys@sahabatatagro.co.id
           - cameliazen.qa@gmail.com
         notify:
@@ -296,7 +296,7 @@ workflows:
       email:
         recipients:
           - developer@sahabatagro.co.id
-          - fredy.pm@sahabatagro.co.id
+          - freddy.pm@sahabatagro.co.id
           - sys.analys@sahabatatagro.co.id
         notify:
           success: true

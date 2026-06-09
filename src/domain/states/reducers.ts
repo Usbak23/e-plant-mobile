@@ -37,6 +37,9 @@ import warehouseReducer, {IRSWarehouseManagement} from './warehouse-management/r
 import realizationFertilizationReducer, {IRSRealizationFertilization} from './realization-fertilization/reducer'
 import approvalReducer, {ApprovalState} from './approval/reducers'
 import notificationReducer, {INotificationState} from './notification/reducer'
+import syncQueueReducer, {IRSSyncQueue} from './sync-queue/reducer'
+import monitoringTphReducer, {IRSMonitoringTph} from './monitoring-tph/reducer'
+import spbLocalReducer, {IRSSpbLocal} from './spb-local/reducer'
 
 export type RootState = {
   user: IRSUser
@@ -77,6 +80,9 @@ export type RootState = {
   realizationFertilizationReducer: IRSRealizationFertilization
   approval: ApprovalState
   notification: INotificationState
+  syncQueue: IRSSyncQueue
+  monitoringTph: IRSMonitoringTph
+  spbLocal: IRSSpbLocal
 }
 
 const defaultConfig = {
@@ -326,7 +332,25 @@ const reducers = combineReducers({
     },
     bpbksReducer,
   ),
-  tonnageGarden: tonnageGardenReducer,
+  tonnageGarden: persistReducer(
+    {
+      ...defaultConfig,
+      key: 'tonnageGarden',
+      blacklist: [
+        'formTonnageGardenStatus',
+        'deleteTonnageGardenStatus',
+        'tonnageGardenList',
+        'tonnageGardenDetail',
+        'tonnageGardenAll.loading',
+        'tonnageGardenAll.error',
+        'tonnageGardenWithoutPKS.loading',
+        'tonnageGardenWithoutPKS.error',
+        'draftOptions.loading',
+        'draftOptions.error',
+      ],
+    },
+    tonnageGardenReducer,
+  ), // ← draftOptions.data DI-PERSIST untuk offline access ✅
   tonnagePKS: tonnagePKSReducer,
   bkmTakeCare: persistReducer(
     {
@@ -352,6 +376,15 @@ const reducers = combineReducers({
   realizationFertilizationReducer: realizationFertilizationReducer,
   approval: approvalReducer,
   notification: notificationReducer,
+  syncQueue: persistReducer(
+    {
+      ...defaultConfig,
+      key: 'syncQueue',
+    },
+    syncQueueReducer,
+  ),
+  monitoringTph: monitoringTphReducer,
+  spbLocal: spbLocalReducer,
 })
 
 export default reducers

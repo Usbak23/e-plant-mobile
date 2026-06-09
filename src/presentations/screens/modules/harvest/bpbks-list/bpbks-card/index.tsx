@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@app/domain/states/reducers'
 import { showErrorToast } from '@app/presentations/_shared-components/Toast'
 import { Doc, BPBKSSyncStatus } from '@app/models/eplant/BPBKS'
+import { useSyncQueueById } from '@app/domain/states/sync-queue/hooks'
 
 interface Props {
   isAllowedToOrganizeBPBKS?: boolean
@@ -29,22 +30,22 @@ interface Props {
   onPopupDelete?: (item?: Doc) => void
 }
 
-const syncDotColor: Record<BPBKSSyncStatus, string> = {
-  pending: '#F5A623',
-  syncing: '#4A90E2',
-  synced: '#4ce24a',
-  failed: '#D0021B',
+const syncDotColor: Record<string, string> = {
+  pending: '#F5A623',   // Orange
+  syncing: '#4A90E2',   // Blue
+  success: '#4ce24a',   // Green
+  error: '#D0021B',     // Red
 }
 
-const SyncDot = ({ status }: { status?: BPBKSSyncStatus }) => {
-  if (!status || status === 'synced') return null
+const SyncDot = ({ status }: { status?: string }) => {
+  if (!status) return null
   return (
     <View
       style={{
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: syncDotColor[status],
+        backgroundColor: syncDotColor[status] || theme.colors.gray,
         marginLeft: 6,
         alignSelf: 'center',
       }}
@@ -52,10 +53,53 @@ const SyncDot = ({ status }: { status?: BPBKSSyncStatus }) => {
   )
 }
 
+const SyncStatusBadge = ({ status, error }: { status?: string; error?: string }) => {
+  if (!status) return null
+
+  const getStatusLabel = () => {
+    switch (status) {
+      case 'pending':
+        return 'Pending'
+      case 'syncing':
+        return 'Syncing...'
+      case 'success':
+        return 'Synced'
+      case 'error':
+        return 'Error'
+      default:
+        return status
+    }
+  }
+
+  return (
+    <View
+      style={{
+        backgroundColor: syncDotColor[status] || theme.colors.gray,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        marginTop: 8,
+      }}>
+      <Text size={10} color="white" type="semibold">
+        {getStatusLabel()}
+      </Text>
+      {error && (
+        <Text size={9} color="white" style={{ marginTop: 2 }}>
+          {error}
+        </Text>
+      )}
+    </View>
+  )
+}
+
 const BKMCard = ({ bpbksData, ...props }: Props) => {
   const navigation: any = useNavigation()
   const isConnected = useSelector((state: RootState) => state.network.isConnected)
   const isDraft = props.item?.isTemp
+  
+  // Gunakan syncStatus dari item (untuk data temp/offline)
+  const syncStatus = props.item?.syncStatus
+  const syncError = props.item?.syncError
   const onEdit = () => {
     if (!isDraft && !isConnected) {
       showErrorToast('Anda tidak dapat edit data dalam mode offline')
@@ -170,6 +214,20 @@ const BKMCard = ({ bpbksData, ...props }: Props) => {
             </Text>
           </View>
         </View>
+        <View style={{ flexDirection: 'row', marginTop: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text color={theme.colors.label} size={11}>
+              No. Kendaraan
+            </Text>
+            <Text color={theme.colors.textThinBlack} size={12}>
+              {props.item?.bpbks?.gardenTonnage?.item?.name
+                ? `${props.item.bpbks.gardenTonnage.item.name} - ${props.item.bpbks.gardenTonnage.item.serialNumber || ''}`
+                : '-'}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }} />
+        </View>
+        {syncStatus && <SyncStatusBadge status={syncStatus} error={syncError} />}
       </View>
     </TouchableOpacity>
   )

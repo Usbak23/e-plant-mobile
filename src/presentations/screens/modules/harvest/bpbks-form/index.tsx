@@ -1,5 +1,7 @@
 import { theme } from '@app/presentations/utils/styles'
 import { Button, Header, SelectInput, Text, TextInput } from '@app/presentations/_shared-components'
+import SyncIndicatorBadge from '@app/presentations/_shared-components/SyncIndicatorBadge'
+import SyncStatusModal from '@app/presentations/_shared-components/SyncStatusModal'
 import React, { useEffect, useState, useRef } from 'react'
 import { Image, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
@@ -16,7 +18,6 @@ import { useRoute } from '@react-navigation/native'
 import * as schema from '@utils/validation/bpbks-form-validation'
 import { styles } from './style'
 import { IBPBKSFormDataCreate, IBPBKSFormDataUpdate } from '@app/models/eplant/BPBKS'
-import { ITonnageGardenDraftOption } from '@app/models/eplant/TonnageGarden'
 import { useBlockOptions, useBlocksWithPlantingYearByDivisionStd } from '@app/domain/states/block/hooks'
 import moment from 'moment'
 import { checkIfDuplicateExists } from '@app/presentations/utils/check'
@@ -24,6 +25,8 @@ import IOption from '@app/models/commons/IOption'
 import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
 import System from '@app/domain/services/System'
 import Routes from '@app/presentations/navigation/Routes'
+import NetInfo from '@react-native-community/netinfo'
+import RNFS from 'react-native-fs'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -77,8 +80,7 @@ const BPBKSForm = () => {
 
   const [selectedUser, setSelectedUser] = useState(item?.harvester?.id || item?.harvesterId || '')
   const [defaultTph, setDefaultTph] = useState([])
-  const [draftOptions, setDraftOptions] = useState<ITonnageGardenDraftOption[]>([])
-  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState<string>('')
+  const [syncModalVisible, setSyncModalVisible] = useState(false)
   const [tphForm, setTphForm] = useState(isEdit ? [
     {
       blockId: item?.tph?.block?.id || item?.blockId,
@@ -105,26 +107,16 @@ const BPBKSForm = () => {
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
 
   const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
-  const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
 
-  useEffect(() => {
-    setDraftOptions(draftOptionsCache as any)
-  }, [draftOptionsCache])
-
+  // DEBUG: Log untuk cek data
   useEffect(() => {
     if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
-      if (isConnected) {
-        // online: fetch & cache ke Redux
-        dispatch(actions.getDraftOptions.request({
-          loading: true,
-          data: {
-            organizationId: bpbksData.organization.value,
-            date: moment(bpbksData.date).format('YYYY-MM-DD'),
-          },
-        }))
+      if (!isConnected) {
+        console.log('⚠️ Offline: Will use cached draft options')
+        console.log('⚠️ WARNING: Data mungkin tidak up-to-date!')
+      } else {
+        console.log('🌐 Online: Fetching fresh draft options from server')
       }
-      // offline: draftOptionsCache dari Redux persist otomatis dipakai
-      setDraftOptions(draftOptionsCache as any)
     }
   }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
@@ -241,7 +233,6 @@ const BPBKSForm = () => {
       cutNumber: value.cutNumber,
       foremanId: value.foremanId,
       date: moment(value.date).format('YYYY-MM-DD'),
-      gardenTonnageId: selectedGardenTonnageId || undefined,
       tphs: tphForm.map((e: any, index: number) => {
         const tph = tphAll.find(w => w.id === e.tphId)
         const block = blockAll.find(b => b.id === e.blockId)
@@ -273,23 +264,93 @@ const BPBKSForm = () => {
   }
 
   const onSubmit = async (value: any) => {
-    if (!isEdit && !selectedGardenTonnageId) {
-      showErrorToast('No. Kendaraan (Tonase Draft) wajib dipilih!')
-      return
-    }
+    // Double-check koneksi langsung dari device
+    const netInfoState = await NetInfo.fetch()
+    const isActuallyConnected = netInfoState.isConnected && netInfoState.isInternetReachable !== false
+    
+    console.log('🔍 Network Debug:')
+    console.log('  - isConnected from Redux:', isConnected)
+    console.log('  - isConnected from NetInfo:', netInfoState.isConnected)
+    console.log('  - isInternetReachable:', netInfoState.isInternetReachable)
+    console.log('  - Connection type:', netInfoState.type)
+    console.log('  - Actually connected:', isActuallyConnected)
+    
+    
+    // Validasi TPH
     if (!validateTPH()) {
       return
     }
+    
+    // Mode Edit
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
+    // Mode Create
     const requestBodyCreate = constructToFormDataCreate(value)
+    
+    // GUNAKAN NetInfo langsung untuk deteksi koneksi yang lebih akurat
+    if (!isActuallyConnected) {
+      const tempId = `BPBKS_${Date.now()}`
+      
+      // Persist foto ke DocumentDirectory agar URI tetap valid setelah restart
+      const persistedTphs = await Promise.all(
+        requestBodyCreate.tphs.map(async (tph: any) => {
+          const photoFields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
+          const persisted: any = { ...tph }
+          for (const field of photoFields) {
+            const photo = tph[field]
+            if (photo?.uri) {
+              try {
+                const destPath = `${RNFS.DocumentDirectoryPath}/bpbks_${tempId}_${field}.jpg`
+                await RNFS.copyFile(photo.uri, destPath)
+                persisted[field] = { ...photo, uri: `file://${destPath}` }
+              } catch (_) {
+                // Jika gagal copy, tetap pakai URI asli
+              }
+            }
+          }
+          return persisted
+        })
+      )
+
+      // Simpan ke local state (bpbksListTemp) agar muncul di list
+      const firstTph = persistedTphs?.[0]
+      dispatch(actions.addBPBKSTemp({
+        ...requestBodyCreate,
+        tphs: persistedTphs,
+        tempId: tempId,
+        syncStatus: 'pending',
+        tph: firstTph?.tph ? { ...firstTph.tph, block: firstTph.block } : null,
+        plantingYear: firstTph?.plantingYear,
+        harvester: user,
+        cutNumber: requestBodyCreate.cutNumber,
+        bpbks: {},
+      }))
+
+      // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status
+      dispatch(actions.addToSyncQueue({
+        id: tempId,
+        type: 'BPBKS',
+        data: { ...requestBodyCreate, tphs: persistedTphs, tempId },
+        timestamp: Date.now(),
+        status: 'pending',
+      }))
+      
+      showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
+      navigation.goBack()
+      return
+    }
+
+    // ONLINE MODE: Direct API call
     try {
+      console.log('🌐 ONLINE: Submitting BPBKS to server')
       const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
       const createdTphs = res?.data?.response?.tphs || []
+      
+      // Upload photos untuk setiap TPH
       for (let i = 0; i < tphForm.length; i++) {
         const tph = tphForm[i] as any
         const createdTph = createdTphs[i]
@@ -301,12 +362,27 @@ const BPBKSForm = () => {
               photoFruitSide: tph.photoFruitSide,
               photoKrani: tph.photoKrani,
             })
-          } catch (_) {}
+          } catch (photoError) {
+            console.error('Failed to upload photo:', photoError)
+          }
         }
       }
-      showSuccessToast('Berhasil disimpan')
+      
+      // Refresh list BPBKS setelah create berhasil
+      dispatch(actions.getBPBKSAll.request({
+        loading: false,
+        data: {
+          organizationId: params.organizationId,
+          divisionId: params.divisionId,
+          foremanId: params.foremanId,
+          date: params.date,
+        },
+      }))
+      
+      showSuccessToast('✅ Berhasil disimpan')
       navigation.goBack()
     } catch (e: any) {
+      console.error('❌ Failed to submit BPBKS:', e)
       showErrorToast(e?.response?.data?.message?.id || 'Gagal menyimpan')
     }
   }
@@ -326,12 +402,18 @@ const BPBKSForm = () => {
   }, [tphForm])
 
   useEffect(() => {
+    console.log('🚀 Initializing BPBKS Form - Fetching master data...')
     dispatch(actions.clearFormBPBKSStatus())
+    
+    // Force refresh master data setiap kali form dibuka
     dispatch(actions.getOrganizationAll.request({ loading: true }))
     dispatch(actions.getAllDivision.request({ loading: true }))
     dispatch(actions.getAllUser.request({ loading: true }))
     dispatch(actions.getTPHAll.request({ loading: true }))
     dispatch(actions.getAllBlock.request({ loading: true }))
+    
+    // Pre-fetch draft options jika ada organization dan date
+    console.log('✅ Master data fetch dispatched')
   }, [])
 
   useEffect(() => {
@@ -349,11 +431,19 @@ const BPBKSForm = () => {
     }
   }, [formBPBKSStatus?.data])
 
-  const HeaderView = () => <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+  const HeaderView = () => (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+      <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+      <TouchableOpacity onPress={() => setSyncModalVisible(true)}>
+        <SyncIndicatorBadge size="small" showLabel={false} />
+      </TouchableOpacity>
+    </View>
+  )
 
   return (
     <SafeAreaView style={styles.root}>
       <HeaderView />
+      <SyncStatusModal visible={syncModalVisible} onClose={() => setSyncModalVisible(false)} />
       <ScrollView
         style={styles.container}
         ref={scrollViewRef}
@@ -402,7 +492,7 @@ const BPBKSForm = () => {
         <Row>
           <SelectInput
             label="Nama Karyawan"
-            placeholder="Contoh : Dedi"
+            placeholder={users.length === 0 ? 'Loading karyawan...' : 'Contoh : Dedi'}
             control={control}
             items={users}
             disabled={isEdit}
@@ -410,6 +500,7 @@ const BPBKSForm = () => {
             name="harvesterId"
             onChange={v => setSelectedUser(v)}
             isRequired
+            noItemsText="Tidak ada karyawan di divisi ini"
           />
           <TextInput
             isFloat={false}
@@ -421,34 +512,6 @@ const BPBKSForm = () => {
             isNumber
           />
         </Row>
-        {!isEdit && (
-          <SelectInput
-            label="No. Kendaraan (Tonase Draft)"
-            placeholder={draftOptions.length === 0 ? 'Tidak ada kendaraan tersedia' : 'Pilih kendaraan dari tonase draft'}
-            control={control}
-            name="gardenTonnageId"
-            items={draftOptions.map(d => ({
-              value: d.id,
-              label: d.item ? `${d.item.name} - ${d.item.serialNumber}` : d.id,
-            }))}
-            onChange={(v: string) => setSelectedGardenTonnageId(v)}
-            isRequired
-          />
-        )}
-        {isEdit && (
-          <TextInput
-            label="No. Kendaraan"
-            control={control}
-            name="gardenTonnageId"
-            disabled
-            disabledText={
-              item?.bpbks?.gardenTonnage?.item?.name
-                ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
-                : '-'
-            }
-          />
-        )}
-
         {defaultTph?.map((v, i) => (
           <TPHView
             item={v}
@@ -500,7 +563,9 @@ const BPBKSForm = () => {
                       rottenFruitChecked: '0',
                       longHandleChecked: '0',
                       looseChecked: '0',
-                      photoFruit: null,
+                      photoFruitFront: null,
+                      photoFruitBack: null,
+                      photoFruitSide: null,
                       photoKrani: null,
                       fromScan: true,
                     },

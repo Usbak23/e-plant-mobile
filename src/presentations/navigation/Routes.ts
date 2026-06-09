@@ -136,6 +136,12 @@ export default class Routes {
   static TONNAGE_PKS_FORM = Routes.HARVEST + '/tonnage-pks-form'
   static TONNAGE_PKS_DETAIL = Routes.HARVEST + '/tonnage-pks-detail'
 
+  static MONITORING_TPH_FILTER = Routes.HARVEST + '/monitoring-tph-filter'
+  static MONITORING_TPH_LIST = Routes.HARVEST + '/monitoring-tph-list'
+  static SPB_LOCAL_FILTER = Routes.HARVEST + '/spb-local-filter'
+  static SPB_LOCAL_LIST = Routes.HARVEST + '/spb-local-list'
+  static SPB_LOCAL_FORM = Routes.HARVEST + '/spb-local-form'
+
   static BPBKS_FILTER = Routes.HARVEST + '/bpbks-filter'
   static BPBKS_LIST = Routes.PLAN + '/bpbks-list'
   static BPBKS_FORM = Routes.PLAN + '/bpbks-form'

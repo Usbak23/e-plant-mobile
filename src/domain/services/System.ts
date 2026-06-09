@@ -33,6 +33,8 @@ import RequestService from './eplant/MyRequestService'
 import FieldReportService from './eplant/FieldReportService'
 import WarehouseManagementService from './eplant/WarehouseManagementService'
 import RealizationFertilizationService from '@domain/services/eplant/RealizationFertilization'
+import MonitoringTphService from './eplant/MonitoringTphService'
+import SpbLocalService from './eplant/SpbLocalService'
 
 class System {
   private static _instance: System
@@ -70,6 +72,8 @@ class System {
   fieldReportService: FieldReportService = new FieldReportService()
   warehouseManagementService: WarehouseManagementService = new WarehouseManagementService()
   realizationFertilizationService: RealizationFertilizationService = new RealizationFertilizationService()
+  monitoringTphService: MonitoringTphService = new MonitoringTphService()
+  spbLocalService: SpbLocalService = new SpbLocalService()
 
   static get instance(): System {
     if (!System._instance) {

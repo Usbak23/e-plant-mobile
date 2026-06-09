@@ -58,15 +58,35 @@ const createBPBKS: StreamType = (action$, state$, api) => {
       return from(api.bpbksService.createBPBKS(action.payload.data as IBPBKSFormDataCreate)).pipe(
         concatMap((data: any) => {
           const syncingTempId = action.payload.data?.tempId
-          const result = [
-            actions.createBPBKS.success({loading: false, data}),
-            actions.clearFormBPBKSStatus(),
-            actions.getBPBKSAll.request({loading: true, data: action.payload.data}),
-            actions.syncBPBKS(),
-          ]
-          // hapus dari temp setelah berhasil sync
-          if (syncingTempId) result.unshift(actions.deleteBPBKSTemp(action.payload.data) as any)
-          return result
+          const createdTphs = data?.data?.response?.tphs || []
+          const tphForms = action.payload.data?.tphs || []
+
+          // Upload photos for each TPH after successful create
+          const uploadPromises = tphForms.map((tph: any, i: number) => {
+            const createdTph = createdTphs[i]
+            if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
+              return api.bpbksService.uploadPhotos(createdTph.id, {
+                photoFruitFront: tph.photoFruitFront,
+                photoFruitBack: tph.photoFruitBack,
+                photoFruitSide: tph.photoFruitSide,
+                photoKrani: tph.photoKrani,
+              }).catch((e: any) => console.warn('Photo upload failed:', e?.message))
+            }
+            return Promise.resolve()
+          })
+
+          return from(Promise.all(uploadPromises)).pipe(
+            concatMap(() => {
+              const result: any[] = [
+                actions.createBPBKS.success({loading: false, data}),
+                actions.clearFormBPBKSStatus(),
+                actions.getBPBKSAll.request({loading: true, data: action.payload.data}),
+                actions.syncBPBKS(),
+              ]
+              if (syncingTempId) result.unshift(actions.deleteBPBKSTemp(action.payload.data) as any)
+              return result
+            }),
+          )
         }),
         catchError(error => {
           const syncingTempId = action.payload.data?.tempId

@@ -30,6 +30,7 @@ export interface ITonnageGardenDraftOption {
   }
   date: string
   poNumber: string
+  driver: string
 }
 
 export interface ITonnageGardenBlockFormData {

@@ -55,4 +55,18 @@ export const harvestMenus: {
     screen: Routes.TONNAGE_PKS_LIST,
     bgColor: 'rgba(240, 177, 13, 0.5)',
   },
+  {
+    icon: () => <BPBKS width={24} height={24} />,
+    title: 'Monitoring\nTPH',
+    slug: 'lihat-monitoring-tph',
+    screen: Routes.MONITORING_TPH_FILTER,
+    bgColor: 'rgba(46, 125, 50, 0.35)',
+  },
+  {
+    icon: () => <Balance width={24} height={24} />,
+    title: 'SPB Local',
+    slug: 'lihat-spb-local',
+    screen: Routes.SPB_LOCAL_FILTER,
+    bgColor: 'rgba(30, 136, 229, 0.35)',
+  },
 ]

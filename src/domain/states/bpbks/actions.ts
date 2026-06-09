@@ -44,3 +44,4 @@ export const updateBPBKSTempStatus = createAction(c.UPDATE_BPBKS_TEMP_STATUS, pa
 
 export const clearFormBPBKSStatus = createAction(c.CREATE_OR_EDIT_BPBKS_CLEAR, clearAction)()
 export const clearDeleteBPBKSStatus = createAction(c.DELETE_BPBKS_CLEAR, clearAction)()
+export const clearBPBKSAll = createAction(c.CLEAR_BPBKS_ALL, clearAction)()
