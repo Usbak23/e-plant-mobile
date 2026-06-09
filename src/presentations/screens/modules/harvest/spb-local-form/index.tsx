@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {Alert, FlatList, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native'
+import {SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native'
 import {Button, Header, SelectInput, Text, TextInput} from '@app/presentations/_shared-components'
 import {showErrorToast, showSuccessToast} from '@app/presentations/_shared-components/Toast'
 import {useNavigation, useRoute} from '@react-navigation/native'
@@ -10,6 +10,7 @@ import {useSpbLocalFormStatus} from '@app/domain/states/spb-local/hooks'
 import {useMonitoringTphList} from '@app/domain/states/monitoring-tph/hooks'
 import {theme} from '@app/presentations/utils/styles'
 import {useForm} from 'react-hook-form'
+import System from '@app/domain/services/System'
 import moment from 'moment'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -17,7 +18,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 interface SpbLocalItem {
   tphId: string
   blockId: string
-  blockName: string
+  blockCode: string
   plantingYear: string
   tphName: string
   janjang: string
@@ -28,16 +29,28 @@ const SPBLocalForm = () => {
   const navigation: any = useNavigation()
   const dispatch: any = useDispatch()
   const route: any = useRoute()
-  const {divisionId, date, organizationName, divisionName} = route.params || {}
+  const {divisionId, date, organizationName, divisionName, editItem} = route.params || {}
+  const isEdit = Boolean(editItem)
 
   const formStatus = useSpbLocalFormStatus()
   const monitoringTphList = useMonitoringTphList()
   const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
 
-  const [items, setItems] = useState<SpbLocalItem[]>([])
-  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState('')
+  const [items, setItems] = useState<SpbLocalItem[]>(() => {
+    if (!editItem?.items) return []
+    return editItem.items.map((i: any) => ({
+      tphId: i.tph?.id || i.tphId || '',
+      blockId: i.block?.id || i.blockId || '',
+      blockCode: i.block?.code || i.blockCode || '-',
+      plantingYear: i.plantingYear || '-',
+      tphName: i.tph?.name || i.tphName || '-',
+      janjang: String(i.janjang || 0),
+      sisaJanjang: i.janjang || 0,
+    }))
+  })
+  const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState(editItem?.gardenTonnage?.id || editItem?.gardenTonnageId || '')
 
-  const {control} = useForm({defaultValues: {gardenTonnageId: ''}})
+  const {control} = useForm({defaultValues: {gardenTonnageId: editItem?.gardenTonnage?.id || ''}})
 
   // Filter draft options by date
   const draftOptions = draftOptionsCache.filter((d: any) => {
@@ -57,7 +70,7 @@ const SPBLocalForm = () => {
     const monthYear = moment(date)
     dispatch(actions.monitoringTph.getMonitoringTphList.request({
       loading: true,
-      data: {divisionId, month: monthYear.format('MM'), year: monthYear.format('YYYY')},
+      data: {divisionId, month: monthYear.format('MM'), year: monthYear.format('YYYY'), limit: 9999},
     }))
   }, [])
 
@@ -73,52 +86,31 @@ const SPBLocalForm = () => {
     }
   }, [formStatus])
 
-  const handleAddFromMonitoring = () => {
-    const monitoringData = monitoringTphList?.data?.docs || monitoringTphList?.data || []
-    if (!Array.isArray(monitoringData) || monitoringData.length === 0) {
-      showErrorToast('Tidak ada data monitoring TPH')
-      return
-    }
-    // Show picker from monitoring data: filter out already-added tph
-    const existingTphIds = items.map(i => i.tphId)
-    const available = monitoringData.filter((m: any) => !existingTphIds.includes(m.tphId || m.tph?.id))
-    if (available.length === 0) {
-      showErrorToast('Semua TPH sudah ditambahkan')
-      return
-    }
-    // Add first available item (simple picker; in production use modal)
-    const pick = available[0]
-    setItems(prev => [
-      ...prev,
-      {
-        tphId: pick.tphId || pick.tph?.id,
-        blockId: pick.blockId || pick.block?.id,
-        blockName: pick.blockName || pick.block?.name || '-',
-        plantingYear: pick.plantingYear?.toString() || '-',
-        tphName: pick.tphName || pick.tph?.name || '-',
-        janjang: String(pick.sisaJanjang || pick.sisa || 0),
-        sisaJanjang: pick.sisaJanjang || pick.sisa || 0,
-      },
-    ])
-  }
-
-  const handleScanResult = (data: any) => {
+const handleScanResult = (data: any) => {
     if (!data) return
     const exists = items.find(i => i.tphId === data.tphId)
     if (exists) {
       showErrorToast('TPH sudah ditambahkan')
       return
     }
+    const monitoringData = monitoringTphList?.data?.docs || monitoringTphList?.data || []
+    const matchingTph = Array.isArray(monitoringData)
+      ? monitoringData.find((m: any) =>
+          (m.tphId || m.tph?.id) === data.tphId ||
+          m.tphCode === data.tphCode
+        )
+      : null
+    const sisaJanjang = matchingTph?.sisaJanjang ?? matchingTph?.remainingJanjang ?? 0
     setItems(prev => [
       ...prev,
       {
         tphId: data.tphId,
         blockId: data.blockId,
-        blockName: data.blockName || '-',
+        blockName: data.blockCode || data.blockName || '-',
         plantingYear: data.plantingYear?.[0]?.toString() || '-',
         tphName: data.tphName || '-',
-        janjang: String(data.sisaJanjang || 0),
-        sisaJanjang: data.sisaJanjang || 0,
+        janjang: String(sisaJanjang),
+        sisaJanjang: sisaJanjang,
       },
     ])
   }
@@ -156,26 +148,30 @@ const SPBLocalForm = () => {
 
   const handleSubmit = () => {
     if (!validate()) return
-    dispatch(actions.spbLocal.createSpbLocal.request({
-      loading: true,
-      data: {
-        divisionId,
-        date,
-        gardenTonnageId: selectedGardenTonnageId,
-        items: items.map(item => ({
-          tphId: item.tphId,
-          blockId: item.blockId,
-          plantingYear: item.plantingYear,
-          janjang: parseInt(item.janjang),
-          bpbksDate: date,
-        })),
-      },
-    }))
+    const payload = {
+      divisionId,
+      date,
+      gardenTonnageId: selectedGardenTonnageId,
+      items: items.map(item => ({
+        tphId: item.tphId,
+        blockId: item.blockId,
+        plantingYear: item.plantingYear,
+        janjang: parseInt(item.janjang),
+        bpbksDate: date,
+      })),
+    }
+    if (isEdit) {
+      System.instance.spbLocalService.update(editItem.id, payload)
+        .then(() => { showSuccessToast('SPB Local berhasil diubah'); navigation.goBack() })
+        .catch(() => showErrorToast('Gagal mengubah SPB Local'))
+    } else {
+      dispatch(actions.spbLocal.createSpbLocal.request({loading: true, data: payload}))
+    }
   }
 
   return (
     <SafeAreaView style={styles.root}>
-      <Header title="Tambah SPB Local" />
+      <Header title={isEdit ? 'Ubah SPB Local' : 'Tambah SPB Local'} />
       <ScrollView style={styles.container} contentContainerStyle={{paddingBottom: 100}}>
         <View style={styles.readonlyRow}>
           <Text size={12} color={theme.colors.grey}>Tanggal</Text>
@@ -193,11 +189,45 @@ const SPBLocalForm = () => {
           noItemsText="Tidak ada kendaraan tersedia"
         />
 
+        {items.map((item, index) => (
+          <View key={`${item.tphId}-${index}`} style={styles.itemCard}>
+            <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemoveItem(index)}>
+              <AntDesign name="delete" size={18} color={theme.colors.black} />
+            </TouchableOpacity>
+            <Row>
+              <View>
+                <Text size={12} color={theme.colors.label}>Blok</Text>
+                <Text size={13} type="semibold">{item.blockName}</Text>
+              </View>
+              <View>
+                <Text size={12} color={theme.colors.label}>Tahun Tanam</Text>
+                <Text size={13} type="semibold">{item.plantingYear}</Text>
+              </View>
+            </Row>
+            <Row>
+              <View>
+                <Text size={12} color={theme.colors.label}>TPH</Text>
+                <Text size={13} type="semibold">{item.tphName}</Text>
+              </View>
+              <View>
+                <Text size={12} color={theme.colors.label}>Sisa Janjang</Text>
+                <Text size={13} type="semibold">{Math.max(0, item.sisaJanjang - (parseInt(item.janjang) || 0))}</Text>
+              </View>
+            </Row>
+            <TextInput
+              label="Jumlah Janjang"
+              control={control}
+              name={`items[${index}].janjang`}
+              placeholder="0"
+              value={item.janjang}
+              onChangeText={(v: any) => handleChangeJanjang(index, v)}
+              isNumber
+              isRequired
+            />
+          </View>
+        ))}
+
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.addBtn} onPress={handleAddFromMonitoring}>
-            <Icon name="add-circle-outline" size={18} color="white" />
-            <Text color="white" size={12} style={{marginLeft: 4}}>Tambah</Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.addBtn, {backgroundColor: theme.colors.black || '#333'}]}
             onPress={() => navigation.navigate(Routes.QR_SCANNER, {onScanSuccess: handleScanResult})}>
@@ -205,55 +235,25 @@ const SPBLocalForm = () => {
             <Text color="white" size={12} style={{marginLeft: 4}}>Scan</Text>
           </TouchableOpacity>
         </View>
-
-        {items.map((item, index) => (
-          <View key={`${item.tphId}-${index}`} style={styles.itemCard}>
-            <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemoveItem(index)}>
-              <AntDesign name="closecircle" size={18} color={theme.colors.danger || 'red'} />
-            </TouchableOpacity>
-            <View style={styles.itemRow}>
-              <Text size={12} color={theme.colors.grey}>Blok</Text>
-              <Text size={13} type="semibold">{item.blockName}</Text>
-            </View>
-            <View style={styles.itemRow}>
-              <Text size={12} color={theme.colors.grey}>Tahun Tanam</Text>
-              <Text size={13} type="semibold">{item.plantingYear}</Text>
-            </View>
-            <View style={styles.itemRow}>
-              <Text size={12} color={theme.colors.grey}>TPH</Text>
-              <Text size={13} type="semibold">{item.tphName}</Text>
-            </View>
-            <View style={styles.itemRow}>
-              <Text size={12} color={theme.colors.grey}>Sisa Janjang</Text>
-              <Text size={13} type="semibold">{item.sisaJanjang}</Text>
-            </View>
-            <View style={{marginTop: 8}}>
-              <Text size={12} color={theme.colors.grey}>Jumlah Janjang</Text>
-              <View style={styles.janjangInput}>
-                <TextInput
-                  control={control}
-                  name={`items[${index}].janjang`}
-                  placeholder="0"
-                  value={item.janjang}
-                  onChangeText={(v: any) => handleChangeJanjang(index, v)}
-                  isNumber
-                />
-              </View>
-            </View>
-          </View>
-        ))}
       </ScrollView>
 
       <View style={styles.submitWrap}>
         <Button
           disabled={formStatus?.loading}
           onPress={handleSubmit}>
-          <Text color="white">{formStatus?.loading ? 'Loading...' : 'Simpan'}</Text>
+          <Text color="white">{formStatus?.loading ? 'Loading...' : isEdit ? 'Simpan Perubahan' : 'Simpan'}</Text>
         </Button>
       </View>
     </SafeAreaView>
   )
 }
+
+const Row = ({children}: any) => (
+  <View style={{flexDirection: 'row', marginBottom: 8}}>
+    <View style={{marginRight: 5, flex: 1}}>{React.Children.toArray(children)[0]}</View>
+    <View style={{marginLeft: 5, flex: 1}}>{React.Children.toArray(children)[1]}</View>
+  </View>
+)
 
 export default SPBLocalForm
 
@@ -271,15 +271,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   itemCard: {
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
+    backgroundColor: theme.colors.light2,
+    borderRadius: 10,
+    padding: 16,
+    paddingTop: 20,
+    marginBottom: 16,
   },
-  removeBtn: {position: 'absolute', top: 8, right: 8, zIndex: 1},
-  itemRow: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4},
-  janjangInput: {marginTop: 4},
+  removeBtn: {position: 'absolute', top: 0, right: 0, padding: 16, zIndex: 1},
   submitWrap: {padding: 16, borderTopWidth: 1, borderTopColor: '#eee'},
 })

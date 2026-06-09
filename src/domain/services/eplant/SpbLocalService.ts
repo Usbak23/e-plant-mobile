@@ -10,7 +10,7 @@ export default class SpbLocalService extends BaseService {
   }
 
   list(params: {divisionId?: string; date?: string; gardenTonnageId?: string; page?: number; limit?: number}): Promise<AxiosResponse<IRESTApiResponse>> {
-    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/spb-local/list?${qs.stringify(params)}`)
+    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/spb-local/?${qs.stringify(params)}`)
   }
 
   detail(id: string): Promise<AxiosResponse<IRESTApiResponse>> {

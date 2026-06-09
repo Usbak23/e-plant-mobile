@@ -10,7 +10,7 @@ export default class MonitoringTphService extends BaseService {
   }
 
   list(params: {divisionId: string; month: string; year: string; page?: number; limit?: number}): Promise<AxiosResponse<IRESTApiResponse>> {
-    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/monitoring-tph/list?${qs.stringify(params)}`)
+    return GET(`${this.d.eplantDomain}/api/eplant-server/web/v0/monitoring-tph/?${qs.stringify(params)}`)
   }
 
   summary(params: {divisionId: string; month: string; year: string}): Promise<AxiosResponse<IRESTApiResponse>> {
