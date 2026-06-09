@@ -1,6 +1,6 @@
 {
   "appName": "eplant",
-  "displayName": "E-Plantation",
+  "displayName": "E-Plantation Staging",
   "androidAppId": "com.eplantation.mobile.app",
   "iosBundleId": "com.eplantation.mobile.app",
   "googleSignInConfig": {
