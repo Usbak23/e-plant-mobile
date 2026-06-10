@@ -8,9 +8,9 @@ const getDateColor = (dateStr: string): string | undefined => {
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
   if (diffDays <= 0) return undefined
-  if (diffDays === 1) return '#0376c8'
-  if (diffDays === 2) return '#fbe200'
-  if (diffDays === 3) return '#f50018'
+  if (diffDays === 1) return '#E3F2FD'
+  if (diffDays === 2) return '#FFF9C4'
+  if (diffDays === 3) return '#FFCDD2'
   return '#ffffff'
 }
 
