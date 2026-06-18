@@ -123,47 +123,41 @@ const SPBLocalList = () => {
     </View>
   )
 
-  const renderItem = ({item}: any) => (
-    <TouchableOpacity style={styles.card} onPress={() => {}}>
-      <View style={styles.cardHeader}>
-        <Text size={13} color={theme.colors.accent} type="semibold">
-          {item.items?.map((i: any) => i.tph?.name).filter(Boolean).join(', ') || '-'}
-        </Text>
-        <View style={{flexDirection: 'row'}}>
-          <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
-            <AntDesign name="edit" size={18} color={theme.colors.accent} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-            <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
-          </TouchableOpacity>
+  const renderItem = ({item}: any) => {
+    const kendaraan = item.gardenTonnage?.item?.name
+      ? `${item.gardenTonnage.item.name}${item.gardenTonnage.item.serialNumber ? ` - ${item.gardenTonnage.item.serialNumber}` : ''}`
+      : item.kendaraan || '-'
+    const totalJJG = item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0
+    const tphCount = item.items?.length || 0
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate(Routes.SPB_LOCAL_DETAIL, {item, divisionId, date, organizationName, divisionName})}>
+        <View style={styles.cardHeader}>
+          <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
+          <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+              <AntDesign name="edit" size={18} color={theme.colors.accent} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+              <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={{flexDirection: 'row', marginTop: 8}}>
-        <View style={{flex: 1}}>
-          <Text color={theme.colors.label} size={11}>Blok</Text>
-          <Text color={theme.colors.textThinBlack} size={12}>
-            {item.items?.map((i: any) => i.block?.code).filter(Boolean).join(', ') || '-'}
-          </Text>
+        <View style={{flexDirection: 'row', marginTop: 8}}>
+          <View style={{flex: 1}}>
+            <Text color={theme.colors.label} size={11}>Jumlah TPH</Text>
+            <Text color={theme.colors.textThinBlack} size={12}>{tphCount} TPH</Text>
+          </View>
+          <View style={{flex: 1}}>
+            <Text color={theme.colors.label} size={11}>Total JJG</Text>
+            <Text color={theme.colors.textThinBlack} size={12}>{totalJJG}</Text>
+          </View>
         </View>
-        <View style={{flex: 1}}>
-          <Text color={theme.colors.label} size={11}>Kendaraan</Text>
-          <Text color={theme.colors.textThinBlack} size={12}>
-            {item.gardenTonnage?.item?.name || item.kendaraan || '-'}
-            {item.gardenTonnage?.item?.serialNumber ? ` - ${item.gardenTonnage.item.serialNumber}` : ''}
-          </Text>
-        </View>
-      </View>
-      <View style={{flexDirection: 'row', marginTop: 8}}>
-        <View style={{flex: 1}}>
-          <Text color={theme.colors.label} size={11}>Total JJG</Text>
-          <Text color={theme.colors.textThinBlack} size={12}>
-            {item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0}
-          </Text>
-        </View>
-        <View style={{flex: 1}} />
-      </View>
-    </TouchableOpacity>
-  )
+      </TouchableOpacity>
+    )
+  }
 
   const onEndReached = () => {
     if (!isLoading && Array.isArray(docs) && docs.length >= page * 20) {
