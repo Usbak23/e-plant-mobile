@@ -137,12 +137,14 @@ const SPBLocalList = () => {
         <View style={styles.cardHeader}>
           <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
           <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
-              <AntDesign name="edit" size={18} color={theme.colors.accent} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-              <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
-            </TouchableOpacity>
+            {item.gardenTonnage?.status !== 'submitted' && <>
+              <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+                <AntDesign name="edit" size={18} color={theme.colors.accent} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+                <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
+              </TouchableOpacity>
+            </>}
           </View>
         </View>
         <View style={{flexDirection: 'row', marginTop: 8}}>
