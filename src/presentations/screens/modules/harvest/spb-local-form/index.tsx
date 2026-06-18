@@ -33,7 +33,6 @@ const SPBLocalForm = () => {
   const isEdit = Boolean(editItem)
 
   const formStatus = useSpbLocalFormStatus()
-  const monitoringTphList = useMonitoringTphList()
   const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
 
   const [items, setItems] = useState<SpbLocalItem[]>(() => {
@@ -63,15 +62,23 @@ const SPBLocalForm = () => {
     label: d.item ? `${d.item.name} - ${d.item.serialNumber} (${d.driver || 'Tanpa Supir'})` : d.id,
   }))
 
+  const [monitoringData, setMonitoringData] = useState<any[]>([])
+
   useEffect(() => {
     // Fetch draft options for kendaraan dropdown
     dispatch(actions.getDraftOptions.request({loading: true, data: {date}}))
-    // Fetch monitoring TPH data for picking
+    // Fetch monitoring TPH data directly (bypass Redux to get fresh data)
     const monthYear = moment(date)
-    dispatch(actions.monitoringTph.getMonitoringTphList.request({
-      loading: true,
-      data: {divisionId, month: monthYear.format('MM'), year: monthYear.format('YYYY'), limit: 9999},
-    }))
+    System.instance.monitoringTphService.list({
+      divisionId,
+      month: monthYear.format('M'),
+      year: monthYear.format('YYYY'),
+      limit: 9999,
+    }).then((res: any) => {
+      const responseData = res?.data?.response
+      const docs = Array.isArray(responseData?.docs) ? responseData.docs : Array.isArray(responseData) ? responseData : []
+      setMonitoringData(docs)
+    }).catch(() => setMonitoringData([]))
   }, [])
 
   useEffect(() => {
@@ -93,20 +100,17 @@ const handleScanResult = (data: any) => {
       showErrorToast('TPH sudah ditambahkan')
       return
     }
-    const monitoringData = monitoringTphList?.data?.docs || monitoringTphList?.data || []
-    const matchingTph = Array.isArray(monitoringData)
-      ? monitoringData.find((m: any) =>
-          (m.tphId || m.tph?.id) === data.tphId ||
-          m.tphCode === data.tphCode
-        )
-      : null
-    const sisaJanjang = matchingTph?.sisaJanjang ?? matchingTph?.remainingJanjang ?? 0
+    const matchingTph = monitoringData.find((m: any) =>
+      (m.tphId || m.tph?.id) === data.tphId ||
+      m.tphCode === data.tphCode
+    )
+    const sisaJanjang = matchingTph?.sisaJanjang ?? 0
     setItems(prev => [
       ...prev,
       {
         tphId: data.tphId,
         blockId: data.blockId,
-        blockName: data.blockCode || data.blockName || '-',
+        blockCode: data.blockCode || data.blockName || '-',
         plantingYear: data.plantingYear?.[0]?.toString() || '-',
         tphName: data.tphName || '-',
         janjang: String(sisaJanjang),
