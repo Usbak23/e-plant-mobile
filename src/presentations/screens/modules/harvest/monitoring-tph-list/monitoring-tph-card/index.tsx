@@ -8,10 +8,10 @@ const getDateColor = (dateStr: string): string | undefined => {
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
   if (diffDays <= 0) return undefined
-  if (diffDays === 1) return '#E3F2FD'
-  if (diffDays === 2) return '#FFF9C4'
-  if (diffDays === 3) return '#FFCDD2'
-  return '#ffffff'
+  if (diffDays === 1) return '#abd9fa'
+  if (diffDays === 2) return '#f9f09f'
+  if (diffDays === 3) return '#fabcc3'
+  return '#d9d9d9'
 }
 
 const formatDate = (dateStr: string) => {
