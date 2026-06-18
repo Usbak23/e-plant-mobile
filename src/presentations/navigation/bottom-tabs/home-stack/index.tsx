@@ -84,7 +84,7 @@ import CameraPhotoScreen from '@app/presentations/screens/modules/harvest/camera
 import SPBLocalFilter from '@app/presentations/screens/modules/harvest/spb-local-filter'
 import SPBLocalList from '@app/presentations/screens/modules/harvest/spb-local-list'
 import SPBLocalForm from '@app/presentations/screens/modules/harvest/spb-local-form'
-
+import SPBLocalDetail from '@app/presentations/screens/modules/harvest/spb-local-detail'
 import BKMTakeCareFilter from '@app/presentations/screens/modules/take-care/bkm-take-care-filter'
 import BKMTakeCareList from '@app/presentations/screens/modules/take-care/bkm-take-care-list'
 import BKMTakeCareDetail from '@app/presentations/screens/modules/take-care/bkm-take-care-detail'
@@ -259,6 +259,7 @@ const HomeStack: React.FC<HomeStackProps> = ({}) => {
       <Stack.Screen name={Routes.SPB_LOCAL_FILTER} component={SPBLocalFilter} />
       <Stack.Screen name={Routes.SPB_LOCAL_LIST} component={SPBLocalList} />
       <Stack.Screen name={Routes.SPB_LOCAL_FORM} component={SPBLocalForm} />
+      <Stack.Screen name={Routes.SPB_LOCAL_DETAIL} component={SPBLocalDetail} />
 
       {/* TAKE CARE */}
       <Stack.Screen name={Routes.TAKE_CARE} component={TakeCareModulePage} />

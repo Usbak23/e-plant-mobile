@@ -1,7 +1,7 @@
 import React from 'react'
 import Routes from '@navigation/Routes'
 import BKM from '@assets/icons/ic_book.svg'
-import PMB from '@assets/icons/ic_grain.svg'
+// import PMB from '@assets/icons/ic_grain.svg'
 import PMA from '@assets/icons/ic_checklist.svg'
 import BPBKS from '@assets/icons/ic_checklist.svg'
 import Balance from '@assets/icons/ic_balance.svg'
@@ -36,7 +36,7 @@ export const harvestMenus: {
   },
   {
     icon: () => <BPBKS width={24} height={24} />,
-    title: 'Pemeriksaan\nMutu Buah',
+    title: 'BPBKS',
     slug: 'lihat-bpbks',
     screen: Routes.BPBKS_FILTER,
     bgColor: 'rgba(156, 93, 228, 0.35)',
