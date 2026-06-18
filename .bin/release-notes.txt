@@ -1,11 +1,11 @@
-E-Plantation Staging v6.1.0
+E-Plantation Staging v6.2.0
 
-Build: #15
+Build: #16
 Environment: Staging
 
 Recent changes:
-- feat(monitoring-tph-list): refactor list, add search filter, extract card to MonitoringTphCard component
-- feat(monitoring-tph-card): add MonitoringTphCard component
-- feat(spb-local-form): add edit mode, fix sisaJanjang realtime calc, fetch monitoring with limit 9999
-- feat(spb-local-list): refactor to direct fetch, add search filter, redesign card with edit & delete action
-- fix(service): fix monitoring-tph and spb-local list endpoint URL
+-   feat(spb-local): update list screen for offline-first support
+-  fix(spb-local-form): fetch monitoring TPH directly to avoid Redux state conflict
+- fix(monitoring-tph): adjust card indicator colors for better contrast
+-  feat(monitoring-tph): implement infinite scroll with load-more pagination
+- feat(harvest): add SPB Local detail screen and register route
