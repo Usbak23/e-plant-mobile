@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useState} from 'react'
-import {FlatList, RefreshControl, SafeAreaView, StyleSheet, View} from 'react-native'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
+import {ActivityIndicator, FlatList, RefreshControl, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native'
 import {Header, ListFilterAlt, Text} from '@app/presentations/_shared-components'
 import {useRoute} from '@react-navigation/native'
 import {theme} from '@app/presentations/utils/styles'
@@ -16,6 +16,21 @@ import MonitoringTphCard from './monitoring-tph-card'
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 const ICON_SIZE = 17
 
+const STATUS_TABS = [
+  {key: 'all', label: 'Semua'},
+  {key: '0', label: 'Hari Ini'},
+  {key: '1', label: '1 Hari'},
+  {key: '2', label: '2 Hari'},
+  {key: '3', label: '3+ Hari'},
+]
+
+const getDiffDays = (dateStr: string): number => {
+  const diff = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  return diff < 0 ? 0 : diff
+}
+
+const PAGE_LIMIT = 10
+
 const MonitoringTphList = () => {
   const dispatch: any = useDispatch()
   const route: any = useRoute()
@@ -25,77 +40,66 @@ const MonitoringTphList = () => {
   const listState = useMonitoringTphList()
 
   const totalJanjang = summaryState?.loading === false ? (summaryState?.data?.totalJanjang ?? summaryState?.data?.sisaJanjang ?? 0) : 0
-  const allData: any[] = Array.isArray(listState?.data?.docs) ? listState.data.docs : Array.isArray(listState?.data) ? listState.data : []
   const loading = listState?.loading || false
 
-  const [query, setQuery] = useState({ search: '' })
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [accumulatedData, setAccumulatedData] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const isLoadingMore = useRef(false)
 
-  const filteredData = allData.filter((item: any) =>
-    (item?.tphName || item?.tphCode || '').toLowerCase().includes(query.search.toLowerCase()) ||
-    (item?.blockCode || '').toLowerCase().includes(query.search.toLowerCase())
-  )
+  const filteredData = accumulatedData.filter((item: any) => {
+    const matchSearch =
+      (item?.tphName || item?.tphCode || '').toLowerCase().includes(search.toLowerCase()) ||
+      (item?.blockCode || '').toLowerCase().includes(search.toLowerCase())
+    if (!matchSearch) return false
+    if (statusFilter === 'all') return true
+    const diff = getDiffDays(item.date)
+    if (statusFilter === '3') return diff >= 3
+    return diff === parseInt(statusFilter, 10)
+  })
+
+  const fetchPage = useCallback((page: number) => {
+    dispatch(actions.monitoringTph.getMonitoringTphList.request({
+      loading: true,
+      data: {divisionId, month, year, page, limit: PAGE_LIMIT},
+    }))
+  }, [divisionId, month, year])
 
   const getData = useCallback(() => {
+    setAccumulatedData([])
+    setCurrentPage(0)
+    setHasMore(true)
+    isLoadingMore.current = false
     dispatch(actions.monitoringTph.getMonitoringTphSummary.request({
       loading: true,
       data: {divisionId, month, year},
     }))
-    dispatch(actions.monitoringTph.getMonitoringTphList.request({
-      loading: true,
-      data: {divisionId, month, year},
-    }))
-  }, [divisionId, month, year])
+    fetchPage(0)
+  }, [divisionId, month, year, fetchPage])
+
+  // Append new page data when listState updates
+  useEffect(() => {
+    if (listState?.loading === false && listState?.data?.docs) {
+      const {docs, totalPages, page} = listState.data
+      setAccumulatedData(prev => page === 0 ? docs : [...prev, ...docs])
+      setHasMore(page < totalPages - 1)
+      isLoadingMore.current = false
+    }
+  }, [listState])
 
   useEffect(() => {
     getData()
   }, [])
 
-  const ListHeaderComponent = () => (
-    <View style={styles.headerInfo}>
-      <View style={styles.infoContainer}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <View style={styles.smallIconView}>
-              <IconBuilding width={ICON_SIZE} height={ICON_SIZE} />
-            </View>
-            <View style={styles.leftSpacer}>
-              <Text style={styles.infoLabel} size={11}>Organisasi</Text>
-              <Text color={theme.colors.textThinBlack} size={12}>{organizationName || '-'}</Text>
-            </View>
-          </View>
-          <View style={styles.infoItem}>
-            <View style={styles.smallIconView}>
-              <IconBuilding width={ICON_SIZE} height={ICON_SIZE} />
-            </View>
-            <View style={styles.leftSpacer}>
-              <Text style={styles.infoLabel} size={11}>Divisi</Text>
-              <Text color={theme.colors.textThinBlack} size={12}>{divisionName || '-'}</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <View style={styles.smallIconView}>
-              <IconCalendar width={ICON_SIZE} height={ICON_SIZE} />
-            </View>
-            <View style={styles.leftSpacer}>
-              <Text style={styles.infoLabel} size={11}>Bulan/Tahun</Text>
-              <Text color={theme.colors.textThinBlack} size={12}>{MONTHS[parseInt(month, 10) - 1]} {year}</Text>
-            </View>
-          </View>
-          <View style={styles.infoItem}>
-            <View style={styles.smallIconView}>
-              <IconGroupWork width={ICON_SIZE} height={ICON_SIZE} />
-            </View>
-            <View style={styles.leftSpacer}>
-              <Text style={styles.infoLabel} size={11}>Total Janjang</Text>
-              <Text color={theme.colors.textThinBlack} size={12}>{totalJanjang}</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  )
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore || isLoadingMore.current) return
+    isLoadingMore.current = true
+    const nextPage = currentPage + 1
+    setCurrentPage(nextPage)
+    fetchPage(nextPage)
+  }, [loading, hasMore, currentPage, fetchPage])
 
   const renderItem = ({item}: any) => <MonitoringTphCard item={item} />
 
@@ -103,18 +107,69 @@ const MonitoringTphList = () => {
     <SafeAreaView style={styles.root}>
       <Header title="Monitoring TPH" />
       <ListFilterAlt
-        searchValue={query.search}
-        onChangeSearch={(search: string) => setQuery({search})}
+        searchValue={search}
+        onChangeSearch={(v: string) => setSearch(v)}
       />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer} contentContainerStyle={styles.tabsContent}>
+        {STATUS_TABS.map(tab => (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tab, statusFilter === tab.key && styles.tabActive]}
+            onPress={() => setStatusFilter(tab.key)}>
+            <Text size={12} color={statusFilter === tab.key ? 'white' : theme.colors.label}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      <View style={styles.headerInfo}>
+        <View style={styles.infoContainer}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <View style={styles.smallIconView}><IconBuilding width={ICON_SIZE} height={ICON_SIZE} /></View>
+              <View style={styles.leftSpacer}>
+                <Text style={styles.infoLabel} size={11}>Organisasi</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{organizationName || '-'}</Text>
+              </View>
+            </View>
+            <View style={styles.infoItem}>
+              <View style={styles.smallIconView}><IconBuilding width={ICON_SIZE} height={ICON_SIZE} /></View>
+              <View style={styles.leftSpacer}>
+                <Text style={styles.infoLabel} size={11}>Divisi</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{divisionName || '-'}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <View style={styles.smallIconView}><IconCalendar width={ICON_SIZE} height={ICON_SIZE} /></View>
+              <View style={styles.leftSpacer}>
+                <Text style={styles.infoLabel} size={11}>Bulan/Tahun</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{MONTHS[parseInt(month, 10) - 1]} {year}</Text>
+              </View>
+            </View>
+            <View style={styles.infoItem}>
+              <View style={styles.smallIconView}><IconGroupWork width={ICON_SIZE} height={ICON_SIZE} /></View>
+              <View style={styles.leftSpacer}>
+                <Text style={styles.infoLabel} size={11}>Total Janjang</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{totalJanjang}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
       <FlatList
-        ListHeaderComponent={ListHeaderComponent}
         data={filteredData}
         renderItem={renderItem}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+        contentContainerStyle={{paddingBottom: 24}}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
         refreshControl={
-          <RefreshControl colors={[theme.colors.primary]} refreshing={loading && !allData.length} onRefresh={getData} />
+          <RefreshControl colors={[theme.colors.primary]} refreshing={loading && accumulatedData.length === 0} onRefresh={getData} />
         }
-        ListEmptyComponent={loading ? null : EmptyList}
+        ListFooterComponent={loading && accumulatedData.length > 0 ? <ActivityIndicator style={{marginVertical: 16}} color={theme.colors.primary} /> : null}
+        ListEmptyComponent={loading ? null : <View style={{marginTop: -48}}><EmptyList /></View>}
       />
     </SafeAreaView>
   )
@@ -124,7 +179,7 @@ export default MonitoringTphList
 
 const styles = StyleSheet.create({
   root: {flex: 1, backgroundColor: 'white'},
-  headerInfo: {marginTop: 16, marginBottom: 6},
+  headerInfo: {marginTop: 12, marginBottom: 8},
   infoContainer: {
     marginHorizontal: 22,
     paddingHorizontal: 16,
@@ -132,7 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#F4F4F4',
   },
-  infoRow: {marginVertical: 8, flexDirection: 'row'},
+  infoRow: {marginVertical: 6, flexDirection: 'row'},
   infoItem: {flex: 1, flexDirection: 'row', alignItems: 'center', marginHorizontal: 8},
   infoLabel: {color: '#9C9C9C'},
   leftSpacer: {marginStart: 8, flex: 1},
@@ -140,5 +195,21 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.smallIconViewColor,
     padding: 4,
     borderRadius: 5,
+  },
+  tabsContainer: {height: 52, marginVertical: 4},
+  tabsContent: {paddingHorizontal: 18, paddingVertical: 4, alignItems: 'center'},
+  tab: {
+    height: 32,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.label,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  tabActive: {
+    backgroundColor: theme.colors.accent,
+    borderColor: theme.colors.accent,
   },
 })
