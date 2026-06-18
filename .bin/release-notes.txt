@@ -1,11 +1,11 @@
-E-Plantation Staging v6.2.0
+E-Plantation Staging v6.3.0
 
-Build: #16
+Build: #17
 Environment: Staging
 
 Recent changes:
+- fix(tonnage-garden): clear draft options on request to prevent stale data
+- fix(spb-local): pass organizationId through filter → list → form for draft options
+- [skip ci] bump version 6.2.0
 -   feat(spb-local): update list screen for offline-first support
 -  fix(spb-local-form): fetch monitoring TPH directly to avoid Redux state conflict
-- fix(monitoring-tph): adjust card indicator colors for better contrast
--  feat(monitoring-tph): implement infinite scroll with load-more pagination
-- feat(harvest): add SPB Local detail screen and register route
