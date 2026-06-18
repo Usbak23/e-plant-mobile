@@ -51,6 +51,7 @@ const SPBLocalFilter = () => {
     const div = divisionAll.find((o: any) => o.id === getValues('divisionId'))
     navigation.navigate(Routes.SPB_LOCAL_LIST, {
       divisionId: getValues('divisionId'),
+      organizationId: getValues('organizationId'),
       date: moment(getValues('date')).format('YYYY-MM-DD'),
       organizationName: org?.label || '',
       divisionName: div?.name || '',
