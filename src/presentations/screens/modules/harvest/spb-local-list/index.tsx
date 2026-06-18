@@ -24,7 +24,7 @@ const SPBLocalList = () => {
   const dispatch: any = useDispatch()
   const route: any = useRoute()
   const isFocused = useIsFocused()
-  const {divisionId, date, organizationName, divisionName} = route.params || {}
+  const {divisionId, date, organizationId, organizationName, divisionName} = route.params || {}
 
   const [page, setPage] = useState(1)
   const [allDocs, setAllDocs] = useState<any[]>([])
@@ -137,7 +137,7 @@ const SPBLocalList = () => {
         <View style={styles.cardHeader}>
           <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
           <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+            <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
               <AntDesign name="edit" size={18} color={theme.colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
@@ -187,7 +187,7 @@ const SPBLocalList = () => {
         />
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationName, divisionName})}>
+        onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName})}>
         <Icon name="add" size={28} color="white" />
       </TouchableOpacity>
     </SafeAreaView>

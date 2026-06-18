@@ -147,7 +147,7 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
       ...state,
       draftOptions: {
         ...payload,
-        data: state.draftOptions?.data,
+        data: [],
       },
     }
   })

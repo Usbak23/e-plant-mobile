@@ -29,7 +29,7 @@ const SPBLocalForm = () => {
   const navigation: any = useNavigation()
   const dispatch: any = useDispatch()
   const route: any = useRoute()
-  const {divisionId, date, organizationName, divisionName, editItem} = route.params || {}
+  const {divisionId, date, organizationId, organizationName, divisionName, editItem} = route.params || {}
   const isEdit = Boolean(editItem)
 
   const formStatus = useSpbLocalFormStatus()
@@ -63,12 +63,14 @@ const SPBLocalForm = () => {
   }))
 
   const [monitoringData, setMonitoringData] = useState<any[]>([])
+  const [monitoringLoading, setMonitoringLoading] = useState(true)
 
   useEffect(() => {
     // Fetch draft options for kendaraan dropdown
-    dispatch(actions.getDraftOptions.request({loading: true, data: {date}}))
+    dispatch(actions.getDraftOptions.request({loading: true, data: {organizationId, date}}))
     // Fetch monitoring TPH data directly (bypass Redux to get fresh data)
     const monthYear = moment(date)
+    setMonitoringLoading(true)
     System.instance.monitoringTphService.list({
       divisionId,
       month: monthYear.format('M'),
@@ -77,8 +79,12 @@ const SPBLocalForm = () => {
     }).then((res: any) => {
       const responseData = res?.data?.response
       const docs = Array.isArray(responseData?.docs) ? responseData.docs : Array.isArray(responseData) ? responseData : []
-      setMonitoringData(docs)
+      // Filter by exact date to get correct sisaJanjang for this specific day
+      const dateStr = moment(date).format('YYYY-MM-DD')
+      const filtered = docs.filter((d: any) => moment(d.date).format('YYYY-MM-DD') === dateStr)
+      setMonitoringData(filtered)
     }).catch(() => setMonitoringData([]))
+      .finally(() => setMonitoringLoading(false))
   }, [])
 
   useEffect(() => {
@@ -201,7 +207,7 @@ const handleScanResult = (data: any) => {
             <Row>
               <View>
                 <Text size={12} color={theme.colors.label}>Blok</Text>
-                <Text size={13} type="semibold">{item.blockName}</Text>
+                <Text size={13} type="semibold">{item.blockCode}</Text>
               </View>
               <View>
                 <Text size={12} color={theme.colors.label}>Tahun Tanam</Text>
@@ -233,10 +239,11 @@ const handleScanResult = (data: any) => {
 
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.addBtn, {backgroundColor: theme.colors.black || '#333'}]}
+            style={[styles.addBtn, {backgroundColor: monitoringLoading ? theme.colors.grey : (theme.colors.black || '#333')}, monitoringLoading && {opacity: 0.6}]}
+            disabled={monitoringLoading}
             onPress={() => navigation.navigate(Routes.QR_SCANNER, {onScanSuccess: handleScanResult})}>
             <Icon name="qr-code-scanner" size={18} color="white" />
-            <Text color="white" size={12} style={{marginLeft: 4}}>Scan</Text>
+            <Text color="white" size={12} style={{marginLeft: 4}}>{monitoringLoading ? 'Loading...' : 'Scan'}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
