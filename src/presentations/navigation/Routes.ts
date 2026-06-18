@@ -141,6 +141,7 @@ export default class Routes {
   static SPB_LOCAL_FILTER = Routes.HARVEST + '/spb-local-filter'
   static SPB_LOCAL_LIST = Routes.HARVEST + '/spb-local-list'
   static SPB_LOCAL_FORM = Routes.HARVEST + '/spb-local-form'
+  static SPB_LOCAL_DETAIL = Routes.HARVEST + '/spb-local-detail'
 
   static BPBKS_FILTER = Routes.HARVEST + '/bpbks-filter'
   static BPBKS_LIST = Routes.PLAN + '/bpbks-list'
