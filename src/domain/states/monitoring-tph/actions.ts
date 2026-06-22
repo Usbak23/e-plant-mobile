@@ -16,3 +16,7 @@ export const getMonitoringTphSummary = createAsyncAction(
 )<IEffectPayload<any, true>, IEffectPayload<any, false>, IEffectPayload<null, false, IError>>()
 
 export const clearMonitoringTph = createAction(c.CLEAR_MONITORING_TPH, clearAction)()
+
+export const setMonitoringTphLastUpdated = createAction(
+  c.SET_MONITORING_TPH_LAST_UPDATED,
+)<string>()
