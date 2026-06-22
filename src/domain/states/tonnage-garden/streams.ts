@@ -3,6 +3,7 @@ import {from, of} from 'rxjs'
 import {isActionOf} from 'typesafe-actions'
 import * as actions from '@app/domain/states/tonnage-garden/actions'
 import {StreamType} from '@app/domain/states/types'
+import moment from 'moment'
 import {
   ITonnageGardenBlockFormData,
   ITonnageGardenFileFormData,
@@ -142,12 +143,23 @@ const getTonnageGardenDetail: StreamType = (action$, state$, api) => {
 const getDraftOptionsStream: StreamType = (action$, state$, api) => {
   return action$.pipe(
     filter(isActionOf(actions.getDraftOptions.request)),
-    switchMap(action =>
-      from(api.tonnageGarderService.getDraftOptions(action.payload.data as any)).pipe(
+    switchMap(action => {
+      const isConnected = state$?.value?.network.isConnected
+      const cached = state$?.value?.tonnageGarden?.draftOptions?.data
+      if (!isConnected) {
+        const { organizationId, date } = (action.payload.data || {}) as any
+        const filtered = (cached || []).filter((d: any) => {
+          const matchOrg = !organizationId || d.organization?.id === organizationId
+          const matchDate = !date || moment(d.date).format('YYYY-MM-DD') === date
+          return matchOrg && matchDate
+        })
+        return of(actions.getDraftOptions.success({loading: false, data: filtered}))
+      }
+      return from(api.tonnageGarderService.getDraftOptions(action.payload.data as any)).pipe(
         map(({data}: any) => actions.getDraftOptions.success({loading: false, data: data?.response || []})),
         catchError(() => of(actions.getDraftOptions.failure({loading: false, error: null}))),
-      ),
-    ),
+      )
+    }),
   )
 }
 
