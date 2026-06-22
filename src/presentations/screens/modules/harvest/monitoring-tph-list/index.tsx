@@ -3,8 +3,10 @@ import {ActivityIndicator, FlatList, RefreshControl, SafeAreaView, ScrollView, S
 import {Header, ListFilterAlt, Text} from '@app/presentations/_shared-components'
 import {useRoute} from '@react-navigation/native'
 import {theme} from '@app/presentations/utils/styles'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {actions} from '@app/domain/states/store'
+import {useNetInfo} from '@react-native-community/netinfo'
+import moment from 'moment'
 import EmptyList from '@app/presentations/_shared-components/Empty'
 import {useMonitoringTphList, useMonitoringTphSummary} from '@app/domain/states/monitoring-tph/hooks'
 import IconBuilding from '@assets/icons/ic_small_building.svg'
@@ -35,6 +37,10 @@ const MonitoringTphList = () => {
   const dispatch: any = useDispatch()
   const route: any = useRoute()
   const {divisionId, month, year, divisionName, organizationName} = route.params || {}
+
+  const lastUpdated = useSelector((s: any) => s.monitoringTph?.lastUpdated)
+  const netInfo = useNetInfo()
+  const isOffline = netInfo.isConnected === false
 
   const summaryState = useMonitoringTphSummary()
   const listState = useMonitoringTphList()
@@ -106,6 +112,18 @@ const MonitoringTphList = () => {
   return (
     <SafeAreaView style={styles.root}>
       <Header title="Monitoring TPH" />
+      {isOffline && (
+        <View style={styles.offlineBanner}>
+          <Text size={12} color='#856404'>Anda sedang offline. Menampilkan data terakhir.</Text>
+        </View>
+      )}
+      {!isOffline && lastUpdated && (
+        <View style={styles.lastUpdatedBar}>
+          <Text size={11} color={theme.colors.label}>
+            Diperbarui: {moment(lastUpdated).format('D MMM YYYY, HH:mm')}
+          </Text>
+        </View>
+      )}
       <ListFilterAlt
         searchValue={search}
         onChangeSearch={(v: string) => setSearch(v)}
@@ -211,5 +229,15 @@ const styles = StyleSheet.create({
   tabActive: {
     backgroundColor: theme.colors.accent,
     borderColor: theme.colors.accent,
+  },
+  offlineBanner: {
+    backgroundColor: '#FFF3CD',
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderRadius: 0,
+  },
+  lastUpdatedBar: {
+    paddingHorizontal: 22,
+    paddingBottom: 2,
   },
 })

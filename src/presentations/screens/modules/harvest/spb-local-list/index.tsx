@@ -4,7 +4,7 @@ import {Header, ListFilterAlt, Loader, Text} from '@app/presentations/_shared-co
 import {showErrorToast, showSuccessToast} from '@app/presentations/_shared-components/Toast'
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native'
 import Routes from '@app/presentations/navigation/Routes'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {actions} from '@app/domain/states/store'
 // spb-local list hooks removed - using direct fetch
 import {theme} from '@app/presentations/utils/styles'
@@ -30,6 +30,8 @@ const SPBLocalList = () => {
   const [allDocs, setAllDocs] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
+  const spbLocalListTemp = useSelector((s: any) => s.spbLocal?.spbLocalListTemp || [])
+
   const docs = allDocs
   const isLoading = loading
 
@@ -54,15 +56,29 @@ const SPBLocalList = () => {
       .then((res: any) => {
         const responseData = res?.data?.response
         const newDocs = Array.isArray(responseData?.docs) ? responseData.docs : Array.isArray(responseData) ? responseData : []
-        if (p === 1) setAllDocs(newDocs)
+        const tempItems = spbLocalListTemp.filter((t: any) => t.divisionId === divisionId && t.tempId)
+        if (p === 1) setAllDocs([...tempItems, ...newDocs])
         else setAllDocs(prev => [...prev, ...newDocs])
       })
-      .catch(() => { if (p === 1) setAllDocs([]) })
+      .catch(() => {
+        if (p === 1) {
+          const tempItems = spbLocalListTemp.filter((t: any) => t.divisionId === divisionId && t.tempId)
+          setAllDocs(tempItems)
+        }
+      })
       .finally(() => setLoading(false))
-  }, [divisionId, date])
+  }, [divisionId, date, spbLocalListTemp])
 
   useEffect(() => {
-    if (isFocused) fetchData(1)
+    if (isFocused) {
+      fetchData(1)
+      // Prefetch data for offline use saat online
+      dispatch(actions.getDraftOptions.request({loading: true, data: {organizationId, date}}))
+      dispatch(actions.monitoringTph.getMonitoringTphList.request({
+        loading: true,
+        data: {divisionId, month: moment(date).format('M'), year: moment(date).format('YYYY'), limit: 9999, page: 0},
+      }))
+    }
   }, [isFocused])
 
   const handleDelete = (id: string) => {
@@ -129,22 +145,29 @@ const SPBLocalList = () => {
       : item.kendaraan || '-'
     const totalJJG = item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0
     const tphCount = item.items?.length || 0
+    const isTemp = Boolean(item.tempId)
 
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate(Routes.SPB_LOCAL_DETAIL, {item, divisionId, date, organizationName, divisionName})}>
+        onPress={() => !isTemp && navigation.navigate(Routes.SPB_LOCAL_DETAIL, {item, divisionId, date, organizationName, divisionName})}>
         <View style={styles.cardHeader}>
           <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
           <View style={{flexDirection: 'row'}}>
-            {item.gardenTonnage?.status !== 'submitted' && <>
-              <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
-                <AntDesign name="edit" size={18} color={theme.colors.accent} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-                <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
-              </TouchableOpacity>
-            </>}
+            {isTemp ? (
+              <View style={styles.syncBadge}>
+                <Text size={10} color="#856404">Menunggu Sync</Text>
+              </View>
+            ) : (
+              item.gardenTonnage?.status !== 'submitted' && <>
+                <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+                  <AntDesign name="edit" size={18} color={theme.colors.accent} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+                  <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
         <View style={{flexDirection: 'row', marginTop: 8}}>
@@ -171,6 +194,11 @@ const SPBLocalList = () => {
   return (
     <SafeAreaView style={styles.root}>
       <Header title="SPB Local" />
+      {spbLocalListTemp.length > 0 && (
+        <View style={styles.syncBanner}>
+          <Text size={12} color='#856404'>{spbLocalListTemp.length} data menunggu sinkronisasi</Text>
+        </View>
+      )}
       <ListFilterAlt
         searchValue={search}
         onChangeSearch={(v: string) => setSearch(v)}
@@ -235,6 +263,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteBtn: {padding: 4},
+  syncBadge: {
+    backgroundColor: '#FFF3CD',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    justifyContent: 'center',
+  },
+  syncBanner: {
+    backgroundColor: '#FFF3CD',
+    padding: 8,
+    marginHorizontal: 18,
+    borderRadius: 8,
+    marginBottom: 4,
+    marginTop: 4,
+  },
   fab: {
     position: 'absolute',
     bottom: 24,
