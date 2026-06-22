@@ -54,24 +54,33 @@ const HomePage = () => {
   const netInfo = useNetInfo()
   const isConnected = netInfo.isConnected && netInfo.isInternetReachable !== false
 
+  const prefetchHarvestData = () => {
+    const today = moment().format('YYYY-MM-DD')
+    const month = moment().format('M')
+    const year = moment().format('YYYY')
+    const divisions = currentUser?.userDivisions || []
+
+    const seenOrgs = new Set()
+    divisions.forEach((ud: any) => {
+      const divisionId = ud.division?.id
+      const orgId = ud.division?.organization?.id
+      if (divisionId) {
+        dispatch(actions.monitoringTph.getMonitoringTphList.request({
+          loading: false,
+          data: {divisionId, month, year, limit: 9999, page: 0},
+        }))
+      }
+      if (orgId && !seenOrgs.has(orgId)) {
+        seenOrgs.add(orgId)
+        dispatch(actions.getDraftOptions.request({loading: false, data: {organizationId: orgId, date: today}}))
+      }
+    })
+  }
+
   const onRefresh = () => {
     setRefreshing(true)
     dispatch(actions.fetchAllDataForOfflineMode())
-
-    // Pre-fetch draft options untuk semua organisasi user dengan tanggal hari ini
-    const today = moment().format('YYYY-MM-DD')
-    const orgIds = [...new Set(
-      (currentUser?.userDivisions || [])
-        .map((d: any) => d.division?.organization?.id)
-        .filter(Boolean)
-    )]
-    orgIds.forEach((orgId: any) => {
-      dispatch(actions.getDraftOptions.request({
-        loading: false,
-        data: { organizationId: orgId, date: today },
-      }))
-    })
-
+    prefetchHarvestData()
     setTimeout(() => setRefreshing(false), 1500)
   }
 
@@ -186,9 +195,11 @@ const HomePage = () => {
 
   }, [])
 
+
   useEffect(() => {
     if (isFocused) {
       dispatch(actions.fetchAllDataForOfflineMode())
+      prefetchHarvestData()
     }
   }, [isFocused])
 
