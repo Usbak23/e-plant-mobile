@@ -11,8 +11,6 @@ import Request from '@assets/icons/ic_request.svg'
 import Approval from '@assets/icons/ic_checklist.svg' // Menggunakan icon checklist yang sudah ada
 import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 
-console.log(MasterData)
-
 export const Menus = [
   {
     icon: MasterData,
