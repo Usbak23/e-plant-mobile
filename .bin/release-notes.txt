@@ -1,11 +1,11 @@
-E-Plantation Staging v6.3.0
+E-Plantation Staging v6.4.0
 
-Build: #17
+Build: #19
 Environment: Staging
 
 Recent changes:
-- fix(tonnage-garden): clear draft options on request to prevent stale data
-- fix(spb-local): pass organizationId through filter → list → form for draft options
-- [skip ci] bump version 6.2.0
--   feat(spb-local): update list screen for offline-first support
--  fix(spb-local-form): fetch monitoring TPH directly to avoid Redux state conflict
+- fix(offline): improve BPBKS success toast and fix SPB Local monitoring cache
+- test: fix jest config and mocks so test suite passes
+- docs: update README with complete feature list and project info
+- docs: update README with complete feature list and project info
+- Merge branch 'staging' into 'feat/offline-first'
