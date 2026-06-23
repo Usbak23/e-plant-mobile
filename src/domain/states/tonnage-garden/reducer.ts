@@ -147,7 +147,7 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
       ...state,
       draftOptions: {
         ...payload,
-        data: [],
+        data: state.draftOptions?.data || [],  // jaga cache, jangan reset ke []
       },
     }
   })
@@ -163,9 +163,16 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
   })
   .handleAction(actions.getDraftOptions.success, (state, action) => {
     const payload = (action as IEffectAction).payload
+    const existing = state.draftOptions?.data || []
+    const incoming = payload.data || []
+    // Merge: update existing entries, add new ones
+    const merged = [
+      ...existing.filter((e: any) => !incoming.find((i: any) => i.id === e.id)),
+      ...incoming,
+    ]
     return {
       ...state,
-      draftOptions: payload,
+      draftOptions: { ...payload, data: merged },
     }
   })
 
