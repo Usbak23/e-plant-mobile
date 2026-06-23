@@ -1,97 +1,223 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# E-Plantation Mobile (eplant)
 
-# Getting Started
+Aplikasi mobile **E-Plantation** untuk manajemen perkebunan kelapa sawit, dibangun dengan [React Native](https://reactnative.dev) v0.82.1.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## Tech Stack
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **React Native** 0.82.1 + **TypeScript**
+- **Redux** + **Redux Observable** (RxJS) + **Redux Persist**
+- **React Navigation** v7
+- **WatermelonDB** — local database
+- **Firebase** (Analytics, Crashlytics, Messaging)
+- **React Native Vision Camera** — kamera
+- **React Native Maps** — peta
+- **CI/CD**: Codemagic
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+---
+
+## Fitur Utama
+
+### 🌾 Harvest (Panen)
+
+| Fitur | Keterangan |
+|-------|------------|
+| BPBKS (Bukti Pemeriksaan Buah Kelapa Sawit) | ✅ Full Offline + Auto Sync |
+| SPB Local (Surat Pengantar Buah Lokal) | ✅ Full Offline + Auto Sync |
+| Monitoring TPH | ✅ Read-only (cached) |
+| BKM (Buku Kas Mandor) Harvest | List, detail, form |
+| PMA (Pemantauan Mandor Afdeling) | List, detail, form, preview |
+| Tonnage Garden | List, detail, form, upload file |
+| Tonnage PKS | List, detail, form |
+| QR Scanner | Scan QR BPBKS |
+| Camera Photo | Pengambilan foto lapangan |
+
+### 🌿 Take Care (Perawatan)
+
+| Fitur | Keterangan |
+|-------|------------|
+| BKM Take Care | List, detail, form |
+| Realisasi Pemupukan | List, detail, form |
+
+### 📋 Plan (Perencanaan)
+
+| Fitur | Keterangan |
+|-------|------------|
+| RKH (Rencana Kerja Harian) Harvest | List, detail, form |
+| RKH Take Care | List, detail, form |
+| AKP (Anggaran Kerja Perkebunan) | List, detail, form |
+| Perpajakan (Taxation) | List, detail, form |
+| Sensus (Census) | List, detail, form |
+
+### 📊 Report (Laporan)
+
+| Fitur | Keterangan |
+|-------|------------|
+| BPBKS Report | View laporan |
+| BMP (Biaya Mandor Panen) | View laporan |
+| BJR (Berat Janjang Rata-rata) | View laporan |
+| RRP | View laporan |
+| AKP | View laporan |
+| AKP Plan / Realization | View laporan |
+| RKB Harvest / Take Care | View laporan |
+| Tonnage Garden / PKS | View laporan |
+| PMA | View laporan |
+| BPK | View laporan |
+| Cropbook | View laporan |
+| Yield Report | View laporan |
+| Chapel | View laporan |
+| Employee Wage & Wage Cut | View laporan |
+
+### 📦 Request
+
+| Fitur | Keterangan |
+|-------|------------|
+| My Request | List, detail, form (material, cash, tool, transportation) |
+| List Request | List, detail |
+| Warehouse Management | List, detail, BPU |
+
+### 🗂️ Master Data
+
+| Fitur | Keterangan |
+|-------|------------|
+| Organisasi | List, detail, form |
+| Divisi | List, detail, form |
+| Blok | List, detail, form |
+| TPH | List, form |
+| Item / Master Item / Category Item | List, detail, form |
+| Raw Material | List, detail, form |
+| Daily Activity | List, detail, form |
+| Maintenance | List, detail, form |
+| Tools & Equipment | List |
+| Item Transportation Detail | Detail |
+| Reception / Purchasement History | Form |
+
+### 📝 Field Report & Attendance
+
+| Fitur | Keterangan |
+|-------|------------|
+| Field Report | List, detail, form |
+| Attendance | List, detail, form (employee & file) |
+
+### 👤 Lainnya
+
+| Fitur | Keterangan |
+|-------|------------|
+| Dashboard | Produksi & organisasi |
+| Approval | List approval |
+| Notifikasi | Push notification (Firebase) |
+| Profile | Lihat & ubah profil |
+| Change Password / Add Email | Pengaturan akun |
+| Working Area | Area kerja |
+
+---
+
+## Getting Started
+
+### Prasyarat
+
+- Node.js >= 20
+- React Native environment setup: [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment)
+
+### Install Dependencies
 
 ```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+yarn install
 ```
 
-## Step 2: Build and run your app
+### iOS
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+```sh
+bundle install
+bundle exec pod install
+```
+
+---
+
+## Menjalankan App
+
+### Start Metro
+
+```sh
+yarn start
+```
 
 ### Android
 
 ```sh
-# Using npm
-npm run android
-
-# OR using Yarn
 yarn android
 ```
 
 ### iOS
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
 ```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
 yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Scripts
 
-## Step 3: Modify your app
+| Script | Deskripsi |
+|--------|-----------|
+| `yarn start` | Jalankan Metro bundler |
+| `yarn android` | Build & run Android (debug) |
+| `yarn ios` | Build & run iOS (debug) |
+| `yarn test` | Jalankan unit tests (Jest) |
+| `yarn lint` | ESLint |
+| `yarn buildAPK` | Build APK release Android |
+| `yarn bundle` | Build AAB release Android |
 
-Now that you have successfully run the app, let's make changes!
+---
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Struktur Project
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```
+src/
+├── domain/
+│   ├── services/       # API service layer
+│   └── states/         # Redux state (actions, reducer, streams/epics)
+├── model/              # WatermelonDB models
+├── presentations/
+│   ├── screens/        # Halaman/screen
+│   ├── _shared-components/
+│   ├── hooks/
+│   └── navigation/
+assets/
+├── fonts/
+├── icons/
+└── images/
+__config__/             # Konfigurasi environment (dev/staging/prod)
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+---
 
-## Congratulations! :tada:
+## Environment Config
 
-You've successfully run and modified your React Native App. :partying_face:
+Konfigurasi per environment ada di `__config__/`:
+- `ci-config-dev.json`
+- `ci-config-staging.json`
+- `ci-config-prod.json`
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Offline Mode
 
-# Troubleshooting
+App mendukung offline mode menggunakan:
+- **Redux Persist** + **AsyncStorage** untuk state persistence
+- **NetInfo** untuk deteksi koneksi
+- **Temporary storage** untuk data yang dibuat saat offline
+- **Auto-sync** saat koneksi kembali (sequential dengan `concatMap`)
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Lihat detail: [`OFFLINE_MODE_AUDIT_REPORT.md`](./OFFLINE_MODE_AUDIT_REPORT.md)
 
-# Learn More
+---
 
-To learn more about React Native, take a look at the following resources:
+## Testing
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```sh
+yarn test
+```
+
+Test setup ada di `__tests__/` dan mock di `__mocks__/`.
