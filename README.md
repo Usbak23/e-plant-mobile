@@ -210,7 +210,7 @@ App mendukung offline mode menggunakan:
 - **Temporary storage** untuk data yang dibuat saat offline
 - **Auto-sync** saat koneksi kembali (sequential dengan `concatMap`)
 
-Lihat detail: [`OFFLINE_MODE_AUDIT_REPORT.md`](./OFFLINE_MODE_AUDIT_REPORT.md)
+
 
 ---
 
