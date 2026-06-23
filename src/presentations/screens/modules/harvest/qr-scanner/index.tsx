@@ -30,52 +30,50 @@ const QRScannerScreen = () => {
 
   const parseQRCodeOffline = (qrCode: string) => {
     try {
-      console.log('📋 Raw QR Code:', qrCode)
-      console.log('📋 QR Code length:', qrCode.length)
-      
-      // Trim whitespace
       const trimmedCode = qrCode.trim()
-      
-      // QR Code format adalah TPH Code (plain text): "I/A03/068"
-      // Bukan JSON, jadi cari TPH berdasarkan code/name
-      
-      console.log('🔍 Searching TPH by code:', trimmedCode)
-      console.log('🔍 Total TPH in cache:', tphAll.length)
-      console.log('🔍 Total Block in cache:', blockAll.length)
-      
-      // Cari TPH berdasarkan code atau name
-      const tph = tphAll.find((t: any) => 
-        t.code === trimmedCode || 
-        t.name === trimmedCode ||
-        t.code?.toUpperCase() === trimmedCode.toUpperCase() ||
-        t.name?.toUpperCase() === trimmedCode.toUpperCase()
+
+      // QR format wajib: "I/A01/043:3" (kode TPH + ":" + nomor versi print)
+      const colonIdx = trimmedCode.lastIndexOf(':')
+      if (colonIdx === -1) {
+        throw new Error('QR Code tidak valid atau versi lama. Gunakan QR Code terbaru.')
+      }
+
+      const tphCode = trimmedCode.substring(0, colonIdx).trim()
+      const scannedVersion = parseInt(trimmedCode.substring(colonIdx + 1).trim(), 10)
+      if (!tphCode || isNaN(scannedVersion)) {
+        throw new Error('Format QR Code tidak valid.')
+      }
+
+      const upperCode = tphCode.toUpperCase()
+      const tph = tphAll.find((t: any) =>
+        t.name?.toUpperCase() === upperCode ||
+        t.code?.toUpperCase() === upperCode
       )
 
       if (!tph) {
-        console.error('❌ TPH not found in cache')
-        console.log('Available TPH codes:', tphAll.slice(0, 5).map((t: any) => t.code || t.name))
-        throw new Error(`TPH "${trimmedCode}" tidak ditemukan di cache. Pastikan data sudah ter-sync.`)
+        throw new Error(`TPH "${tphCode}" tidak ditemukan di cache. Pastikan data sudah ter-sync.`)
       }
 
-      console.log('✅ TPH found:', tph)
-      
-      // Cari block dari TPH
-      const block = blockAll.find((b: any) => b.id === tph.block?.id)
-      
-      console.log('✅ Block found:', !!block)
+      // Validasi versi print — wajib ada di cache dan harus cocok/lebih baru
+      const activeVersion = tph.printVersion ?? tph.print_version ?? null
+      if (activeVersion === null) {
+        throw new Error(`Data TPH "${tphCode}" belum memiliki versi. Lakukan sync ulang saat online.`)
+      }
+      if (scannedVersion < activeVersion) {
+        throw new Error(`QR Code tidak aktif (versi ${scannedVersion}, versi aktif ${activeVersion}). Gunakan QR Code terbaru.`)
+      }
 
-      // Extract planting year dari block atau TPH
+      const block = blockAll.find((b: any) => b.id === tph.block?.id)
       const plantingYear = tph.plantingYear || block?.plantingYear || []
 
       return {
         tphId: tph.id,
         blockId: tph.block?.id || block?.id,
         plantingYear: Array.isArray(plantingYear) ? plantingYear : [plantingYear],
-        tph: tph,
+        tph,
         block: block || tph.block,
       }
     } catch (error: any) {
-      console.error('❌ Parse error:', error)
       throw new Error(error.message || 'QR Code tidak valid')
     }
   }

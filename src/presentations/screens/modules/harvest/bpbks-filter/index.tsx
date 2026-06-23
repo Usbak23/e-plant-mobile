@@ -110,7 +110,7 @@ const BPBKSFilter = () => {
 
   return (
     <SafeAreaView style={styles.root}>
-      <Header title="PMB" />
+      <Header title="BPBKS" />
 
       <ScrollView style={styles.scroll}>
         <SelectInput
@@ -167,7 +167,7 @@ const BPBKSFilter = () => {
         />
 
         <Button disabled={!isValid} onPress={handleSubmit(onSubmit)}>
-          <Text color="white">Pilih PMB</Text>
+          <Text color="white">Pilih BPBKS</Text>
         </Button>
       </ScrollView>
     </SafeAreaView>

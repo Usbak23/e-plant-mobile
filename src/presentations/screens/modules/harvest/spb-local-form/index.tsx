@@ -62,6 +62,8 @@ const SPBLocalForm = () => {
     label: d.item ? `${d.item.name} - ${d.item.serialNumber} (${d.driver || 'Tanpa Supir'})` : d.id,
   }))
 
+  const monitoringTphCache = useSelector((state: RootStateType) => state.monitoringTph?.list?.data)
+
   const [monitoringData, setMonitoringData] = useState<any[]>([])
   const [monitoringLoading, setMonitoringLoading] = useState(true)
 
@@ -83,7 +85,14 @@ const SPBLocalForm = () => {
       const dateStr = moment(date).format('YYYY-MM-DD')
       const filtered = docs.filter((d: any) => moment(d.date).format('YYYY-MM-DD') === dateStr)
       setMonitoringData(filtered)
-    }).catch(() => setMonitoringData([]))
+      // Cache to Redux for offline use
+      dispatch(actions.monitoringTph.getMonitoringTphList.success({loading: false, data: {docs, totalPages: 1, page: 0}}))
+    }).catch(() => {
+      // Offline fallback: use Redux cache
+      const cachedDocs = Array.isArray(monitoringTphCache?.docs) ? monitoringTphCache.docs : []
+      const dateStr = moment(date).format('YYYY-MM-DD')
+      setMonitoringData(cachedDocs.filter((d: any) => moment(d.date).format('YYYY-MM-DD') === dateStr))
+    })
       .finally(() => setMonitoringLoading(false))
   }, [])
 
@@ -99,7 +108,7 @@ const SPBLocalForm = () => {
     }
   }, [formStatus])
 
-const handleScanResult = (data: any) => {
+  const handleScanResult = (data: any) => {
     if (!data) return
     const exists = items.find(i => i.tphId === data.tphId)
     if (exists) {
@@ -111,16 +120,19 @@ const handleScanResult = (data: any) => {
       m.tphCode === data.tphCode
     )
     const sisaJanjang = matchingTph?.sisaJanjang ?? 0
+    const tphName = data.tphName || data.tph?.name || '-'
+    const blockCode = data.blockCode || data.blockName || data.block?.code || '-'
+    const plantingYear = data.plantingYear?.[0]?.toString() || data.block?.plantingYear?.[0]?.toString() || '-'
     setItems(prev => [
       ...prev,
       {
         tphId: data.tphId,
         blockId: data.blockId,
-        blockCode: data.blockCode || data.blockName || '-',
-        plantingYear: data.plantingYear?.[0]?.toString() || '-',
-        tphName: data.tphName || '-',
+        blockCode,
+        plantingYear,
+        tphName,
         janjang: String(sisaJanjang),
-        sisaJanjang: sisaJanjang,
+        sisaJanjang,
       },
     ])
   }

@@ -1,4 +1,4 @@
-import {map, catchError, filter, switchMap} from 'rxjs/operators'
+import {map, catchError, filter, switchMap, concatMap} from 'rxjs/operators'
 import {from, of} from 'rxjs'
 import {isActionOf} from 'typesafe-actions'
 import * as actions from './actions'
@@ -9,7 +9,10 @@ const getMonitoringTphList: StreamType = (action$, _state$, api) => {
     filter(isActionOf(actions.getMonitoringTphList.request)),
     switchMap(action =>
       from(api.monitoringTphService.list(action.payload.data)).pipe(
-        map(({data}: any) => actions.getMonitoringTphList.success({loading: false, data: data.response})),
+        concatMap(({data}: any) => [
+          actions.getMonitoringTphList.success({loading: false, data: data.response}),
+          actions.setMonitoringTphLastUpdated(new Date().toISOString()),
+        ]),
         catchError(error => of(actions.getMonitoringTphList.failure({loading: false, error}))),
       ),
     ),

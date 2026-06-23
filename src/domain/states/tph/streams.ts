@@ -112,8 +112,15 @@ const writeToDb = async (tphs: any[]) => {
       const dataToInsert = tphs.map(mTph =>
         tphCollections.prepareCreate(
           protectedFunction(r => {
-            r._raw = sanitizedRaw({ id: mTph.id, name: mTph.name, block: JSON.stringify(mTph.block) }, tphCollections.schema);
-            // Object.assign(r, mTph);
+            r._raw = sanitizedRaw(
+              {
+                id: mTph.id,
+                name: mTph.name,
+                block: JSON.stringify(mTph.block),
+                print_version: mTph.printVersion ?? null,
+              },
+              tphCollections.schema
+            )
           })
         ),
       )

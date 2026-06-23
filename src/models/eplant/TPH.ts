@@ -6,6 +6,8 @@ export interface ITPHRowAll {
   name: string
   geoJson: any
   fileGeoJson: string
+  printVersion: number | null
+  block?: any
 }
 
 export interface ITPHRow {
