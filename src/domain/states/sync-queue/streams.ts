@@ -1,7 +1,8 @@
 import {map, catchError, filter, switchMap, concatMap, delay} from 'rxjs/operators'
-import {from, of} from 'rxjs'
+import {from, of, EMPTY} from 'rxjs'
 import {isActionOf} from 'typesafe-actions'
 import * as actions from '@app/domain/states/sync-queue/actions'
+import * as spbLocalActions from '@app/domain/states/spb-local/actions'
 import {StreamType} from '@app/domain/states/types'
 import {ISyncQueueItem} from '@app/domain/states/sync-queue/actions'
 
@@ -88,4 +89,19 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
   )
 }
 
-export default [autoSyncOnConnectionRestore]
+export default [autoSyncOnConnectionRestore, autoSyncSpbLocalOnConnectionRestore]
+
+const autoSyncSpbLocalOnConnectionRestore: StreamType = (action$, state$) => {
+  return action$.pipe(
+    filter((action: any) =>
+      action.type === 'Network/CONNECTION_CHANGE' && action.payload?.isConnected === true,
+    ),
+    switchMap(() => {
+      const listTemp = state$?.value?.spbLocal?.spbLocalListTemp || []
+      const pending = listTemp.filter((i: any) => i.syncStatus !== 'success')
+      if (pending.length === 0) return EMPTY
+      console.log(`🔄 Auto-sync SPB Local: ${pending.length} pending`)
+      return of(spbLocalActions.syncSpbLocal())
+    }),
+  )
+}

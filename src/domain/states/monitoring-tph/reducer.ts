@@ -12,10 +12,26 @@ export interface IRSMonitoringTph {
 const DEFAULT_STATE: IRSMonitoringTph = {}
 
 const monitoringTphReducer = createReducer<IRSMonitoringTph, ActionsType>(DEFAULT_STATE)
-  .handleAction(
-    [actions.getMonitoringTphList.request, actions.getMonitoringTphList.success, actions.getMonitoringTphList.failure],
-    (state, action: any) => ({...state, list: (action as IEffectAction).payload}),
-  )
+  .handleAction(actions.getMonitoringTphList.request, (state, action: any) => ({
+    ...state,
+    list: {...(action as IEffectAction).payload, data: state.list?.data},
+  }))
+  .handleAction(actions.getMonitoringTphList.success, (state, action: any) => {
+    const payload = (action as IEffectAction).payload
+    const incoming = payload.data?.docs || []
+    const existing = state.list?.data?.docs || []
+    // Merge: keep existing docs not in incoming (different division/date), add all incoming
+    const incomingIds = new Set(incoming.map((d: any) => d.id))
+    const merged = [...existing.filter((d: any) => !incomingIds.has(d.id)), ...incoming]
+    return {
+      ...state,
+      list: {...payload, data: {...payload.data, docs: merged}},
+    }
+  })
+  .handleAction(actions.getMonitoringTphList.failure, (state, action: any) => ({
+    ...state,
+    list: {...(action as IEffectAction).payload, data: state.list?.data},
+  }))
   .handleAction(
     [actions.getMonitoringTphSummary.request, actions.getMonitoringTphSummary.success, actions.getMonitoringTphSummary.failure],
     (state, action: any) => ({...state, summary: (action as IEffectAction).payload}),
