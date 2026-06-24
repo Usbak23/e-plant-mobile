@@ -297,18 +297,32 @@ const BPBKSForm = () => {
       
       // Persist foto ke DocumentDirectory agar URI tetap valid setelah restart
       const persistedTphs = await Promise.all(
-        requestBodyCreate.tphs.map(async (tph: any) => {
+        requestBodyCreate.tphs.map(async (tph: any, index: number) => {
           const photoFields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
           const persisted: any = { ...tph }
           for (const field of photoFields) {
             const photo = tph[field]
             if (photo?.uri) {
               try {
-                const destPath = `${RNFS.DocumentDirectoryPath}/bpbks_${tempId}_${field}.jpg`
-                await RNFS.copyFile(photo.uri, destPath)
-                persisted[field] = { ...photo, uri: `file://${destPath}` }
-              } catch (_) {
-                // Jika gagal copy, tetap pakai URI asli
+                const timestamp = Date.now()
+                const fileName = `bpbks_${tempId}_tph${index}_${field}_${timestamp}.jpg`
+                const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`
+                await RNFS.copyFile(photo.uri.replace('file://', ''), destPath)
+                
+                // Simpan metadata lengkap agar bisa di-upload saat sync
+                persisted[field] = {
+                  uri: `file://${destPath}`,
+                  type: photo.type || 'image/jpeg',
+                  fileName: fileName,
+                }
+              } catch (error) {
+                console.error(`Failed to persist photo ${field}:`, error)
+                // Jika gagal copy, tetap pakai URI asli dengan metadata
+                persisted[field] = {
+                  uri: photo.uri,
+                  type: photo.type || 'image/jpeg',
+                  fileName: photo.fileName || `${field}.jpg`,
+                }
               }
             }
           }
