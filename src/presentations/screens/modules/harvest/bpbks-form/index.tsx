@@ -339,7 +339,7 @@ const BPBKSForm = () => {
         status: 'pending',
       }))
       
-      showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
+      showSuccessToast(`Data BPBKS ${user?.name || ''} berhasil disimpan (offline). Akan tersinkronisasi saat online.`)
       navigation.goBack()
       return
     }
