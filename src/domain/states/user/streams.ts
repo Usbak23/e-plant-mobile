@@ -355,6 +355,120 @@ const updatePassword: StreamType = (action$, state$, api) => {
   )
 }
 
+const syncMasterData: StreamType = (action$, state$, api) => {
+  return action$.pipe(
+    filter(isActionOf(actions.syncMasterData.request)),
+    switchMap(action => {
+      const actionsToDispatch: any[] = []
+      
+      try {
+        // Organizations
+        if (organizationActions?.getOrganizationAll?.request) {
+          actionsToDispatch.push(organizationActions.getOrganizationAll.request({ loading: false }))
+        }
+        
+        // Divisions
+        if (divisionActions?.getAllDivision?.request) {
+          actionsToDispatch.push(divisionActions.getAllDivision.request({ loading: false }))
+        }
+        
+        // Users
+        if (actions?.getAllUser?.request) {
+          actionsToDispatch.push(actions.getAllUser.request({ loading: false }))
+        }
+        
+        // TPH
+        if (tphActions?.getTPHAll?.request) {
+          actionsToDispatch.push(tphActions.getTPHAll.request({ loading: false }))
+        }
+        
+        // Blocks
+        if (blockActions?.getAllBlock?.request) {
+          actionsToDispatch.push(blockActions.getAllBlock.request({ loading: false }))
+        }
+        
+        // Sub Activities
+        if (subActivityActions?.getSubActivityAll?.request) {
+          actionsToDispatch.push(subActivityActions.getSubActivityAll.request({ loading: false }))
+        }
+        
+        // Roles
+        if (roleActions?.getRoleAll?.request) {
+          actionsToDispatch.push(roleActions.getRoleAll.request({ loading: false }))
+        }
+        
+        // Category Items
+        if (categoryItemActions?.getCategoryItemAll?.request) {
+          actionsToDispatch.push(categoryItemActions.getCategoryItemAll.request({ loading: false }))
+        }
+        
+        // Master Items
+        if (masterItemActions?.getMasterItemAll?.request) {
+          actionsToDispatch.push(masterItemActions.getMasterItemAll.request({ loading: false }))
+        }
+        
+        // Items
+        if (itemActions?.getItemAll?.request) {
+          actionsToDispatch.push(itemActions.getItemAll.request({ loading: false }))
+        }
+        
+        // Raw Materials
+        if (rawMaterialActions?.getRawMaterialAll?.request) {
+          actionsToDispatch.push(rawMaterialActions.getRawMaterialAll.request({ loading: false }))
+        }
+        
+        // Master data lainnya
+        if (masterActions?.getMinimumAkp?.request) {
+          actionsToDispatch.push(masterActions.getMinimumAkp.request({ loading: false }))
+        }
+        
+        if (masterActions?.getUoms?.request) {
+          actionsToDispatch.push(masterActions.getUoms.request({ loading: false }))
+        }
+        
+        if (masterActions?.getSupervisions?.request) {
+          actionsToDispatch.push(masterActions.getSupervisions.request({ loading: false }))
+        }
+        
+        if (masterActions?.getWorkStatuses?.request) {
+          actionsToDispatch.push(masterActions.getWorkStatuses.request({ loading: false }))
+        }
+        
+        // Draft options (3 hari ke depan)
+        const currentUser = state$.value.user?.currentUserInfo?.data
+        let organizationId = currentUser?.organization?.id
+        
+        // Fallback: ambil dari userDivisions jika tidak ada
+        if (!organizationId && currentUser?.userDivisions && currentUser.userDivisions.length > 0) {
+          organizationId = currentUser.userDivisions[0]?.division?.organization?.id
+        }
+        
+        if (organizationId && tonnageGardenActions?.getDraftOptions?.request) {
+          const today = moment()
+          for (let i = 0; i < 3; i++) {
+            const date = today.clone().add(i, 'days').format('YYYY-MM-DD')
+            actionsToDispatch.push(
+              tonnageGardenActions.getDraftOptions.request({
+                loading: false,
+                data: {
+                  organizationId: organizationId,
+                  date: date,
+                },
+              })
+            )
+          }
+        }
+        
+        actionsToDispatch.push(actions.syncMasterData.success({ loading: false, data: { synced: actionsToDispatch.length } }))
+        
+        return from(actionsToDispatch)
+      } catch (error) {
+        return of(actions.syncMasterData.failure({ loading: false, error: error as any }))
+      }
+    }),
+  )
+}
+
 export default [
   login,
   getAllUser,
@@ -366,4 +480,5 @@ export default [
   updatePassword,
   forgotPassword,
   changePassword,
+  syncMasterData,
 ]

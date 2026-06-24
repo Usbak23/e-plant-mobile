@@ -8,7 +8,7 @@ import System from '@app/domain/services/System'
 import { showErrorToast } from '@app/presentations/_shared-components/Toast'
 import { useSelector } from 'react-redux'
 import { RootStateType } from '@app/domain/states/store'
-import NetInfo from '@react-native-community/netinfo'
+import { useNetInfo } from '@react-native-community/netinfo'
 
 const QRScannerScreen = () => {
   const navigation: any = useNavigation()
@@ -17,9 +17,15 @@ const QRScannerScreen = () => {
   const [hasPermission, setHasPermission] = useState(false)
   const [scanning, setScanning] = useState(true)
 
+  // Network status
+  const netInfo = useNetInfo()
+  const isOnline = netInfo.isConnected && netInfo.isInternetReachable !== false
+
   // Get TPH data from Redux (cached for offline)
   const tphAll = useSelector((state: RootStateType) => state.tph?.tphAll?.data || [])
   const blockAll = useSelector((state: RootStateType) => state.block?.blockAll?.data || [])
+  const tphCacheEmpty = !tphAll || tphAll.length === 0
+  const blockCacheEmpty = !blockAll || blockAll.length === 0
 
   useEffect(() => {
     (async () => {
@@ -51,7 +57,10 @@ const QRScannerScreen = () => {
       )
 
       if (!tph) {
-        throw new Error(`TPH "${tphCode}" tidak ditemukan di cache. Pastikan data sudah ter-sync.`)
+        const cacheStatus = tphAll.length === 0 
+          ? 'Cache TPH kosong. Login sekali saat online untuk sync data.' 
+          : `TPH "${tphCode}" tidak ditemukan (${tphAll.length} TPH di cache).`
+        throw new Error(cacheStatus)
       }
 
       // Validasi versi print — wajib ada di cache dan harus cocok/lebih baru
@@ -86,12 +95,8 @@ const QRScannerScreen = () => {
       
       const qrCode = codes[0].value
       console.log('📷 QR Code scanned:', qrCode)
-
-      // Check network status
-      const netInfoState = await NetInfo.fetch()
-      const isOnline = netInfoState.isConnected && netInfoState.isInternetReachable !== false
-
       console.log('🌐 Network status:', isOnline ? 'ONLINE' : 'OFFLINE')
+      console.log('💾 Cache status: TPH =', tphAll.length, ', Block =', blockAll.length)
 
       // ONLINE: Hit API untuk validasi
       if (isOnline) {
@@ -110,6 +115,14 @@ const QRScannerScreen = () => {
       } 
       // OFFLINE: Parse QR code secara lokal
       else {
+        // Check cache availability
+        if (tphCacheEmpty) {
+          console.error('❌ Data TPH kosong, tidak bisa scan offline')
+          showErrorToast('Mode offline: Data TPH belum tersedia. Login sekali saat online untuk sync data.')
+          setTimeout(() => setScanning(true), 2000)
+          return
+        }
+
         try {
           const data = parseQRCodeOffline(qrCode)
           console.log('✅ QR Code valid (offline mode):', data)
@@ -152,6 +165,27 @@ const QRScannerScreen = () => {
         codeScanner={codeScanner}
       />
       <View style={styles.overlay}>
+        {/* Network Status Indicator */}
+        <View style={[styles.statusBadge, isOnline ? styles.statusOnline : styles.statusOffline]}>
+          <Icon name={isOnline ? 'wifi' : 'wifi-off'} size={16} color="white" />
+          <Text style={styles.statusText}>{isOnline ? 'Online' : 'Offline'}</Text>
+        </View>
+
+        {/* Cache Warning */}
+        {!isOnline && tphCacheEmpty && (
+          <View style={styles.warningBanner}>
+            <Icon name="warning" size={20} color="#856404" />
+            <Text style={styles.warningText}>Data TPH belum tersedia untuk mode offline</Text>
+          </View>
+        )}
+
+        {!isOnline && !tphCacheEmpty && (
+          <View style={styles.infoBanner}>
+            <Icon name="info" size={16} color="#004085" />
+            <Text style={styles.infoText}>Mode offline: {tphAll.length} TPH tersedia</Text>
+          </View>
+        )}
+
         <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
           <Icon name="close" size={30} color="white" />
         </TouchableOpacity>
@@ -173,6 +207,67 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  statusBadge: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  statusOnline: {
+    backgroundColor: 'rgba(40, 167, 69, 0.9)',
+  },
+  statusOffline: {
+    backgroundColor: 'rgba(220, 53, 69, 0.9)',
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  warningBanner: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(255, 243, 205, 0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 9,
+  },
+  warningText: {
+    flex: 1,
+    color: '#856404',
+    fontSize: 13,
+    marginLeft: 8,
+  },
+  infoBanner: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(204, 229, 255, 0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 9,
+  },
+  infoText: {
+    flex: 1,
+    color: '#004085',
+    fontSize: 13,
+    marginLeft: 8,
   },
   closeButton: {
     position: 'absolute',
