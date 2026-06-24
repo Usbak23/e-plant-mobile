@@ -433,7 +433,7 @@ const BPBKSForm = () => {
 
   const HeaderView = () => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
-      <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+      <Header title={isEdit ? 'Ubah BPBKS' : 'Tambah BPBKS'} />
       <TouchableOpacity onPress={() => setSyncModalVisible(true)}>
         <SyncIndicatorBadge size="small" showLabel={false} />
       </TouchableOpacity>

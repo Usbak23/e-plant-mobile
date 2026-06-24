@@ -136,7 +136,7 @@ const BPBKSList = () => {
   }
 
   const headerTitle = () => {
-    return `PMB`
+    return `BPBKS`
   }
 
   const contentTitle = () => {
@@ -180,7 +180,7 @@ const BPBKSList = () => {
           <View style={styles.popupLabel}>
             <AntDesign name="plus" size={15} color={theme.colors.textThinBlack} />
             <Text style={styles.text} color={theme.colors.textThinBlack} type="semibold">
-              Tambah PMB
+              Tambah BPBKS
             </Text>
           </View>
         </MenuOption>
