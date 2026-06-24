@@ -20,7 +20,6 @@ import * as itemActions from '@app/domain/states/item/actions'
 import * as rawMaterialActions from '@app/domain/states/raw-material/actions'
 import * as masterActions from '@app/domain/states/master/actions'
 import * as tonnageGardenActions from '@app/domain/states/tonnage-garden/actions'
-import * as monitoringTphActions from '@app/domain/states/monitoring-tph/actions'
 
 const login: StreamType = (action$, state$, api) => {
   return action$.pipe(
@@ -63,11 +62,6 @@ const login: StreamType = (action$, state$, api) => {
             // TPH
             if (tphActions?.getTPHAll?.request) {
               actionsToDispatch.push(tphActions.getTPHAll.request({ loading: false }))
-            }
-            
-            // Monitoring TPH
-            if (monitoringTphActions?.getMonitoringTphList?.request) {
-              actionsToDispatch.push(monitoringTphActions.getMonitoringTphList.request({ loading: false }))
             }
             
             // Blocks
@@ -386,11 +380,6 @@ const syncMasterData: StreamType = (action$, state$, api) => {
         // TPH
         if (tphActions?.getTPHAll?.request) {
           actionsToDispatch.push(tphActions.getTPHAll.request({ loading: false }))
-        }
-        
-        // Monitoring TPH
-        if (monitoringTphActions?.getMonitoringTphList?.request) {
-          actionsToDispatch.push(monitoringTphActions.getMonitoringTphList.request({ loading: false }))
         }
         
         // Blocks

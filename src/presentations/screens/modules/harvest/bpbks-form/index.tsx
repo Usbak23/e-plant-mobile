@@ -330,17 +330,23 @@ const BPBKSForm = () => {
         bpbks: {},
       }))
 
-      // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status
-      dispatch(actions.addToSyncQueue({
-        id: tempId,
-        type: 'BPBKS',
-        data: { ...requestBodyCreate, tphs: persistedTphs, tempId },
-        timestamp: Date.now(),
-        status: 'pending',
-      }))
+      // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status (jika ada)
+      if (actions.syncQueue?.addToSyncQueue) {
+        dispatch(actions.syncQueue.addToSyncQueue({
+          id: tempId,
+          type: 'BPBKS',
+          data: { ...requestBodyCreate, tphs: persistedTphs, tempId },
+          timestamp: Date.now(),
+          status: 'pending',
+        }))
+      }
       
-      showSuccessToast(`Data BPBKS ${user?.name || ''} berhasil disimpan (offline). Akan tersinkronisasi saat online.`)
-      navigation.goBack()
+      showSuccessToast(`✅ Data BPBKS ${user?.name || ''} berhasil disimpan (offline). Akan tersinkronisasi saat online.`)
+      
+      // Delay navigation agar toast muncul
+      setTimeout(() => {
+        navigation.goBack()
+      }, 100)
       return
     }
 

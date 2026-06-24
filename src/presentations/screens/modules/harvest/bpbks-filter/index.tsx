@@ -69,16 +69,12 @@ const BPBKSFilter = () => {
     const usr = userAll.find(o => o.id == getValues('foreman'))
     const dateStr = moment(getValues('date')).format('YYYY-MM-DD')
     
-    console.log('🚀 BPBKS Filter Submit:')
-    console.log('  - Organization:', org?.label)
-    console.log('  - Division:', div?.name)
-    console.log('  - Foreman:', usr?.name)
-    console.log('  - Date:', dateStr)
+
     
     // IMPORTANT: Fetch draft options untuk tanggal yang dipilih
     // Ini akan REFRESH data terbaru dari server (jika online)
     // Atau gunakan cache (jika offline)
-    console.log('💾 Fetching/Refreshing draft options for selected date...')
+
     dispatch(
       actions.getDraftOptions.request({
         loading: true,

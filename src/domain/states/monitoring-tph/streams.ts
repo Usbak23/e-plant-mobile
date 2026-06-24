@@ -10,7 +10,7 @@ const getMonitoringTphList: StreamType = (action$, _state$, api) => {
     switchMap(action =>
       from(api.monitoringTphService.list(action.payload.data)).pipe(
         concatMap(({data}: any) => [
-          actions.getMonitoringTphList.success({loading: false, data: data.response}),
+          actions.getMonitoringTphList.success({loading: false, data: data.response, params: action.payload.data}),
           actions.setMonitoringTphLastUpdated(new Date().toISOString()),
         ]),
         catchError(error => of(actions.getMonitoringTphList.failure({loading: false, error}))),
@@ -24,7 +24,7 @@ const getMonitoringTphSummary: StreamType = (action$, _state$, api) => {
     filter(isActionOf(actions.getMonitoringTphSummary.request)),
     switchMap(action =>
       from(api.monitoringTphService.summary(action.payload.data)).pipe(
-        map(({data}: any) => actions.getMonitoringTphSummary.success({loading: false, data: data.response})),
+        map(({data}: any) => actions.getMonitoringTphSummary.success({loading: false, data: data.response, params: action.payload.data})),
         catchError(error => of(actions.getMonitoringTphSummary.failure({loading: false, error}))),
       ),
     ),
