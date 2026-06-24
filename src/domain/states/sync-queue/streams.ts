@@ -89,8 +89,6 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
   )
 }
 
-export default [autoSyncOnConnectionRestore, autoSyncSpbLocalOnConnectionRestore]
-
 const autoSyncSpbLocalOnConnectionRestore: StreamType = (action$, state$) => {
   return action$.pipe(
     filter((action: any) =>
@@ -105,3 +103,5 @@ const autoSyncSpbLocalOnConnectionRestore: StreamType = (action$, state$) => {
     }),
   )
 }
+
+export default [autoSyncOnConnectionRestore, autoSyncSpbLocalOnConnectionRestore]
