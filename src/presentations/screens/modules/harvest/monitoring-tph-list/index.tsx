@@ -39,13 +39,21 @@ const MonitoringTphList = () => {
   const {divisionId, month, year, divisionName, organizationName} = route.params || {}
 
   const lastUpdated = useSelector((s: any) => s.monitoringTph?.lastUpdated)
+  const monitoringTphCache = useSelector((s: any) => s.monitoringTph?.cache || {})
   const netInfo = useNetInfo()
   const isOffline = netInfo.isConnected === false
 
   const summaryState = useMonitoringTphSummary()
   const listState = useMonitoringTphList()
 
-  const totalJanjang = summaryState?.loading === false ? (summaryState?.data?.totalJanjang ?? summaryState?.data?.sisaJanjang ?? 0) : 0
+  // Ambil summary dari cache jika offline
+  const cacheKey = `${divisionId}_${month}_${year}`
+  const cachedItem = monitoringTphCache[cacheKey]
+  
+  const totalJanjang = isOffline && cachedItem?.summary?.totalJanjang 
+    ? cachedItem.summary.totalJanjang 
+    : (summaryState?.loading === false ? (summaryState?.data?.totalJanjang ?? summaryState?.data?.sisaJanjang ?? 0) : 0)
+  
   const loading = listState?.loading || false
 
   const [search, setSearch] = useState('')
@@ -66,46 +74,79 @@ const MonitoringTphList = () => {
     return diff === parseInt(statusFilter, 10)
   })
 
-  const fetchPage = useCallback((page: number) => {
+  const fetchAllData = useCallback(() => {
+    // Fetch semua data tanpa pagination (limit = 9999)
     dispatch(actions.monitoringTph.getMonitoringTphList.request({
       loading: true,
-      data: {divisionId, month, year, page, limit: PAGE_LIMIT},
+      data: {divisionId, month, year, page: 0, limit: 9999},
     }))
   }, [divisionId, month, year])
 
   const getData = useCallback(() => {
+    const cacheKey = `${divisionId}_${month}_${year}`
+    
+    // Jika offline, load dari cached data di Redux
+    if (isOffline) {
+      console.log('⚠️ Offline: Loading cached monitoring TPH data')
+      console.log('Cache key:', cacheKey)
+      
+      const cachedItem = monitoringTphCache[cacheKey]
+      
+      if (cachedItem?.list?.docs && cachedItem.list.docs.length > 0) {
+        console.log(`📦 Found ${cachedItem.list.docs.length} cached monitoring TPH items for ${cacheKey}`)
+        setAccumulatedData(cachedItem.list.docs)
+      } else {
+        console.log('⚠️ No cached monitoring TPH data found for', cacheKey)
+        setAccumulatedData([])
+      }
+      setCurrentPage(0)
+      setHasMore(false)
+      return
+    }
+    
+    // Online mode: fetch SEMUA data sekaligus
+    console.log('🌐 Online: Fetching ALL monitoring TPH from server')
     setAccumulatedData([])
     setCurrentPage(0)
-    setHasMore(true)
+    setHasMore(false) // Tidak ada pagination
     isLoadingMore.current = false
     dispatch(actions.monitoringTph.getMonitoringTphSummary.request({
       loading: true,
       data: {divisionId, month, year},
     }))
-    fetchPage(0)
-  }, [divisionId, month, year, fetchPage])
+    fetchAllData()
+  }, [divisionId, month, year, fetchAllData, isOffline, monitoringTphCache])
 
-  // Append new page data when listState updates
+  // Load data when listState updates (single fetch, no pagination)
   useEffect(() => {
     if (listState?.loading === false && listState?.data?.docs) {
-      const {docs, totalPages, page} = listState.data
-      setAccumulatedData(prev => page === 0 ? docs : [...prev, ...docs])
-      setHasMore(page < totalPages - 1)
+      const {docs} = listState.data
+      setAccumulatedData(docs)
+      setHasMore(false) // No more pages
       isLoadingMore.current = false
     }
   }, [listState])
 
+  // Initial load
   useEffect(() => {
     getData()
   }, [])
+  
+  // Reload saat kembali online (dari offline ke online saja)
+  const previousIsOffline = useRef(isOffline)
+  useEffect(() => {
+    if (previousIsOffline.current && !isOffline) {
+      // Baru kembali online dari offline, refresh data
+      console.log('✅ Back online, refreshing monitoring TPH...')
+      getData()
+    }
+    previousIsOffline.current = isOffline
+  }, [isOffline, getData])
 
   const loadMore = useCallback(() => {
-    if (loading || !hasMore || isLoadingMore.current) return
-    isLoadingMore.current = true
-    const nextPage = currentPage + 1
-    setCurrentPage(nextPage)
-    fetchPage(nextPage)
-  }, [loading, hasMore, currentPage, fetchPage])
+    // No pagination, do nothing
+    return
+  }, [])
 
   const renderItem = ({item}: any) => <MonitoringTphCard item={item} />
 
@@ -183,12 +224,9 @@ const MonitoringTphList = () => {
         renderItem={renderItem}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         contentContainerStyle={{paddingBottom: 24}}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl colors={[theme.colors.primary]} refreshing={loading && accumulatedData.length === 0} onRefresh={getData} />
         }
-        ListFooterComponent={loading && accumulatedData.length > 0 ? <ActivityIndicator style={{marginVertical: 16}} color={theme.colors.primary} /> : null}
         ListEmptyComponent={loading ? null : <EmptyList />}
       />
     </SafeAreaView>

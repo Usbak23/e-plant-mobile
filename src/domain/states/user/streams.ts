@@ -459,7 +459,9 @@ const syncMasterData: StreamType = (action$, state$, api) => {
           }
         }
         
-        actionsToDispatch.push(actions.syncMasterData.success({ loading: false, data: { synced: actionsToDispatch.length } }))
+        // Hitung total actions sebelum menambahkan success action
+        const totalSyncActions = actionsToDispatch.length
+        actionsToDispatch.push(actions.syncMasterData.success({ loading: false, data: { synced: totalSyncActions } }))
         
         return from(actionsToDispatch)
       } catch (error) {
