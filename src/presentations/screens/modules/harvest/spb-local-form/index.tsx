@@ -97,12 +97,21 @@ const SPBLocalForm = () => {
   }, [])
 
   useEffect(() => {
+    console.log('🔍 FormStatus changed:', formStatus)
     if (formStatus?.data) {
-      showSuccessToast('SPB Local berhasil disimpan')
-      dispatch(actions.spbLocal.clearSpbLocalForm())
-      navigation.goBack()
+      console.log('✅ Success - showing toast and navigating back')
+      showSuccessToast('✅ SPB Local berhasil disimpan')
+      // Delay agar toast sempat muncul dan navigation selesai
+      setTimeout(() => {
+        navigation.goBack()
+        // Clear form setelah navigation selesai
+        setTimeout(() => {
+          dispatch(actions.spbLocal.clearSpbLocalForm())
+        }, 50)
+      }, 100)
     }
     if (formStatus?.error) {
+      console.log('❌ Error:', formStatus.error)
       showErrorToast(formStatus.error?.message || 'Gagal menyimpan')
       dispatch(actions.spbLocal.clearSpbLocalForm())
     }
@@ -170,21 +179,44 @@ const SPBLocalForm = () => {
 
   const handleSubmit = () => {
     if (!validate()) return
+    if (formStatus?.loading) return // Prevent double submit
+    
+    // Ambil data kendaraan lengkap dari draftOptions untuk offline mode
+    const selectedKendaraan = draftOptions.find((d: any) => d.id === selectedGardenTonnageId)
+    
     const payload = {
       divisionId,
       date,
       gardenTonnageId: selectedGardenTonnageId,
+      // Tambahkan data kendaraan lengkap untuk offline
+      gardenTonnage: selectedKendaraan ? {
+        id: selectedKendaraan.id,
+        item: selectedKendaraan.item,
+        driver: selectedKendaraan.driver,
+      } : undefined,
+      // Simpan juga kendaraan name untuk display
+      kendaraan: selectedKendaraan?.item 
+        ? `${selectedKendaraan.item.name}${selectedKendaraan.item.serialNumber ? ` - ${selectedKendaraan.item.serialNumber}` : ''}` 
+        : '-',
       items: items.map(item => ({
         tphId: item.tphId,
         blockId: item.blockId,
         plantingYear: item.plantingYear,
         janjang: parseInt(item.janjang),
         bpbksDate: date,
+        // Tambahkan data lengkap untuk offline display
+        tph: monitoringData.find(m => m.tphId === item.tphId || m.tph?.id === item.tphId)?.tph,
+        block: monitoringData.find(m => m.blockId === item.blockId)?.block,
+        tphName: item.tphName,
+        blockCode: item.blockCode,
       })),
     }
     if (isEdit) {
       System.instance.spbLocalService.update(editItem.id, payload)
-        .then(() => { showSuccessToast('SPB Local berhasil diubah'); navigation.goBack() })
+        .then(() => { 
+          showSuccessToast('✅ SPB Local berhasil diubah')
+          setTimeout(() => navigation.goBack(), 100)
+        })
         .catch(() => showErrorToast('Gagal mengubah SPB Local'))
     } else {
       dispatch(actions.spbLocal.createSpbLocal.request({loading: true, data: payload}))
