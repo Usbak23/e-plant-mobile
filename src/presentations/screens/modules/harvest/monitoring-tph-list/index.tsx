@@ -124,23 +124,24 @@ const MonitoringTphList = () => {
           </Text>
         </View>
       )}
-      <ListFilterAlt
-        searchValue={search}
-        onChangeSearch={(v: string) => setSearch(v)}
-      />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer} contentContainerStyle={styles.tabsContent}>
-        {STATUS_TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tab, statusFilter === tab.key && styles.tabActive]}
-            onPress={() => setStatusFilter(tab.key)}>
-            <Text size={12} color={statusFilter === tab.key ? 'white' : theme.colors.label}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <View style={styles.headerInfo}>
+      <View style={styles.fixedHeader}>
+        <ListFilterAlt
+          searchValue={search}
+          onChangeSearch={(v: string) => setSearch(v)}
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer} contentContainerStyle={styles.tabsContent}>
+          {STATUS_TABS.map(tab => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tab, statusFilter === tab.key && styles.tabActive]}
+              onPress={() => setStatusFilter(tab.key)}>
+              <Text size={12} color={statusFilter === tab.key ? 'white' : theme.colors.label}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <View style={styles.headerInfo}>
         <View style={styles.infoContainer}>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
@@ -175,6 +176,7 @@ const MonitoringTphList = () => {
             </View>
           </View>
         </View>
+        </View>
       </View>
       <FlatList
         data={filteredData}
@@ -187,7 +189,7 @@ const MonitoringTphList = () => {
           <RefreshControl colors={[theme.colors.primary]} refreshing={loading && accumulatedData.length === 0} onRefresh={getData} />
         }
         ListFooterComponent={loading && accumulatedData.length > 0 ? <ActivityIndicator style={{marginVertical: 16}} color={theme.colors.primary} /> : null}
-        ListEmptyComponent={loading ? null : <View style={{marginTop: -48}}><EmptyList /></View>}
+        ListEmptyComponent={loading ? null : <EmptyList />}
       />
     </SafeAreaView>
   )
@@ -197,7 +199,8 @@ export default MonitoringTphList
 
 const styles = StyleSheet.create({
   root: {flex: 1, backgroundColor: 'white'},
-  headerInfo: {marginTop: 12, marginBottom: 8},
+  fixedHeader: {backgroundColor: 'white'},
+  headerInfo: {marginTop: 8, marginBottom: 12},
   infoContainer: {
     marginHorizontal: 22,
     paddingHorizontal: 16,
@@ -214,21 +217,19 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 5,
   },
-  tabsContainer: {height: 52, marginVertical: 4},
-  tabsContent: {paddingHorizontal: 18, paddingVertical: 4, alignItems: 'center'},
+  tabsContainer: {marginTop: 8, marginBottom: 8},
+  tabsContent: {paddingHorizontal: 18, alignItems: 'center'},
   tab: {
-    height: 32,
-    paddingHorizontal: 14,
+    height: 36,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.label,
+    backgroundColor: '#F5F5F5',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
   tabActive: {
     backgroundColor: theme.colors.accent,
-    borderColor: theme.colors.accent,
   },
   offlineBanner: {
     backgroundColor: '#FFF3CD',

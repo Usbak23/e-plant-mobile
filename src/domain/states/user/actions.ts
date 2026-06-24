@@ -81,3 +81,9 @@ export const clearUserAddOrChangeEmail = createAction(c.ADD_OR_UPDATE_EMAIL_CLEA
 export const clearUserUpdatePassword = createAction(c.UPDATE_PASSWORD_CLEAR, clearAction)()
 export const clearUserForgotPassword = createAction(c.FORGOT_PASSWORD_CLEAR, clearAction)()
 export const clearUserResetPassword = createAction(c.RESET_PASSWORD_CLEAR, clearAction)()
+
+export const syncMasterData = createAsyncAction(
+  c.SYNC_MASTER_DATA_REQUEST,
+  c.SYNC_MASTER_DATA_SUCCESS,
+  c.SYNC_MASTER_DATA_FAILURE,
+)<IEffectPayload<any, boolean>, IEffectPayload<any, false>, IEffectPayload<null, false, IError>>()
