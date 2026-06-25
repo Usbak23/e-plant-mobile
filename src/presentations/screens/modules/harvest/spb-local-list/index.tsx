@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react'
 import {Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, TouchableOpacity, View} from 'react-native'
 import {Header, ListFilterAlt, Loader, Text} from '@app/presentations/_shared-components'
-import {showErrorToast, showSuccessToast} from '@app/presentations/_shared-components/Toast'
+import {showErrorToast, showSuccessToast, showInfoToast} from '@app/presentations/_shared-components/Toast'
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native'
 import Routes from '@app/presentations/navigation/Routes'
 import {useDispatch, useSelector} from 'react-redux'
@@ -29,8 +29,10 @@ const SPBLocalList = () => {
   const [page, setPage] = useState(1)
   const [allDocs, setAllDocs] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   const spbLocalListTemp = useSelector((s: any) => s.spbLocal?.spbLocalListTemp || [])
+  const isConnected = useSelector((s: any) => s.network?.isConnected)
 
   const docs = allDocs
   const isLoading = loading
@@ -80,12 +82,42 @@ const SPBLocalList = () => {
       }))
     }
   }, [isFocused])
+  
+  // Detect saat syncing berubah
+  useEffect(() => {
+    const isSyncing = spbLocalListTemp.some((item: any) => item.syncStatus === 'syncing')
+    setSyncing(isSyncing)
+    
+    // Jika ada yang syncing, refresh list setelah selesai
+    if (!isSyncing && spbLocalListTemp.length === 0) {
+      fetchData(1)
+    }
+  }, [spbLocalListTemp])
+  
+  const handleManualSync = () => {
+    if (!isConnected) {
+      showErrorToast('Tidak ada koneksi internet')
+      return
+    }
+    
+    const pendingItems = spbLocalListTemp.filter((item: any) => 
+      item.syncStatus === 'pending' || item.syncStatus === 'failed'
+    )
+    
+    if (pendingItems.length === 0) {
+      showInfoToast('Tidak ada data yang perlu di-sync')
+      return
+    }
+    
+    showSuccessToast(`Memulai sinkronisasi ${pendingItems.length} data...`)
+    dispatch(actions.spbLocal.syncSpbLocal())
+  }
 
   const handleDelete = (id: string) => {
     Alert.alert('Hapus SPB Local', 'Apakah anda yakin ingin menghapus?', [
       {text: 'Batal', style: 'cancel'},
       {text: 'Hapus', style: 'destructive', onPress: () => {
-        System.instance.spbLocalService.delete(id)
+        System.instance.spbLocalService.deleteSpbLocal(id)
           .then(() => { showSuccessToast('Berhasil dihapus'); fetchData(1) })
           .catch(() => showErrorToast('Gagal menghapus'))
       }},
@@ -146,6 +178,35 @@ const SPBLocalList = () => {
     const totalJJG = item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0
     const tphCount = item.items?.length || 0
     const isTemp = Boolean(item.tempId)
+    const syncStatus = item.syncStatus
+
+    const getSyncBadge = () => {
+      if (!isTemp) return null
+      
+      let bgColor = '#FFF3CD'
+      let textColor = '#856404'
+      let text = 'Menunggu Sync'
+      let icon = 'clockcircleo'
+      
+      if (syncStatus === 'syncing') {
+        bgColor = '#D1ECF1'
+        textColor = '#0C5460'
+        text = 'Syncing...'
+        icon = 'sync'
+      } else if (syncStatus === 'failed') {
+        bgColor = '#F8D7DA'
+        textColor = '#721C24'
+        text = 'Gagal Sync'
+        icon = 'closecircleo'
+      }
+      
+      return (
+        <View style={[styles.syncBadge, {backgroundColor: bgColor}]}>
+          <AntDesign name={icon} size={10} color={textColor} />
+          <Text size={10} color={textColor} style={{marginLeft: 4}}>{text}</Text>
+        </View>
+      )
+    }
 
     return (
       <TouchableOpacity
@@ -153,21 +214,17 @@ const SPBLocalList = () => {
         onPress={() => !isTemp && navigation.navigate(Routes.SPB_LOCAL_DETAIL, {item, divisionId, date, organizationName, divisionName})}>
         <View style={styles.cardHeader}>
           <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
-          <View style={{flexDirection: 'row'}}>
-            {isTemp ? (
-              <View style={styles.syncBadge}>
-                <Text size={10} color="#856404">Menunggu Sync</Text>
-              </View>
-            ) : (
-              item.gardenTonnage?.status !== 'submitted' && <>
-                <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
-                  <AntDesign name="edit" size={18} color={theme.colors.accent} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-                  <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
-                </TouchableOpacity>
-              </>
-            )}
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            {getSyncBadge()}
+            {!isTemp && item.gardenTonnage?.status !== 'submitted' && <>
+              <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+                <AntDesign name="edit" size={18} color={theme.colors.accent} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+                <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
+              </TouchableOpacity>
+            </>
+            }
           </View>
         </View>
         <View style={{flexDirection: 'row', marginTop: 8}}>
@@ -196,7 +253,22 @@ const SPBLocalList = () => {
       <Header title="SPB Local" />
       {spbLocalListTemp.length > 0 && (
         <View style={styles.syncBanner}>
-          <Text size={12} color='#856404'>{spbLocalListTemp.length} data menunggu sinkronisasi</Text>
+          <View style={{flex: 1}}>
+            <Text size={12} color='#856404'>
+              {spbLocalListTemp.length} data menunggu sinkronisasi
+            </Text>
+          </View>
+          {isConnected && (
+            <TouchableOpacity 
+              onPress={handleManualSync}
+              disabled={syncing}
+              style={styles.syncButton}>
+              <Icon name={syncing ? 'sync' : 'cloud-upload'} size={16} color="#856404" />
+              <Text size={11} color='#856404' style={{marginLeft: 4}}>
+                {syncing ? 'Syncing...' : 'Sync Sekarang'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       <ListFilterAlt
@@ -269,6 +341,9 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
   },
   syncBanner: {
     backgroundColor: '#FFF3CD',
@@ -277,6 +352,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 4,
     marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  syncButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#856404',
   },
   fab: {
     position: 'absolute',

@@ -384,7 +384,14 @@ const reducers = combineReducers({
     syncQueueReducer,
   ),
   monitoringTph: monitoringTphReducer,
-  spbLocal: spbLocalReducer,
+  spbLocal: persistReducer(
+    {
+      ...defaultConfig,
+      key: 'spbLocal',
+      blacklist: ['list.loading', 'list.error', 'detail.loading', 'detail.error', 'formStatus', 'deleteStatus'],
+    },
+    spbLocalReducer,
+  ),
 })
 
 export default reducers

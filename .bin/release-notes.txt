@@ -1,11 +1,11 @@
-E-Plantation Staging v6.4.0
+E-Plantation Staging v6.6.0
 
-Build: #19
+Build: #23
 Environment: Staging
 
 Recent changes:
-- fix(offline): improve BPBKS success toast and fix SPB Local monitoring cache
-- test: fix jest config and mocks so test suite passes
-- docs: update README with complete feature list and project info
-- docs: update README with complete feature list and project info
-- Merge branch 'staging' into 'feat/offline-first'
+- fix(spb-local): include full kendaraan data in offline submit payload
+- [skip ci] bump version 6.5.0
+- Merge branch 'feat/offline-first' into 'staging'
+- fix(offline): fix BPBKS submit & monitoring TPH cache
+- feat(offline): add monitoring TPH to data sync

@@ -39,8 +39,9 @@ const createSpbLocal: StreamType = (action$, state$, api) => {
       if (!isConnected && newData) {
         return of(
           actions.addSpbLocalTemp({...action.payload.data, tempId}),
-          actions.createSpbLocal.success({loading: false, data: {}}),
-          actions.clearSpbLocalForm(),
+          actions.createSpbLocal.success({loading: false, data: {success: true, tempId, offline: true, timestamp: Date.now()}}),
+          // Jangan clear form di sini, biarkan form yang handle
+          // actions.clearSpbLocalForm(),
           actions.syncSpbLocal(),
         )
       }
@@ -60,8 +61,9 @@ const createSpbLocal: StreamType = (action$, state$, api) => {
           if (newData && error.message === 'Network Error') {
             return of(
               actions.addSpbLocalTemp({...action.payload.data, tempId: uuid.v4() as string}),
-              actions.createSpbLocal.success({loading: false, data: {}}),
-              actions.clearSpbLocalForm(),
+              actions.createSpbLocal.success({loading: false, data: {success: true, offline: true, timestamp: Date.now()}}),
+              // Jangan clear form di sini
+              // actions.clearSpbLocalForm(),
             )
           }
           if (syncingTempId) {
@@ -129,18 +131,48 @@ const syncSpbLocal: StreamType = (action$, state$) => {
     filter(isActionOf(actions.syncSpbLocal)),
     concatMap(() => {
       const loading = state$?.value?.spbLocal?.formStatus?.loading
-      const data = state$?.value?.spbLocal?.formStatus?.data
       const isConnected = state$?.value?.network.isConnected
       const listTemp = state$?.value?.spbLocal?.spbLocalListTemp || []
-      const lastIndex = listTemp.length - 1
-      const allow = Boolean(isConnected && !loading && listTemp.length > 0 && data?.tempId !== listTemp[lastIndex]?.tempId)
+      
+      // Cari item pending (belum di-sync atau failed)
+      const pendingItems = listTemp.filter((item: any) => 
+        item.syncStatus === 'pending' || item.syncStatus === 'failed'
+      )
+      
+      const allow = Boolean(isConnected && !loading && pendingItems.length > 0)
+      
       if (!allow) return EMPTY
+      
+      // Ambil item pertama dari pending list untuk di-sync
+      const itemToSync = pendingItems[0]
+      
+      console.log(`🔄 Syncing SPB Local (${pendingItems.length} remaining): ${itemToSync.tempId}`)
+      
       return [
-        actions.updateSpbLocalTempStatus({tempId: listTemp[lastIndex].tempId, syncStatus: 'syncing'}),
-        actions.createSpbLocal.request({loading: true, data: listTemp[lastIndex]}),
+        actions.updateSpbLocalTempStatus({tempId: itemToSync.tempId, syncStatus: 'syncing'}),
+        actions.createSpbLocal.request({loading: true, data: itemToSync}),
       ]
     }),
   )
 }
 
-export default [getSpbLocalList, getSpbLocalDetail, createSpbLocal, updateSpbLocal, deleteSpbLocal, syncSpbLocal]
+// Auto-sync saat network kembali online
+const autoSyncOnOnline: StreamType = (action$, state$) => {
+  return action$.pipe(
+    filter((action: any) => action.type === '@@network-connectivity/CONNECTION_CHANGE'),
+    concatMap((action: any) => {
+      const isNowOnline = action.payload?.isConnected === true
+      const listTemp = state$.value?.spbLocal?.spbLocalListTemp || []
+      const hasPendingItems = listTemp.length > 0
+      
+      // Trigger sync jika baru online dan ada pending items
+      if (isNowOnline && hasPendingItems) {
+        console.log(`🔄 Network back online! Auto-syncing ${listTemp.length} pending SPB Local items...`)
+        return [actions.syncSpbLocal()]
+      }
+      return EMPTY
+    }),
+  )
+}
+
+export default [getSpbLocalList, getSpbLocalDetail, createSpbLocal, updateSpbLocal, deleteSpbLocal, syncSpbLocal, autoSyncOnOnline]
