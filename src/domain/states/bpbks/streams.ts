@@ -5,6 +5,23 @@ import * as actions from '@app/domain/states/bpbks/actions'
 import {StreamType} from '@app/domain/states/types'
 import {IBPBKSFormDataCreate, IBPBKSFormDataUpdate} from '@app/models/eplant/BPBKS'
 import uuid from 'react-native-uuid'
+import RNFS from 'react-native-fs'
+
+const autoSyncOnOnline: StreamType = (action$, state$) => {
+  return action$.pipe(
+    filter((action: any) => action.type === '@@network-connectivity/CONNECTION_CHANGE'),
+    filter(() => state$?.value?.network.isConnected),
+    concatMap(() => {
+      const listTemporary = state$?.value?.bpbks?.bpbksListTemp || []
+      const hasPending = listTemporary.some((item: any) => item.syncStatus === 'pending' || item.syncStatus === 'failed')
+      if (hasPending) {
+        console.log('🔄 Network online: Auto-syncing BPBKS...')
+        return of(actions.syncBPBKS())
+      }
+      return EMPTY
+    }),
+  )
+}
 
 const syncBPBKS: StreamType = (action$, state$) => {
   return action$.pipe(
@@ -62,17 +79,46 @@ const createBPBKS: StreamType = (action$, state$, api) => {
           const tphForms = action.payload.data?.tphs || []
 
           // Upload photos for each TPH after successful create
-          const uploadPromises = tphForms.map((tph: any, i: number) => {
+          const uploadPromises = tphForms.map(async (tph: any, i: number) => {
             const createdTph = createdTphs[i]
-            if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
-              return api.bpbksService.uploadPhotos(createdTph.id, {
-                photoFruitFront: tph.photoFruitFront,
-                photoFruitBack: tph.photoFruitBack,
-                photoFruitSide: tph.photoFruitSide,
-                photoKrani: tph.photoKrani,
-              }).catch((e: any) => console.warn('Photo upload failed:', e?.message))
+            if (!createdTph?.id) return
+            
+            const photoFields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
+            const hasPhoto = photoFields.some(field => tph[field]?.uri)
+            if (!hasPhoto) return
+
+            // Validasi dan prepare foto dengan metadata lengkap
+            const photos: any = {}
+            for (const field of photoFields) {
+              const photo = tph[field]
+              if (photo?.uri) {
+                try {
+                  // Check if file exists
+                  const exists = await RNFS.exists(photo.uri.replace('file://', ''))
+                  if (exists) {
+                    photos[field] = {
+                      uri: photo.uri,
+                      type: photo.type || 'image/jpeg',
+                      fileName: photo.fileName || `${field}_${Date.now()}.jpg`,
+                    }
+                  } else {
+                    console.warn(`Photo ${field} not found: ${photo.uri}`)
+                  }
+                } catch (e) {
+                  console.warn(`Error validating photo ${field}:`, e)
+                }
+              }
             }
-            return Promise.resolve()
+
+            // Upload jika ada foto yang valid
+            if (Object.keys(photos).length > 0) {
+              try {
+                await api.bpbksService.uploadPhotos(createdTph.id, photos)
+                console.log(`✅ Photos uploaded for TPH ${createdTph.id}`)
+              } catch (e: any) {
+                console.error(`❌ Photo upload failed for TPH ${createdTph.id}:`, e?.message)
+              }
+            }
           })
 
           return from(Promise.all(uploadPromises)).pipe(
@@ -191,4 +237,4 @@ const clearBpbksDraft: StreamType = (action$, state$) => {
   )
 }
 
-export default [createBPBKS, editBPBKS, deleteBPBKS, syncBPBKS, getBPBKSAll, clearBpbksDraft]
+export default [createBPBKS, editBPBKS, deleteBPBKS, syncBPBKS, getBPBKSAll, clearBpbksDraft, autoSyncOnOnline]
