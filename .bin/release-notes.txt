@@ -1,11 +1,11 @@
-E-Plantation Staging v6.6.0
+E-Plantation Staging v6.7.0
 
-Build: #23
+Build: #24
 Environment: Staging
 
 Recent changes:
+- Merge branch 'feat/offline-first' into 'staging'
+- fix(bpbks): ensure photos upload correctly during offline sync
+- [skip ci] bump version 6.6.0
 - fix(spb-local): include full kendaraan data in offline submit payload
 - [skip ci] bump version 6.5.0
-- Merge branch 'feat/offline-first' into 'staging'
-- fix(offline): fix BPBKS submit & monitoring TPH cache
-- feat(offline): add monitoring TPH to data sync
