@@ -814,7 +814,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
         <View style={{ marginTop: 8 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
+              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani (Selfi Depan Buah Di TPH)</Text>
               <PhotoField
                 label="Krani"
                 photo={item?.photoKrani}
