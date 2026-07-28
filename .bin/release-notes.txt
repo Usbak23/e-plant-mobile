@@ -1,11 +1,11 @@
-E-Plantation Staging v6.7.0
+E-Plantation Staging v6.8.0
 
-Build: #24
+Build: #25
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
+- fix: change info labe foto krani panen
+- [skip ci] bump version 6.7.0
+- Merge branch 'feat/offline-first' into 'staging'
 - fix(bpbks): ensure photos upload correctly during offline sync
-- [skip ci] bump version 6.6.0
-- fix(spb-local): include full kendaraan data in offline submit payload
-- [skip ci] bump version 6.5.0
