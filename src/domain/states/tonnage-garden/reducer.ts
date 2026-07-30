@@ -165,11 +165,30 @@ const tonnageGardenReducer = createReducer<IRSTonnageGarden, ActionsType>(DEFAUL
     const payload = (action as IEffectAction).payload
     const existing = state.draftOptions?.data || []
     const incoming = payload.data || []
-    // Merge: update existing entries, add new ones
-    const merged = [
-      ...existing.filter((e: any) => !incoming.find((i: any) => i.id === e.id)),
-      ...incoming,
-    ]
+
+    // Ambil tanggal-tanggal yang di-fetch dari incoming response
+    // Untuk tanggal yang sama, buang cache lama karena mungkin ada yang sudah submitted
+    const incomingDates = [...new Set(incoming.map((i: any) => {
+      const d = new Date(i.date)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }))]
+
+    // Jika incoming kosong tapi ada payload.requestDate, buang cache untuk tanggal tersebut
+    // (artinya semua draft untuk tanggal itu sudah submitted/tidak ada)
+    const requestDate = (payload as any).requestDate
+    if (requestDate) {
+      incomingDates.push(requestDate)
+    }
+
+    // Simpan entry dari tanggal lain (offline cache), buang entry tanggal yang baru di-fetch
+    const filtered = existing.filter((e: any) => {
+      const d = new Date(e.date)
+      const eDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      return !incomingDates.includes(eDate)
+    })
+
+    const merged = [...filtered, ...incoming]
+
     return {
       ...state,
       draftOptions: { ...payload, data: merged },
