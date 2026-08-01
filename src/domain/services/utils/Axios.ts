@@ -31,13 +31,16 @@ const Axios = axios.create()
 
 Axios.interceptors.request.use(async config => {
   const token = await getToken()
-  Object.assign(config, {
-    timeout: 1000 * 15,
-    headers: {
-      ...config.headers,
-      Authorization: token,
-    },
-  })
+  config.timeout = 1000 * 15
+  config.headers = config.headers ?? {}
+  config.headers['Authorization'] = token
+
+  // Jangan override Content-Type jika sudah di-set (misal: multipart/form-data untuk upload foto)
+  // Biarkan Axios set boundary secara otomatis untuk FormData
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
+
   return config
 })
 

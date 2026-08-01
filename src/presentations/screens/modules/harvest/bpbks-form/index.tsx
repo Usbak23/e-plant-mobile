@@ -307,7 +307,10 @@ const BPBKSForm = () => {
                 const timestamp = Date.now()
                 const fileName = `bpbks_${tempId}_tph${index}_${field}_${timestamp}.jpg`
                 const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`
-                await RNFS.copyFile(photo.uri.replace('file://', ''), destPath)
+                const normalizedSrc = photo.uri.startsWith('file://')
+                  ? photo.uri.slice(7)
+                  : photo.uri
+                await RNFS.copyFile(normalizedSrc, destPath)
                 
                 // Simpan metadata lengkap agar bisa di-upload saat sync
                 persisted[field] = {
