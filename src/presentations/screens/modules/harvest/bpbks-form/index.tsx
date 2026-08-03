@@ -93,6 +93,8 @@ const BPBKSForm = () => {
       rottenFruitChecked: item?.rottenFruitChecked != null ? String(Number(item.rottenFruitChecked)) : '',
       longHandleChecked: item?.longHandleChecked != null ? String(Number(item.longHandleChecked)) : '',
       looseChecked: item?.looseChecked != null ? String(Number(item.looseChecked)) : '',
+      abnormalFruitChecked: item?.abnormalFruitChecked != null ? String(Number(item.abnormalFruitChecked)) : '0',
+      sunburnFruitChecked: item?.sunburnFruitChecked != null ? String(Number(item.sunburnFruitChecked)) : '0',
     },
   ] : [])
 
@@ -136,6 +138,8 @@ const BPBKSForm = () => {
             rottenFruitChecked: e?.rottenFruitChecked?.toString(),
             longHandleChecked: e?.longHandleChecked?.toString(),
             looseChecked: e?.looseChecked?.toString(),
+            abnormalFruitChecked: e?.abnormalFruitChecked != null ? String(Number(e.abnormalFruitChecked)) : '0',
+            sunburnFruitChecked: e?.sunburnFruitChecked != null ? String(Number(e.sunburnFruitChecked)) : '0',
             viewOnly: true,
           }
         })
@@ -259,6 +263,8 @@ const BPBKSForm = () => {
       harvester: user,
       ...tph,
       ripeFruitChecked,
+      abnormalFruitChecked: parseInt(tph?.abnormalFruitChecked || '0') || 0,
+      sunburnFruitChecked: parseInt(tph?.sunburnFruitChecked || '0') || 0,
     }
     return data
   }
@@ -586,6 +592,8 @@ const BPBKSForm = () => {
                       rottenFruitChecked: '0',
                       longHandleChecked: '0',
                       looseChecked: '0',
+                      abnormalFruitChecked: '0',
+                      sunburnFruitChecked: '0',
                       photoFruitFront: null,
                       photoFruitBack: null,
                       photoFruitSide: null,
@@ -746,7 +754,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Lewat Matang (JJG)"
+          label="Buah Overripe (JJG)"
           maxLines={1}
           control={control}
           disabled={item?.viewOnly}
@@ -810,6 +818,59 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
             setFieldTphForm(index, 'looseChecked', value)
           }}
           isRequired
+          isNumber
+        />
+      </Row>
+      <Row>
+        <TextInput
+          label="Total JJG Siap Angkut"
+          control={control}
+          disabled
+          disabledText={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          value={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          name={`[${index}]totalJJGSiapAngkut`}
+          isNumber
+        />
+        <View style={{ flex: 1 }} />
+      </Row>
+      <Text size={12} type="semibold" style={{ marginVertical: 8 }}>
+        Kualitas Panen
+      </Text>
+      <Row>
+        <TextInput
+          label="Buah Abnormal (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.abnormalFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]abnormalFruitChecked`}
+          defaultValue="0"
+          value={item?.abnormalFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'abnormalFruitChecked', value)
+          }}
+          isNumber
+        />
+        <TextInput
+          label="Buah Matahari (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.sunburnFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]sunburnFruitChecked`}
+          defaultValue="0"
+          value={item?.sunburnFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'sunburnFruitChecked', value)
+          }}
           isNumber
         />
       </Row>
