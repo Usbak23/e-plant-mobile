@@ -155,8 +155,9 @@ const getDraftOptionsStream: StreamType = (action$, state$, api) => {
         })
         return of(actions.getDraftOptions.success({loading: false, data: filtered}))
       }
+      const { date: requestDate } = (action.payload.data || {}) as any
       return from(api.tonnageGarderService.getDraftOptions(action.payload.data as any)).pipe(
-        map(({data}: any) => actions.getDraftOptions.success({loading: false, data: data?.response || []})),
+        map(({data}: any) => actions.getDraftOptions.success({loading: false, data: data?.response || [], requestDate} as any)),
         catchError(() => of(actions.getDraftOptions.failure({loading: false, error: null}))),
       )
     }),

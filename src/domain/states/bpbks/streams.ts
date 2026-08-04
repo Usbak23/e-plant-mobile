@@ -93,8 +93,11 @@ const createBPBKS: StreamType = (action$, state$, api) => {
               const photo = tph[field]
               if (photo?.uri) {
                 try {
-                  // Check if file exists
-                  const exists = await RNFS.exists(photo.uri.replace('file://', ''))
+                  // Normalize URI: hapus prefix file:// agar RNFS.exists bisa baca path
+                  const normalizedPath = photo.uri.startsWith('file://')
+                    ? photo.uri.slice(7)
+                    : photo.uri
+                  const exists = await RNFS.exists(normalizedPath)
                   if (exists) {
                     photos[field] = {
                       uri: photo.uri,
