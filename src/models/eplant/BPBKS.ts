@@ -118,6 +118,8 @@ export interface Doc {
   rottenFruitChecked: number
   longHandleChecked: number
   looseChecked: number
+  abnormalFruitChecked?: number
+  sunburnFruitChecked?: number
   harvester: Harvester
   tph: Tph
   bpbks: Bpbks
@@ -149,6 +151,8 @@ export interface IBPBKSFormDataCreate {
     rottenFruitChecked: number
     longHandleChecked: number
     looseChecked: number
+    abnormalFruitChecked?: number
+    sunburnFruitChecked?: number
     plantingYear: string
   }[]
 }
@@ -167,4 +171,6 @@ export interface IBPBKSFormDataUpdate {
   rottenFruitChecked: number
   longHandleChecked: number
   looseChecked: number
+  abnormalFruitChecked?: number
+  sunburnFruitChecked?: number
 }

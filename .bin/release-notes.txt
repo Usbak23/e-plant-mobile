@@ -1,11 +1,11 @@
-E-Plantation Staging v6.7.0
+E-Plantation Staging v6.9.0
 
-Build: #24
+Build: #26
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
-- fix(bpbks): ensure photos upload correctly during offline sync
-- [skip ci] bump version 6.6.0
-- fix(spb-local): include full kendaraan data in offline submit payload
-- [skip ci] bump version 6.5.0
+- fix(bpbks-form): fix TPH form layout and field visibility
+- feat(bpbks): add Kualitas Panen fields (Buah Abnormal & Buah Matahari), fix field labels, and add Total JJG Siap Angkut
+-  fix(bpbks): photos not uploaded to Minio on submit
+- chore:add file do not commit

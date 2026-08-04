@@ -93,6 +93,8 @@ const BPBKSForm = () => {
       rottenFruitChecked: item?.rottenFruitChecked != null ? String(Number(item.rottenFruitChecked)) : '',
       longHandleChecked: item?.longHandleChecked != null ? String(Number(item.longHandleChecked)) : '',
       looseChecked: item?.looseChecked != null ? String(Number(item.looseChecked)) : '',
+      abnormalFruitChecked: item?.abnormalFruitChecked != null ? String(Number(item.abnormalFruitChecked)) : '0',
+      sunburnFruitChecked: item?.sunburnFruitChecked != null ? String(Number(item.sunburnFruitChecked)) : '0',
     },
   ] : [])
 
@@ -136,6 +138,8 @@ const BPBKSForm = () => {
             rottenFruitChecked: e?.rottenFruitChecked?.toString(),
             longHandleChecked: e?.longHandleChecked?.toString(),
             looseChecked: e?.looseChecked?.toString(),
+            abnormalFruitChecked: e?.abnormalFruitChecked != null ? String(Number(e.abnormalFruitChecked)) : '0',
+            sunburnFruitChecked: e?.sunburnFruitChecked != null ? String(Number(e.sunburnFruitChecked)) : '0',
             viewOnly: true,
           }
         })
@@ -259,6 +263,8 @@ const BPBKSForm = () => {
       harvester: user,
       ...tph,
       ripeFruitChecked,
+      abnormalFruitChecked: parseInt(tph?.abnormalFruitChecked || '0') || 0,
+      sunburnFruitChecked: parseInt(tph?.sunburnFruitChecked || '0') || 0,
     }
     return data
   }
@@ -307,7 +313,10 @@ const BPBKSForm = () => {
                 const timestamp = Date.now()
                 const fileName = `bpbks_${tempId}_tph${index}_${field}_${timestamp}.jpg`
                 const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`
-                await RNFS.copyFile(photo.uri.replace('file://', ''), destPath)
+                const normalizedSrc = photo.uri.startsWith('file://')
+                  ? photo.uri.slice(7)
+                  : photo.uri
+                await RNFS.copyFile(normalizedSrc, destPath)
                 
                 // Simpan metadata lengkap agar bisa di-upload saat sync
                 persisted[field] = {
@@ -583,6 +592,8 @@ const BPBKSForm = () => {
                       rottenFruitChecked: '0',
                       longHandleChecked: '0',
                       looseChecked: '0',
+                      abnormalFruitChecked: '0',
+                      sunburnFruitChecked: '0',
                       photoFruitFront: null,
                       photoFruitBack: null,
                       photoFruitSide: null,
@@ -704,8 +715,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
-      <Text size={12} type="semibold" style={{ marginVertical: 8 }}>
-        Buah / Janjang yang di Periksa
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
+        Masukan Hasil Panen
       </Text>
       <Row>
         <TextInput
@@ -743,7 +754,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Lewat Matang (JJG)"
+          label="Buah Overripe (JJG)"
           maxLines={1}
           control={control}
           disabled={item?.viewOnly}
@@ -778,22 +789,6 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Gagang Panjang"
-          control={control}
-          disabled={item?.viewOnly}
-          disabledText={item?.longHandleChecked}
-          placeholder="Contoh: 1"
-          name={`[${index}]longHandleChecked`}
-          defaultValue=""
-          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
-          value={item?.longHandleChecked}
-          onChangeText={(value: any) => {
-            setFieldTphForm(index, 'longHandleChecked', value)
-          }}
-          isRequired
-          isNumber
-        />
-        <TextInput
           label="Brondolan (Kg)"
           control={control}
           disabled={item?.viewOnly}
@@ -809,12 +804,80 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isRequired
           isNumber
         />
+        <TextInput
+          label="Total JJG Siap Angkut"
+          control={control}
+          disabled
+          disabledText={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          value={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          name={`[${index}]totalJJGSiapAngkut`}
+          isNumber
+        />
+      </Row>
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
+        Kualitas Panen
+      </Text>
+      <Row>
+        <TextInput
+          label="Gagang Panjang"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.longHandleChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]longHandleChecked`}
+          defaultValue=""
+          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
+          value={item?.longHandleChecked}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'longHandleChecked', value)
+          }}
+          isNumber
+        />
+        <TextInput
+          label="Buah Abnormal (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.abnormalFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]abnormalFruitChecked`}
+          defaultValue="0"
+          value={item?.abnormalFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'abnormalFruitChecked', value)
+          }}
+          isNumber
+        />
+      </Row>
+      <Row>
+        <TextInput
+          label="Buah Matahari (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.sunburnFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]sunburnFruitChecked`}
+          defaultValue="0"
+          value={item?.sunburnFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'sunburnFruitChecked', value)
+          }}
+          isNumber
+        />
+        <View style={{ flex: 1 }} />
       </Row>
       {!item?.viewOnly && !isEdit && (
         <View style={{ marginTop: 8 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
+              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani (Selfi Depan Buah Di TPH)</Text>
               <PhotoField
                 label="Krani"
                 photo={item?.photoKrani}
