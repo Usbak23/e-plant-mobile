@@ -715,8 +715,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
-      <Text size={12} type="semibold" style={{ marginVertical: 8 }}>
-        Buah / Janjang yang di Periksa
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
+        Masukan Hasil Panen
       </Text>
       <Row>
         <TextInput
@@ -789,22 +789,6 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Gagang Panjang"
-          control={control}
-          disabled={item?.viewOnly}
-          disabledText={item?.longHandleChecked}
-          placeholder="Contoh: 1"
-          name={`[${index}]longHandleChecked`}
-          defaultValue=""
-          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
-          value={item?.longHandleChecked}
-          onChangeText={(value: any) => {
-            setFieldTphForm(index, 'longHandleChecked', value)
-          }}
-          isRequired
-          isNumber
-        />
-        <TextInput
           label="Brondolan (Kg)"
           control={control}
           disabled={item?.viewOnly}
@@ -820,8 +804,6 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isRequired
           isNumber
         />
-      </Row>
-      <Row>
         <TextInput
           label="Total JJG Siap Angkut"
           control={control}
@@ -839,12 +821,26 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           name={`[${index}]totalJJGSiapAngkut`}
           isNumber
         />
-        <View style={{ flex: 1 }} />
       </Row>
-      <Text size={12} type="semibold" style={{ marginVertical: 8 }}>
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
         Kualitas Panen
       </Text>
       <Row>
+        <TextInput
+          label="Gagang Panjang"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.longHandleChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]longHandleChecked`}
+          defaultValue=""
+          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
+          value={item?.longHandleChecked}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'longHandleChecked', value)
+          }}
+          isNumber
+        />
         <TextInput
           label="Buah Abnormal (Janjang)"
           control={control}
@@ -859,6 +855,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           }}
           isNumber
         />
+      </Row>
+      <Row>
         <TextInput
           label="Buah Matahari (Janjang)"
           control={control}
@@ -873,6 +871,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           }}
           isNumber
         />
+        <View style={{ flex: 1 }} />
       </Row>
       {!item?.viewOnly && !isEdit && (
         <View style={{ marginTop: 8 }}>
