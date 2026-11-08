@@ -31,8 +31,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -122,8 +123,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -220,8 +222,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -236,10 +239,11 @@ workflows:
         script: |
           npx react-native bump-version --type major
       
-      - name: Build Android Bundle
+      - name: Build Android APK & Bundle
         script: |
           cd android
           ./gradlew clean
+          ./gradlew assembleRelease
           ./gradlew bundleRelease
       
       - name: Generate release notes
