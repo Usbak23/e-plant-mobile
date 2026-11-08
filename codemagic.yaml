@@ -196,7 +196,7 @@ workflows:
     environment:
       groups:
         - eplant-credentials
-        - google-play-credentials
+        # - google-play-credentials
       vars:
         PACKAGE_NAME: 'com.eplantation.mobile.app'
         ENV: 'prod'
@@ -286,18 +286,19 @@ workflows:
       - .bin/release-notes.txt
     
     publishing:
-      google_play:
-        credentials: $GOOGLE_PLAY_KEY
-        track: production
-        in_app_update_priority: 3
-        rollout_fraction: 0.999
-        changes_not_sent_for_review: false
-        submit_as_draft: false
+      # Disabled auto release to Google Play Store
+      # google_play:
+      #   credentials: $GOOGLE_PLAY_KEY
+      #   track: production
+      #   in_app_update_priority: 3
+      #   rollout_fraction: 0.999
+      #   changes_not_sent_for_review: false
+      #   submit_as_draft: false
       email:
         recipients:
           - developer@sahabatagro.co.id
           - freddy.pm@sahabatagro.co.id
-          - sys.analys@sahabatatagro.co.id
+          - sys.analys@sahabatagro.co.id
         notify:
           success: true
           failure: true
