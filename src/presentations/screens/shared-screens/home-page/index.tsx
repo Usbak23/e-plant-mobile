@@ -2,7 +2,7 @@ import { theme } from '@app/presentations/utils/styles'
 import moment from 'moment'
 import { Menu, Text } from '@app/presentations/_shared-components'
 import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, Dimensions, RefreshControl } from 'react-native'
+import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, RefreshControl, useWindowDimensions } from 'react-native'
 import { Menus } from './menu-list'
 import MenuWrapper from '@app/presentations/_shared-components/Menu/wrapper'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -19,9 +19,6 @@ import Routes from '@app/presentations/navigation/Routes'
 import { actions, RootStateType } from '@app/domain/states/store'
 import { database } from '@root/index'
 import { ITPHRowAll } from '@app/models/eplant/TPH'
-
-const window = Dimensions.get('window')
-const screen = Dimensions.get('screen')
 
 const NetworkDot = ({ isConnected }: { isConnected: boolean }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
@@ -47,7 +44,9 @@ const HomePage = () => {
   const currentUser = useCurrentUserInfo()
   const dispatch = useDispatch()
   const isFocused = useIsFocused() // using is focused because we need latest data on BE
-  const [dimensions, setDimensions] = useState({ window, screen })
+  const { width, height } = useWindowDimensions()
+  const isWide = width >= 600 || width > height
+  const columns = isWide ? 4 : 2
   const [refreshing, setRefreshing] = useState(false)
 
   const { tphAll } = useSelector((state: RootStateType) => state?.tph)
@@ -84,16 +83,9 @@ const HomePage = () => {
     setTimeout(() => setRefreshing(false), 1500)
   }
 
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
-      setDimensions({ window, screen })
-    })
-    return () => subscription?.remove()
-  })
-
   const constructMenus = () => {
-    const temps = []
-    let x = []
+    const temps: any[] = []
+    let x: any[] = []
     Menus.forEach((menu, index) => {
       if (menu.slug == ROLE_ACCESS_SLUG.SEE_ABSENSI || menu.slug == ROLE_ACCESS_SLUG.SEE_WAREHOUSE_MANAGEMENT) {
         if (menu.slug == ROLE_ACCESS_SLUG.SEE_ABSENSI && isAllowedToSeeAbsensi) {
@@ -105,12 +97,12 @@ const HomePage = () => {
         x.push(menu)
       }
 
-      if (dimensions.window.height > dimensions.window.width ? x.length == 2 : x.length == 4) {
+      if (x.length === columns) {
         temps.push(x)
         x = []
       }
 
-      if (index == Menus.length - 1) {
+      if (index === Menus.length - 1 && x.length > 0) {
         temps.push(x)
         x = []
       }

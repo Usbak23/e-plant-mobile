@@ -1,10 +1,10 @@
 import {theme} from '@app/presentations/utils/styles'
 import {useNavigation} from '@react-navigation/core'
 import React from 'react'
-import {Dimensions, StyleSheet, View} from 'react-native'
+import {StyleSheet, useWindowDimensions, View} from 'react-native'
 import {TouchableOpacity} from 'react-native-gesture-handler'
 import {Text} from '..'
-const {width} = Dimensions.get('window')
+
 interface IMenuProps {
   menuItem: {
     icon: any
@@ -12,25 +12,55 @@ interface IMenuProps {
     screen: string
     bgColor: string
   }
+  columns?: number
 }
 
 const Menu: React.FC<IMenuProps> = props => {
   const navigation = useNavigation()
   const {icon, title, screen, bgColor} = props.menuItem
+  const {width, height} = useWindowDimensions()
+  const isWide = width >= 600 || width > height
+  const numColumns = props.columns || (isWide ? 4 : 2)
+
+  // Pada HP Portrait: tetap width / 2.45 persis seperti semula
+  // Pada Tablet / Landscape: hitung lebar pas 4 kolom (maksimal 200dp)
+  const cardSize = isWide
+    ? Math.min((width - 32 - numColumns * 20) / numColumns, 200)
+    : width / 2.45
 
   const onMenuTap = () => {
     //@ts-ignore
     navigation.navigate(screen)
   }
 
-  const Icon = icon;
+  const Icon = icon
 
   return (
-    <TouchableOpacity onPress={onMenuTap} activeOpacity={0.5} style={styles.container}>
-      <View style={{marginVertical: 10, padding: 26, borderRadius: 12, backgroundColor: bgColor}}>
-        <Icon width={48} height={48} />
+    <TouchableOpacity
+      onPress={onMenuTap}
+      activeOpacity={0.5}
+      style={[
+        styles.container,
+        {
+          width: cardSize,
+          height: cardSize,
+        },
+      ]}>
+      <View
+        style={{
+          marginVertical: isWide ? 6 : 10,
+          padding: isWide ? 18 : 26,
+          borderRadius: 12,
+          backgroundColor: bgColor,
+        }}>
+        <Icon width={isWide ? 40 : 48} height={isWide ? 40 : 48} />
       </View>
-      <Text maxLines={2} type="semibold" size={12} color={theme.colors.textThinBlack} style={styles.title}>
+      <Text
+        maxLines={2}
+        type="semibold"
+        size={isWide ? 11 : 12}
+        color={theme.colors.textThinBlack}
+        style={styles.title}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -41,10 +71,7 @@ export default Menu
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: 'white',
-    height: width / 2.45,
-    width: width / 2.45,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
