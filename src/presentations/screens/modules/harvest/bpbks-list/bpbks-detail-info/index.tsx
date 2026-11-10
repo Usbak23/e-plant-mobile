@@ -19,7 +19,7 @@ const AKPDetailInfo = ({bpbksData}: any) => {
           </View>
           <View style={[styles.leftSpacer, {flex: 1}]}>
             <Text style={styles.itemTitle} size={11}>
-              Tanggal PMB
+              Tanggal BPBKS
             </Text>
             <Text color={theme.colors.textThinBlack} size={12}>
               {moment(bpbksData?.date).format('DD MMMM YYYY') || '-'}

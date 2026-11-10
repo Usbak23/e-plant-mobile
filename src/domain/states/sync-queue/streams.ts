@@ -1,7 +1,8 @@
 import {map, catchError, filter, switchMap, concatMap, delay} from 'rxjs/operators'
-import {from, of} from 'rxjs'
+import {from, of, EMPTY} from 'rxjs'
 import {isActionOf} from 'typesafe-actions'
 import * as actions from '@app/domain/states/sync-queue/actions'
+import * as spbLocalActions from '@app/domain/states/spb-local/actions'
 import {StreamType} from '@app/domain/states/types'
 import {ISyncQueueItem} from '@app/domain/states/sync-queue/actions'
 
@@ -35,12 +36,28 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
               // Attempt to sync based on type
               if (item.type === 'BPBKS') {
                 return from(api.bpbksService.createBPBKS(item.data)).pipe(
-                  map((response: any) => {
-                    console.log(`✅ BPBKS synced: ${item.id}`)
-                    return actions.updateSyncStatus({
-                      id: item.id,
-                      status: 'success',
+                  switchMap((response: any) => {
+                    const createdTphs = response?.data?.response?.tphs || []
+                    const tphForms = item.data?.tphs || []
+                    const uploadPromises = tphForms.map((tph: any, i: number) => {
+                      // Match by tphId to ensure correct photo-to-record mapping
+                      const createdTph = createdTphs.find((ct: any) => ct.tph?.id === tph.tphId || ct.tphId === tph.tphId) || createdTphs[i]
+                      if (createdTph?.id && (tph.photoFruitFront || tph.photoFruitBack || tph.photoFruitSide || tph.photoKrani)) {
+                        return api.bpbksService.uploadPhotos(createdTph.id, {
+                          photoFruitFront: tph.photoFruitFront,
+                          photoFruitBack: tph.photoFruitBack,
+                          photoFruitSide: tph.photoFruitSide,
+                          photoKrani: tph.photoKrani,
+                        }).catch((e: any) => console.warn('Photo upload failed:', e?.message))
+                      }
+                      return Promise.resolve()
                     })
+                    return from(Promise.all(uploadPromises)).pipe(
+                      map(() => {
+                        console.log(`✅ BPBKS synced with photos: ${item.id}`)
+                        return actions.updateSyncStatus({ id: item.id, status: 'success' })
+                      }),
+                    )
                   }),
                   catchError((error: any) => {
                     console.error(`❌ BPBKS sync failed: ${item.id}`, error.message)
@@ -72,4 +89,19 @@ const autoSyncOnConnectionRestore: StreamType = (action$, state$, api) => {
   )
 }
 
-export default [autoSyncOnConnectionRestore]
+const autoSyncSpbLocalOnConnectionRestore: StreamType = (action$, state$) => {
+  return action$.pipe(
+    filter((action: any) =>
+      action.type === 'Network/CONNECTION_CHANGE' && action.payload?.isConnected === true,
+    ),
+    switchMap(() => {
+      const listTemp = state$?.value?.spbLocal?.spbLocalListTemp || []
+      const pending = listTemp.filter((i: any) => i.syncStatus !== 'success')
+      if (pending.length === 0) return EMPTY
+      console.log(`🔄 Auto-sync SPB Local: ${pending.length} pending`)
+      return of(spbLocalActions.syncSpbLocal())
+    }),
+  )
+}
+
+export default [autoSyncOnConnectionRestore, autoSyncSpbLocalOnConnectionRestore]

@@ -13,6 +13,7 @@ export interface IRSUser {
   userProfilePictureForm?: IEffectPayload
   userAddOrChangeEmailForm?: IEffectPayload
   userUpdatePasswordForm?: IEffectPayload
+  syncMasterDataStatus?: IEffectPayload
   baseURL: 'http://localhost:5011'
   changePasswordStatus: IEffectPayload
   forgotPasswordStatus: IEffectPayload
@@ -43,19 +44,23 @@ const userReducer = createReducer<IRSUser, IEffectAction>(DEFAULT_STATE)
       userDataLogin: payload.data.rememberMe ? payload.data : undefined,
     }
   })
-  .handleAction(
-    [actions.getAllUser.request, actions.getAllUser.success, actions.getAllUser.failure],
-    (state, action) => {
-      const payload = (action as IEffectAction).payload
-      return {
-        ...state,
-        userAll: {
-          data: state.userAll?.data,
-          ...payload,
-        },
-      }
-    },
-  )
+  .handleAction([actions.getAllUser.success], (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      userAll: payload,
+    }
+  })
+  .handleAction([actions.getAllUser.request, actions.getAllUser.failure], (state, action) => {
+    const payload = (action as IEffectAction).payload
+    return {
+      ...state,
+      userAll: {
+        data: state.userAll?.data,
+        ...payload,
+      },
+    }
+  })
   .handleAction([actions.getCurrentUser.request, actions.getCurrentUser.failure], (state, action) => {
     const payload = (action as IEffectAction).payload
 
@@ -175,6 +180,20 @@ const userReducer = createReducer<IRSUser, IEffectAction>(DEFAULT_STATE)
       return {
         ...state,
         userUpdatePasswordForm: payload,
+      }
+    },
+  )
+  .handleAction(
+    [
+      actions.syncMasterData.request,
+      actions.syncMasterData.failure,
+      actions.syncMasterData.success,
+    ],
+    (state, action) => {
+      const payload = (action as IEffectAction).payload
+      return {
+        ...state,
+        syncMasterDataStatus: payload,
       }
     },
   )

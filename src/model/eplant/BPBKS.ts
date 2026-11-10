@@ -122,6 +122,8 @@ export interface Doc {
   rottenFruitChecked: number
   longHandleChecked: number
   looseChecked: number
+  abnormalFruitChecked?: number
+  sunburnFruitChecked?: number
   harvester: Harvester
   tph: Tph
   bpbks: Bpbks
@@ -132,13 +134,18 @@ export interface IBPBKSResponse {
   docs: Doc[]
 }
 
+export type BPBKSSyncStatus = 'pending' | 'syncing' | 'synced' | 'failed'
+
 export interface IBPBKSFormDataCreate {
   tempId?: string
+  syncStatus?: BPBKSSyncStatus
+  syncError?: string
   divisionId: string
   date: string
   foremanId: string
   harvesterId: string
   cutNumber: number | string
+  gardenTonnageId?: string
   tphs: {
     cutNumber: number | string
     tphId: string
@@ -150,6 +157,8 @@ export interface IBPBKSFormDataCreate {
     rottenFruitChecked: number
     longHandleChecked: number
     looseChecked: number
+    abnormalFruitChecked?: number
+    sunburnFruitChecked?: number
     plantingYear: string
   }[]
 }
@@ -168,4 +177,6 @@ export interface IBPBKSFormDataUpdate {
   rottenFruitChecked: number
   longHandleChecked: number
   looseChecked: number
+  abnormalFruitChecked?: number
+  sunburnFruitChecked?: number
 }

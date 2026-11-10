@@ -8,7 +8,7 @@ const defaultInterval = FIVE_SEC_IN_MILISEC
 export const syncData = () => {
   flux.store.dispatch(flux.actions.syncAKP())
   flux.store.dispatch(flux.actions.syncRKH())
-  // flux.store.dispatch(flux.actions.syncRKHTakeCare())
+  flux.store.dispatch(flux.actions.syncBPBKS())
 }
 
 const useSyncData = (interval = defaultInterval) => {

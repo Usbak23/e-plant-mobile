@@ -9,7 +9,7 @@ const tonnage = yup.object().shape({
     .typeError('Janjang wajib diisi'),
 })
 
-export let tonnageGardenFormValidationSchema = yup.object().shape({
+const baseSchema = {
   poNumber: yup.string().required('Organisasi wajib diisi'),
   date: yup.string().required('Tanggal wajib diisi'),
   organizationId: yup.string().required('Pilih organisasi terlebih dahulu'),
@@ -26,12 +26,26 @@ export let tonnageGardenFormValidationSchema = yup.object().shape({
     .max(yup.ref('grossWeight'), 'Berat Tare tak boleh melebihi Berat Gross')
     .required('Berat Tare wajib diisi')
     .typeError('Masukkan Berat Tare dengan benar'),
-  // .lessThan(yup.ref('grossWeight'), 'Berat Tare tak boleh melebihi Berat Gross'),
   netto: yup.number().min(0, 'Netto tidak boleh negatif').typeError('Netto tidak valid'),
-  // .required('Netto wajib terisi'),
+}
+
+export const tonnageGardenFormValidationSchema = yup.object().shape({
+  ...baseSchema,
   gardenTonnageBlocks: yup
     .array()
     .of(tonnage)
     .required('Data Blok wajib diisi')
     .min(1, 'Setidaknya ada perlu satu data'),
+})
+
+export const tonnageGardenDraftValidationSchema = yup.object().shape({
+  poNumber: yup.string().required('Organisasi wajib diisi'),
+  date: yup.string().required('Tanggal wajib diisi'),
+  organizationId: yup.string().required('Pilih organisasi terlebih dahulu'),
+  driver: yup.string().required('Sopir wajib diisi'),
+  itemId: yup.string().required('Nomor kendaraan wajib diisi'),
+  grossWeight: yup.mixed().nullable(),
+  tareWeight: yup.mixed().nullable(),
+  netto: yup.mixed().nullable(),
+  gardenTonnageBlocks: yup.array(),
 })

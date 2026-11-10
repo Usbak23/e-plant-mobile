@@ -1,7 +1,8 @@
 import { theme } from '@app/presentations/utils/styles'
+import moment from 'moment'
 import { Menu, Text } from '@app/presentations/_shared-components'
 import React, { useEffect, useState } from 'react'
-import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native'
+import { Image, ScrollView, StatusBar, StyleSheet, View, TouchableOpacity, Dimensions, RefreshControl } from 'react-native'
 import { Menus } from './menu-list'
 import MenuWrapper from '@app/presentations/_shared-components/Menu/wrapper'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -47,10 +48,41 @@ const HomePage = () => {
   const dispatch = useDispatch()
   const isFocused = useIsFocused() // using is focused because we need latest data on BE
   const [dimensions, setDimensions] = useState({ window, screen })
+  const [refreshing, setRefreshing] = useState(false)
 
   const { tphAll } = useSelector((state: RootStateType) => state?.tph)
   const netInfo = useNetInfo()
   const isConnected = netInfo.isConnected && netInfo.isInternetReachable !== false
+
+  const prefetchHarvestData = () => {
+    const today = moment().format('YYYY-MM-DD')
+    const month = moment().format('M')
+    const year = moment().format('YYYY')
+    const divisions = currentUser?.userDivisions || []
+
+    const seenOrgs = new Set()
+    divisions.forEach((ud: any) => {
+      const divisionId = ud.division?.id
+      const orgId = ud.division?.organization?.id
+      if (divisionId) {
+        dispatch(actions.monitoringTph.getMonitoringTphList.request({
+          loading: false,
+          data: {divisionId, month, year, limit: 9999, page: 0},
+        }))
+      }
+      if (orgId && !seenOrgs.has(orgId)) {
+        seenOrgs.add(orgId)
+        dispatch(actions.getDraftOptions.request({loading: false, data: {organizationId: orgId, date: today}}))
+      }
+    })
+  }
+
+  const onRefresh = () => {
+    setRefreshing(true)
+    dispatch(actions.fetchAllDataForOfflineMode())
+    prefetchHarvestData()
+    setTimeout(() => setRefreshing(false), 1500)
+  }
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window, screen }) => {
@@ -163,15 +195,17 @@ const HomePage = () => {
 
   }, [])
 
+
   useEffect(() => {
     if (isFocused) {
       dispatch(actions.fetchAllDataForOfflineMode())
+      prefetchHarvestData()
     }
   }, [isFocused])
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.backgroundDark }}>
-      <ScrollView style={{ backgroundColor: 'white', marginBottom: -100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ backgroundColor: 'white', marginBottom: -100 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.backgroundDark]} tintColor={theme.colors.backgroundDark} />}>
         <StatusBar animated={true} backgroundColor={theme.colors.backgroundDark} barStyle="light-content" />
         <View style={styles.headerBg}>
           <View style={styles.headerView}>

@@ -27,6 +27,7 @@ import { useBlockOptionsByOrganization } from '@app/domain/states/block/hooks'
 import { showErrorToast, showSuccessToast } from '@app/presentations/_shared-components/Toast'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { dateFormatter } from '@app/presentations/utils/dateFormatter'
+import System from '@app/domain/services/System'
 
 interface IBlockForm {
   blockId: string
@@ -43,8 +44,10 @@ const TonnageGardenForm = () => {
   const route: any = useRoute()
   const navigation: any = useNavigation()
   const resolver = useYupValidationResolver(schema.tonnageGardenFormValidationSchema)
+  const draftResolver = useYupValidationResolver(schema.tonnageGardenDraftValidationSchema)
   const item = route?.params?.item
   const isEdit = Boolean(item)
+  const isDraft = isEdit && item?.status === 'draft'
 
   const constructDefaultBlocks = (currentBlocks?: ITonnageGardenBlok[]) => {
     if (currentBlocks && Array.isArray(currentBlocks)) {
@@ -73,7 +76,7 @@ const TonnageGardenForm = () => {
     setError,
     formState: { errors },
   } = useForm({
-    resolver,
+    resolver: isEdit && !isDraft ? resolver : draftResolver,
     mode: 'onChange',
     defaultValues: {
       poNumber: isEdit ? item?.poNumber : '',
@@ -149,13 +152,13 @@ const TonnageGardenForm = () => {
 
   useEffect(() => {
     const data = formStatus?.data?.data
-    if (data?.status == 'success') {
+    if (data?.status == 'success' || formStatus?.data?.status === 200) {
       showSuccessToast('Berhasil disimpan')
       setTimeout(() => {
         navigation.goBack()
       }, 200)
     }
-  }, [formStatus?.data?.data])
+  }, [formStatus?.data])
 
   useEffect(() => {
     if (isEdit && tonnageGardenDetail?.data?.id === item.id) {
@@ -168,26 +171,69 @@ const TonnageGardenForm = () => {
         grossWeight: tonnageGardenDetail?.data?.grossWeight.toString(),
         tareWeight: tonnageGardenDetail?.data?.tareWeight?.toString(),
         netto: tonnageGardenDetail?.data?.netto?.toString(),
-        gardenTonnageBlocks: constructDefaultBlocks(tonnageGardenDetail?.data?.gardenTonnageBlocks),
+        gardenTonnageBlocks: isDraft ? [defaultBlockForm] : constructDefaultBlocks(tonnageGardenDetail?.data?.gardenTonnageBlocks),
       })
+
+      if (isDraft) {
+        System.instance.tonnageGarderService.getBpbksAggregate(item.id).then((res: any) => {
+          const blocks = (res?.data?.response || []).map((b: any) => ({
+            blockId: b.blockId,
+            totalJanjang: b.totalJanjang?.toString() || '0',
+          }))
+          if (blocks.length > 0) {
+            setValue('gardenTonnageBlocks', blocks)
+          }
+        }).catch(() => {})
+      }
     }
   }, [tonnageGardenDetail?.data])
 
-  const onSubmit = (form: ITonnageGardenFormData) => {
-    if (isEdit) {
-      form.id = item.id
-      form.netto = form.grossWeight - form.tareWeight
-      form.janjang = form.gardenTonnageBlocks?.reduce((acc, obj) => (acc + parseInt(obj.totalJanjang.toString() || '0')), 0) || 0
-      const bjr = form.netto / form.janjang
-      form.bjr = !bjr || isNaN(bjr) || !isFinite(bjr) ? 0 : bjr
-      dispatch(actions.updateTonnageGarden.request({ loading: true, data: form }))
-      return
-    }
-    form.netto = form.grossWeight - form.tareWeight
+  // Load blok dari BPBKS aggregate saat edit draft - handled inside tonnageGardenDetail useEffect
+
+  const buildForm = (form: ITonnageGardenFormData) => {
+    const gross = parseFloat(form.grossWeight as any) || 0
+    const tare = parseFloat(form.tareWeight as any) || 0
+    form.grossWeight = gross
+    form.tareWeight = tare
+    form.netto = gross - tare
     form.janjang = form.gardenTonnageBlocks?.reduce((acc, obj) => (acc + parseInt(obj.totalJanjang.toString() || '0')), 0) || 0
     const bjr = form.netto / form.janjang
     form.bjr = !bjr || isNaN(bjr) || !isFinite(bjr) ? 0 : bjr
+    return form
+  }
+
+  const onSubmit = async (form: ITonnageGardenFormData) => {
+    if (!isEdit) {
+      try {
+        await schema.tonnageGardenFormValidationSchema.validate(form, { abortEarly: false })
+      } catch (err: any) {
+        showErrorToast(err.errors?.[0] || 'Validasi gagal')
+        return
+      }
+    }
+    form = buildForm(form)
+    form.status = 'submitted'
+    if (isEdit) {
+      form.id = item.id
+      dispatch(actions.updateTonnageGarden.request({ loading: true, data: form }))
+      return
+    }
     dispatch(actions.createTonnageGarden.request({ loading: true, data: form }))
+  }
+
+  const onSaveDraft = async () => {
+    const form = getValues() as ITonnageGardenFormData
+    const built = buildForm({ ...form })
+    built.status = 'draft'
+    built.gardenTonnageBlocks = []
+    if (isEdit) {
+      built.id = item.id
+      dispatch(actions.updateTonnageGarden.request({ loading: true, data: built }))
+    } else {
+      dispatch(actions.createTonnageGarden.request({ loading: true, data: built }))
+    }
+    showSuccessToast('Draft berhasil disimpan')
+    navigation.goBack()
   }
   return (
     <SafeAreaView style={styles.root}>
@@ -365,8 +411,15 @@ const TonnageGardenForm = () => {
           />
         ))}
 
-        <Button style={{ marginVertical: 16 }} onPress={handleSubmit(onSubmit)}>
-          <Text color="white">{isEdit ? 'Ubah Tonase Kebun' : 'Simpan Tonase Kebun'}</Text>
+        {!isEdit && (
+          <Button
+            style={{ marginTop: 8, marginBottom: 4, backgroundColor: theme.colors.light2 }}
+            onPress={onSaveDraft}>
+            <Text color={theme.colors.accent}>Simpan Draft</Text>
+          </Button>
+        )}
+        <Button style={{ marginVertical: 8 }} onPress={handleSubmit(onSubmit)}>
+          <Text color="white">{isDraft ? 'Lengkapi & Simpan' : isEdit ? 'Ubah Tonase Kebun' : 'Simpan Tonase Kebun'}</Text>
         </Button>
       </ScrollView>
     </SafeAreaView>

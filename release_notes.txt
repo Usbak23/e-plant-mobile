@@ -1,0 +1,11 @@
+E-Plantation Staging v4.2.0
+
+Build: #1
+Environment: Staging
+
+Recent changes:
+- Configure automatic Play Store production release with release notes
+- Update release notes generation to use commits since last tag
+- Merge branch 'development' of https://gitlab.sahabatagro.co.id/sahabat-agro-group/eplant-mobile into development
+- feat: add release notes to email and Play Store
+- [skip ci] bump version 4.1.1

@@ -26,6 +26,7 @@ import { useBPBKSLists } from '@app/domain/states/bpbks/hooks'
 import System from '@app/domain/services/System'
 import Routes from '@app/presentations/navigation/Routes'
 import NetInfo from '@react-native-community/netinfo'
+import RNFS from 'react-native-fs'
 
 const BPBKSForm = () => {
   const route: any = useRoute()
@@ -92,6 +93,8 @@ const BPBKSForm = () => {
       rottenFruitChecked: item?.rottenFruitChecked != null ? String(Number(item.rottenFruitChecked)) : '',
       longHandleChecked: item?.longHandleChecked != null ? String(Number(item.longHandleChecked)) : '',
       looseChecked: item?.looseChecked != null ? String(Number(item.looseChecked)) : '',
+      abnormalFruitChecked: item?.abnormalFruitChecked != null ? String(Number(item.abnormalFruitChecked)) : '0',
+      sunburnFruitChecked: item?.sunburnFruitChecked != null ? String(Number(item.sunburnFruitChecked)) : '0',
     },
   ] : [])
 
@@ -106,6 +109,18 @@ const BPBKSForm = () => {
   const blocks = useBlocksWithPlantingYearByDivisionStd(bpbksData?.division?.id)
 
   const isConnected = useSelector((state: RootStateType) => state.network.isConnected)
+
+  // DEBUG: Log untuk cek data
+  useEffect(() => {
+    if (!isEdit && bpbksData?.organization?.value && bpbksData?.date) {
+      if (!isConnected) {
+        console.log('⚠️ Offline: Will use cached draft options')
+        console.log('⚠️ WARNING: Data mungkin tidak up-to-date!')
+      } else {
+        console.log('🌐 Online: Fetching fresh draft options from server')
+      }
+    }
+  }, [bpbksData?.organization?.value, bpbksData?.date, isConnected])
 
   useEffect(() => {
     if (!isEdit && selectedUser) {
@@ -123,6 +138,8 @@ const BPBKSForm = () => {
             rottenFruitChecked: e?.rottenFruitChecked?.toString(),
             longHandleChecked: e?.longHandleChecked?.toString(),
             looseChecked: e?.looseChecked?.toString(),
+            abnormalFruitChecked: e?.abnormalFruitChecked != null ? String(Number(e.abnormalFruitChecked)) : '0',
+            sunburnFruitChecked: e?.sunburnFruitChecked != null ? String(Number(e.sunburnFruitChecked)) : '0',
             viewOnly: true,
           }
         })
@@ -194,10 +211,10 @@ const BPBKSForm = () => {
         }
       }
     }
-    // if (!isEdit && tphForm.some((e: any) => !e.photoFruitFront || !e.photoFruitBack || !e.photoFruitSide || !e.photoKrani)) {
-    //   showErrorToast('Foto Buah (depan, belakang, samping) dan Foto Krani wajib diisi!')
-    //   return false
-    // }
+    if (!isEdit && tphForm.some((e: any) => !e.photoFruitFront || !e.photoFruitBack || !e.photoFruitSide || !e.photoKrani)) {
+      showErrorToast('Foto Buah (depan, belakang, samping) dan Foto Krani wajib diisi!')
+      return false
+    }
 
     const isRipeFruiteLessThanZero = tphForm.some((e: any) => {
       const ripeFruitChecked = calculateRipeFruit(e)
@@ -246,47 +263,123 @@ const BPBKSForm = () => {
       harvester: user,
       ...tph,
       ripeFruitChecked,
+      abnormalFruitChecked: parseInt(tph?.abnormalFruitChecked || '0') || 0,
+      sunburnFruitChecked: parseInt(tph?.sunburnFruitChecked || '0') || 0,
     }
     return data
   }
 
   const onSubmit = async (value: any) => {
+    // Double-check koneksi langsung dari device
     const netInfoState = await NetInfo.fetch()
     const isActuallyConnected = netInfoState.isConnected && netInfoState.isInternetReachable !== false
-
+    
+    console.log('🔍 Network Debug:')
+    console.log('  - isConnected from Redux:', isConnected)
+    console.log('  - isConnected from NetInfo:', netInfoState.isConnected)
+    console.log('  - isInternetReachable:', netInfoState.isInternetReachable)
+    console.log('  - Connection type:', netInfoState.type)
+    console.log('  - Actually connected:', isActuallyConnected)
+    
+    
+    // Validasi TPH
     if (!validateTPH()) {
       return
     }
-
+    
+    // Mode Edit
     if (isEdit) {
       const requestBody = constructToFormDataUpdate(value)
       dispatch(actions.editBPBKS.request({ loading: true, data: requestBody }))
       return
     }
 
+    // Mode Create
     const requestBodyCreate = constructToFormDataCreate(value)
-
+    
+    // GUNAKAN NetInfo langsung untuk deteksi koneksi yang lebih akurat
     if (!isActuallyConnected) {
       const tempId = `BPBKS_${Date.now()}`
-      const firstTph = requestBodyCreate.tphs?.[0]
+      
+      // Persist foto ke DocumentDirectory agar URI tetap valid setelah restart
+      const persistedTphs = await Promise.all(
+        requestBodyCreate.tphs.map(async (tph: any, index: number) => {
+          const photoFields = ['photoFruitFront', 'photoFruitBack', 'photoFruitSide', 'photoKrani'] as const
+          const persisted: any = { ...tph }
+          for (const field of photoFields) {
+            const photo = tph[field]
+            if (photo?.uri) {
+              try {
+                const timestamp = Date.now()
+                const fileName = `bpbks_${tempId}_tph${index}_${field}_${timestamp}.jpg`
+                const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`
+                const normalizedSrc = photo.uri.startsWith('file://')
+                  ? photo.uri.slice(7)
+                  : photo.uri
+                await RNFS.copyFile(normalizedSrc, destPath)
+                
+                // Simpan metadata lengkap agar bisa di-upload saat sync
+                persisted[field] = {
+                  uri: `file://${destPath}`,
+                  type: photo.type || 'image/jpeg',
+                  fileName: fileName,
+                }
+              } catch (error) {
+                console.error(`Failed to persist photo ${field}:`, error)
+                // Jika gagal copy, tetap pakai URI asli dengan metadata
+                persisted[field] = {
+                  uri: photo.uri,
+                  type: photo.type || 'image/jpeg',
+                  fileName: photo.fileName || `${field}.jpg`,
+                }
+              }
+            }
+          }
+          return persisted
+        })
+      )
+
+      // Simpan ke local state (bpbksListTemp) agar muncul di list
+      const firstTph = persistedTphs?.[0]
       dispatch(actions.addBPBKSTemp({
         ...requestBodyCreate,
-        tempId,
+        tphs: persistedTphs,
+        tempId: tempId,
         syncStatus: 'pending',
         tph: firstTph?.tph ? { ...firstTph.tph, block: firstTph.block } : null,
         plantingYear: firstTph?.plantingYear,
         harvester: user,
         cutNumber: requestBodyCreate.cutNumber,
+        bpbks: {},
       }))
-      showInfoToast('✅ Data disimpan lokal. Akan tersinkronisasi saat online.')
-      navigation.goBack()
+
+      // Tambahkan ke syncQueue agar SyncStatusModal menampilkan status (jika ada)
+      if (actions.syncQueue?.addToSyncQueue) {
+        dispatch(actions.syncQueue.addToSyncQueue({
+          id: tempId,
+          type: 'BPBKS',
+          data: { ...requestBodyCreate, tphs: persistedTphs, tempId },
+          timestamp: Date.now(),
+          status: 'pending',
+        }))
+      }
+      
+      showSuccessToast(`✅ Data BPBKS ${user?.name || ''} berhasil disimpan (offline). Akan tersinkronisasi saat online.`)
+      
+      // Delay navigation agar toast muncul
+      setTimeout(() => {
+        navigation.goBack()
+      }, 100)
       return
     }
 
+    // ONLINE MODE: Direct API call
     try {
+      console.log('🌐 ONLINE: Submitting BPBKS to server')
       const res: any = await System.instance.bpbksService.createBPBKS(requestBodyCreate)
       const createdTphs = res?.data?.response?.tphs || []
-
+      
+      // Upload photos untuk setiap TPH
       for (let i = 0; i < tphForm.length; i++) {
         const tph = tphForm[i] as any
         const createdTph = createdTphs[i]
@@ -303,7 +396,8 @@ const BPBKSForm = () => {
           }
         }
       }
-
+      
+      // Refresh list BPBKS setelah create berhasil
       dispatch(actions.getBPBKSAll.request({
         loading: false,
         data: {
@@ -339,11 +433,16 @@ const BPBKSForm = () => {
   useEffect(() => {
     console.log('🚀 Initializing BPBKS Form - Fetching master data...')
     dispatch(actions.clearFormBPBKSStatus())
+    
+    // Force refresh master data setiap kali form dibuka
     dispatch(actions.getOrganizationAll.request({ loading: true }))
     dispatch(actions.getAllDivision.request({ loading: true }))
     dispatch(actions.getAllUser.request({ loading: true }))
     dispatch(actions.getTPHAll.request({ loading: true }))
     dispatch(actions.getAllBlock.request({ loading: true }))
+    
+    // Pre-fetch draft options jika ada organization dan date
+    console.log('✅ Master data fetch dispatched')
   }, [])
 
   useEffect(() => {
@@ -363,7 +462,7 @@ const BPBKSForm = () => {
 
   const HeaderView = () => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
-      <Header title={isEdit ? 'Ubah PMB' : 'Tambah PMB'} />
+      <Header title={isEdit ? 'Ubah BPBKS' : 'Tambah BPBKS'} />
       <TouchableOpacity onPress={() => setSyncModalVisible(true)}>
         <SyncIndicatorBadge size="small" showLabel={false} />
       </TouchableOpacity>
@@ -475,28 +574,39 @@ const BPBKSForm = () => {
         ))}
 
         {!isEdit && (
-          <Button
-            style={{ alignSelf: 'flex-start', marginBottom: 16, height: 40 }}
+          <TouchableOpacity
+            style={{ alignSelf: 'flex-start', marginBottom: 16, padding: 12, backgroundColor: theme.colors.accent, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
             onPress={() => {
-              setTphForm([
-                ...tphForm,
-                {
-                  blockId: '',
-                  plantingYear: '',
-                  tphId: '',
-                  numberOfLength: '',
-                  ripeFruitChecked: '0',
-                  rawFruitChecked: '0',
-                  lateRipeChecked: '0',
-                  rottenFruitChecked: '0',
-                  longHandleChecked: '0',
-                  looseChecked: '0',
+              navigation.navigate(Routes.QR_SCANNER, {
+                onScanSuccess: (data: any) => {
+                  setTphForm((prev: any) => [
+                    ...prev,
+                    {
+                      blockId: data.blockId,
+                      plantingYear: data.plantingYear?.[0]?.toString() || '',
+                      tphId: data.tphId,
+                      numberOfLength: '0',
+                      ripeFruitChecked: '0',
+                      rawFruitChecked: '0',
+                      lateRipeChecked: '0',
+                      rottenFruitChecked: '0',
+                      longHandleChecked: '0',
+                      looseChecked: '0',
+                      abnormalFruitChecked: '0',
+                      sunburnFruitChecked: '0',
+                      photoFruitFront: null,
+                      photoFruitBack: null,
+                      photoFruitSide: null,
+                      photoKrani: null,
+                      fromScan: true,
+                    },
+                  ])
                 },
-              ])
-              scrollViewRef?.current?.scrollToEnd({ animated: true })
+              })
             }}>
-            <Text style={{ fontSize: 12 }} color="white">Tambah TPH</Text>
-          </Button>
+            <Icon name="qr-code-scanner" size={20} color="white" />
+            <Text color="white" style={{ marginLeft: 8, fontSize: 13 }}>Scan QR TPH</Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
       <View style={styles.wrapSubmitButton}>
@@ -605,8 +715,8 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isNumber
         />
       </Row>
-      <Text size={12} type="semibold" style={{ marginVertical: 8 }}>
-        Buah / Janjang yang di Periksa
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
+        Masukan Hasil Panen
       </Text>
       <Row>
         <TextInput
@@ -644,7 +754,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Lewat Matang (JJG)"
+          label="Buah Overripe (JJG)"
           maxLines={1}
           control={control}
           disabled={item?.viewOnly}
@@ -679,22 +789,6 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
       </Row>
       <Row>
         <TextInput
-          label="Gagang Panjang"
-          control={control}
-          disabled={item?.viewOnly}
-          disabledText={item?.longHandleChecked}
-          placeholder="Contoh: 1"
-          name={`[${index}]longHandleChecked`}
-          defaultValue=""
-          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
-          value={item?.longHandleChecked}
-          onChangeText={(value: any) => {
-            setFieldTphForm(index, 'longHandleChecked', value)
-          }}
-          isRequired
-          isNumber
-        />
-        <TextInput
           label="Brondolan (Kg)"
           control={control}
           disabled={item?.viewOnly}
@@ -710,12 +804,80 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           isRequired
           isNumber
         />
+        <TextInput
+          label="Total JJG Siap Angkut"
+          control={control}
+          disabled
+          disabledText={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          value={String(Math.max(0,
+            parseInt(item?.numberOfLength || '0') -
+            parseInt(item?.rawFruitChecked || '0') -
+            parseInt(item?.rottenFruitChecked || '0')
+          ))}
+          name={`[${index}]totalJJGSiapAngkut`}
+          isNumber
+        />
       </Row>
-      {/* {!item?.viewOnly && !isEdit && (
+      <Text size={12} type="bold" style={{ marginVertical: 8 }}>
+        Kualitas Panen
+      </Text>
+      <Row>
+        <TextInput
+          label="Gagang Panjang"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.longHandleChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]longHandleChecked`}
+          defaultValue=""
+          errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
+          value={item?.longHandleChecked}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'longHandleChecked', value)
+          }}
+          isNumber
+        />
+        <TextInput
+          label="Buah Abnormal (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.abnormalFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]abnormalFruitChecked`}
+          defaultValue="0"
+          value={item?.abnormalFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'abnormalFruitChecked', value)
+          }}
+          isNumber
+        />
+      </Row>
+      <Row>
+        <TextInput
+          label="Buah Matahari (Janjang)"
+          control={control}
+          disabled={item?.viewOnly}
+          disabledText={item?.sunburnFruitChecked}
+          placeholder="Contoh: 1"
+          name={`[${index}]sunburnFruitChecked`}
+          defaultValue="0"
+          value={item?.sunburnFruitChecked ?? '0'}
+          onChangeText={(value: any) => {
+            setFieldTphForm(index, 'sunburnFruitChecked', value)
+          }}
+          isNumber
+        />
+        <View style={{ flex: 1 }} />
+      </Row>
+      {!item?.viewOnly && !isEdit && (
         <View style={{ marginTop: 8 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani</Text>
+              <Text size={12} type="semibold" style={{ marginBottom: 4 }}>Foto Krani (Selfi Depan Buah Di TPH)</Text>
               <PhotoField
                 label="Krani"
                 photo={item?.photoKrani}
@@ -760,7 +922,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
             </View>
           </View>
         </View>
-      )} */}
+      )}
     </View>
   )
 }

@@ -7,7 +7,7 @@ import { Doc } from '@app/models/eplant/BPBKS'
 import { Table, Row } from 'react-native-table-component'
 import { theme } from '@app/presentations/utils/styles'
 import BPBKSEmployeeTableHeader from './table-header'
-const widthArr = [100, 100, 100, 100, 100, 100, 100, 100, 100]
+const widthArr = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 
 const BPBKSEmployeeDetail = () => {
   const route: any = useRoute()
@@ -59,6 +59,8 @@ const BPBKSEmployeeDetail = () => {
           tph?.rottenFruitChecked != undefined ? tph?.rottenFruitChecked : '-',
           tph?.longHandleChecked != undefined ? tph?.longHandleChecked : '-',
           tph?.looseChecked != undefined ? tph?.looseChecked : '-',
+          tph?.abnormalFruitChecked != undefined ? tph?.abnormalFruitChecked : '-',
+          tph?.sunburnFruitChecked != undefined ? tph?.sunburnFruitChecked : '-',
         ]
       }) || []
 

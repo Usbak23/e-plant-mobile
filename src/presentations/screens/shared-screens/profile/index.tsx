@@ -1,31 +1,37 @@
 import React, {useEffect, useState} from 'react'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {SafeAreaView} from 'react-native-safe-area-context'
-import {Image, ScrollView, StatusBar, StyleSheet, View} from 'react-native'
+import {Image, ScrollView, StatusBar, StyleSheet, View, ActivityIndicator} from 'react-native'
 import {theme} from '@app/presentations/utils/styles'
 import {ModalAsk, MoreButton, Text} from '@app/presentations/_shared-components'
 import Entypo from 'react-native-vector-icons/Entypo'
 import {Menu, MenuOption, MenuOptions, MenuTrigger} from 'react-native-popup-menu'
-import {actions} from '@app/domain/states/store'
+import {actions, RootStateType} from '@app/domain/states/store'
 import PopupEditDelete from '@app/presentations/_shared-components/PopupEditDelete'
 import {useIsFocused, useNavigation} from '@react-navigation/native'
 import Routes from '@app/presentations/navigation/Routes'
 import {useCurrentUserInfo} from '@app/domain/states/user/hooks'
 import RNHTMLtoPDF from 'react-native-html-to-pdf'
 import {Platform} from 'react-native'
-import {showInfoToast, showSuccessToast} from '@app/presentations/_shared-components/Toast'
+import {showInfoToast, showSuccessToast, showErrorToast} from '@app/presentations/_shared-components/Toast'
 import {writeFile} from '@app/presentations/utils/writeFile'
 import {constructHtmlBodyToPdf} from '@app/presentations/utils/html/userDataHtml'
 import * as notifications from '@utils/notifications/eksportNotification'
 import * as c from '@utils/notifications/constantsNotificationt'
+import {useNetInfo} from '@react-native-community/netinfo'
 
 const ProfilePage = () => {
   const isFocused = useIsFocused()
   const navigation: any = useNavigation()
   const user = useCurrentUserInfo()
   const dispatch = useDispatch()
+  const netInfo = useNetInfo()
 
   const [isModalOpen, setModalOpen] = useState<boolean>(false)
+  
+  const syncStatus = useSelector((state: RootStateType) => state.user?.syncMasterDataStatus)
+  const isSyncing = syncStatus?.loading === true
+  const isOnline = netInfo.isConnected && netInfo.isInternetReachable !== false
 
   const logout = () => {
     dispatch(actions.clearRkhTakeCareDraft.request({loading: true, data: []}))
@@ -116,6 +122,22 @@ const ProfilePage = () => {
       dispatch(actions.getCurrentUser.request({loading: true}))
     }
   }, [isFocused])
+
+  useEffect(() => {
+    if (syncStatus?.loading === false && syncStatus?.data) {
+      showSuccessToast(`Data berhasil disinkronkan (${syncStatus.data.synced} item)`)
+    } else if (syncStatus?.error) {
+      showErrorToast('Gagal sinkronisasi data')
+    }
+  }, [syncStatus])
+
+  const handleSyncData = () => {
+    if (!isOnline) {
+      showErrorToast('Tidak bisa sync data saat offline')
+      return
+    }
+    dispatch(actions.syncMasterData.request({loading: true}))
+  }
 
   const HeaderLeft = () => <Image source={require('@assets/icons/sag.png')} style={styles.arvisLogoImg} />
   const HeaderRight = () => (
@@ -236,6 +258,30 @@ const ProfilePage = () => {
           ))}
 
           <View style={{marginTop: 8}} />
+
+          <View>
+            <MoreButton
+              label="Perbarui Data"
+              iconName={isSyncing ? undefined : 'cycle'}
+              customIcon={isSyncing ? <ActivityIndicator size="small" color={theme.colors.accent} /> : undefined}
+              onTap={handleSyncData}
+              disabled={isSyncing || !isOnline}
+            />
+            {!isOnline && (
+              <View style={{marginTop: -8, marginBottom: 8, marginLeft: 16}}>
+                <Text size={11} color={theme.colors.label}>
+                  Perbarui data untuk mode offline (hanya saat online)
+                </Text>
+              </View>
+            )}
+            {isOnline && !isSyncing && (
+              <View style={{marginTop: -8, marginBottom: 8, marginLeft: 16}}>
+                <Text size={11} color={theme.colors.label}>
+                  Perbarui data untuk mode offline
+                </Text>
+              </View>
+            )}
+          </View>
 
           <MoreButton
             label="Penanggung Jawab"

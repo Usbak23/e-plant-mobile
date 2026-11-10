@@ -67,6 +67,25 @@ const BPBKSFilter = () => {
     const org = organizationAll.find(o => o.value == getValues('organizationId'))
     const div = divisionAll.find(o => o.id == getValues('divisionId'))
     const usr = userAll.find(o => o.id == getValues('foreman'))
+    const dateStr = moment(getValues('date')).format('YYYY-MM-DD')
+    
+
+    
+    // IMPORTANT: Fetch draft options untuk tanggal yang dipilih
+    // Ini akan REFRESH data terbaru dari server (jika online)
+    // Atau gunakan cache (jika offline)
+
+    dispatch(
+      actions.getDraftOptions.request({
+        loading: true,
+        data: {
+          organizationId: getValues('organizationId'),
+          date: dateStr,
+        },
+      }),
+    )
+    
+    // Fetch BKM data
     dispatch(
       actions.getBKMMobile.request({
         loading: true,
@@ -78,6 +97,8 @@ const BPBKSFilter = () => {
         },
       }),
     )
+    
+    console.log('✅ Navigating to BPBKS List...')
     navigation.navigate(Routes.BPBKS_LIST, {
       bpbksData: {organization: org, date: getValues('date'), division: div, foreman: usr},
     })
@@ -85,7 +106,7 @@ const BPBKSFilter = () => {
 
   return (
     <SafeAreaView style={styles.root}>
-      <Header title="PMB" />
+      <Header title="BPBKS" />
 
       <ScrollView style={styles.scroll}>
         <SelectInput
@@ -142,7 +163,7 @@ const BPBKSFilter = () => {
         />
 
         <Button disabled={!isValid} onPress={handleSubmit(onSubmit)}>
-          <Text color="white">Pilih PMB</Text>
+          <Text color="white">Pilih BPBKS</Text>
         </Button>
       </ScrollView>
     </SafeAreaView>

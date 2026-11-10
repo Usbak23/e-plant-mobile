@@ -44,6 +44,8 @@ import * as realizationFertilizationActions from '@domain/states/realization-fer
 import * as approvalActions from '@domain/states/approval/actions'
 import * as notificationActions from '@domain/states/notification/actions'
 import * as syncQueueActions from '@domain/states/sync-queue/actions'
+import * as monitoringTphActions from '@domain/states/monitoring-tph/actions'
+import * as spbLocalActions from '@domain/states/spb-local/actions'
 import leadStreams from '@domain/states/leads/streams'
 import organizationStreams from '@domain/states/organization/streams'
 import masterStreams from '@domain/states/master/streams'
@@ -79,6 +81,8 @@ import realizationFertilizationStreams from '@domain/states/realization-fertiliz
 import approvalStreams from '@domain/states/approval/streams'
 import notificationStreams from '@domain/states/notification/streams'
 import syncQueueStreams from '@domain/states/sync-queue/streams'
+import monitoringTphStreams from '@domain/states/monitoring-tph/streams'
+import spbLocalStreams from '@domain/states/spb-local/streams'
 
 export const actions = {
   ...userActions,
@@ -118,6 +122,8 @@ export const actions = {
   approval: approvalActions,
   notification: notificationActions,
   syncQueue: syncQueueActions,
+  monitoringTph: monitoringTphActions,
+  spbLocal: spbLocalActions,
 }
 
 const streams = [
@@ -158,6 +164,8 @@ const streams = [
   ...approvalStreams,
   ...notificationStreams,
   ...syncQueueStreams,
+  ...monitoringTphStreams,
+  ...spbLocalStreams,
 ]
 
 const persistConfig = {

@@ -5,6 +5,5 @@ export default class TPH extends Model {
     static table = 'tphs'
     @field('name') name;
     @json('block') block;
-
-
+    @field('print_version') printVersion;
 }

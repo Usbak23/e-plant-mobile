@@ -136,11 +136,20 @@ export default class Routes {
   static TONNAGE_PKS_FORM = Routes.HARVEST + '/tonnage-pks-form'
   static TONNAGE_PKS_DETAIL = Routes.HARVEST + '/tonnage-pks-detail'
 
+  static MONITORING_TPH_FILTER = Routes.HARVEST + '/monitoring-tph-filter'
+  static MONITORING_TPH_LIST = Routes.HARVEST + '/monitoring-tph-list'
+  static SPB_LOCAL_FILTER = Routes.HARVEST + '/spb-local-filter'
+  static SPB_LOCAL_LIST = Routes.HARVEST + '/spb-local-list'
+  static SPB_LOCAL_FORM = Routes.HARVEST + '/spb-local-form'
+  static SPB_LOCAL_DETAIL = Routes.HARVEST + '/spb-local-detail'
+
   static BPBKS_FILTER = Routes.HARVEST + '/bpbks-filter'
   static BPBKS_LIST = Routes.PLAN + '/bpbks-list'
   static BPBKS_FORM = Routes.PLAN + '/bpbks-form'
   static BPBKS_DETAIL = Routes.PLAN + '/bpbks-detail'
   static BPBKS_EMPLOYEE_DETAIL = Routes.PLAN + '/bpbks-employee-detail'
+  static QR_SCANNER = Routes.PLAN + '/qr-scanner'
+  static CAMERA_PHOTO = Routes.PLAN + '/camera-photo'
 
   static BKM_TAKE_CARE_FILTER = Routes.TAKE_CARE + '/bkm-take-care-filter'
   static BKM_TAKE_CARE_LIST = Routes.TAKE_CARE + '/bkm-take-care-list'

@@ -181,3 +181,7 @@ buck-out/
 
 # Bundle
 .bundle/
+
+# MD
+AGENTS.md
+PRD.md

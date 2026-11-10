@@ -1,7 +1,7 @@
 import React from 'react'
 import Routes from '@navigation/Routes'
 import BKM from '@assets/icons/ic_book.svg'
-import PMB from '@assets/icons/ic_grain.svg'
+// import PMB from '@assets/icons/ic_grain.svg'
 import PMA from '@assets/icons/ic_checklist.svg'
 import BPBKS from '@assets/icons/ic_checklist.svg'
 import Balance from '@assets/icons/ic_balance.svg'
@@ -36,7 +36,7 @@ export const harvestMenus: {
   },
   {
     icon: () => <BPBKS width={24} height={24} />,
-    title: 'Pemeriksaan\nMutu Buah',
+    title: 'BPBKS',
     slug: 'lihat-bpbks',
     screen: Routes.BPBKS_FILTER,
     bgColor: 'rgba(156, 93, 228, 0.35)',
@@ -54,5 +54,19 @@ export const harvestMenus: {
     slug: 'lihat-tonase-pks',
     screen: Routes.TONNAGE_PKS_LIST,
     bgColor: 'rgba(240, 177, 13, 0.5)',
+  },
+  {
+    icon: () => <BPBKS width={24} height={24} />,
+    title: 'Monitoring\nTPH',
+    slug: 'lihat-monitoring-tph',
+    screen: Routes.MONITORING_TPH_FILTER,
+    bgColor: 'rgba(46, 125, 50, 0.35)',
+  },
+  {
+    icon: () => <Balance width={24} height={24} />,
+    title: 'SPB Local',
+    slug: 'lihat-spb-local',
+    screen: Routes.SPB_LOCAL_FILTER,
+    bgColor: 'rgba(30, 136, 229, 0.35)',
   },
 ]
