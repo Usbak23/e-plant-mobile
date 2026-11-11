@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {Alert, FlatList, RefreshControl, SafeAreaView, StyleSheet, TouchableOpacity, View} from 'react-native'
-import {Header, ListFilterAlt, Loader, Text} from '@app/presentations/_shared-components'
+import {Header, ListFilterAlt, Text} from '@app/presentations/_shared-components'
 import {showErrorToast, showSuccessToast, showInfoToast} from '@app/presentations/_shared-components/Toast'
 import {useNavigation, useRoute, useIsFocused} from '@react-navigation/native'
 import Routes from '@app/presentations/navigation/Routes'
@@ -19,6 +19,35 @@ import IconGroupWork from '@assets/icons/ic_group_work.svg'
 
 const ICON_SIZE = 17 // v2
 
+export interface ISpbLocalDoc {
+  id?: string
+  tempId?: string
+  syncStatus?: string
+  divisionId?: string
+  date?: string
+  kendaraan?: string
+  gardenTonnage?: {
+    id?: string
+    status?: string
+    item?: {
+      name?: string
+      serialNumber?: string
+    }
+  }
+  items?: Array<{
+    id?: string
+    janjang?: number
+    block?: {
+      code?: string
+    }
+    tph?: {
+      name?: string
+    }
+  }>
+}
+
+const EMPTY_TEMP_LIST: any[] = []
+
 const SPBLocalList = () => {
   const navigation: any = useNavigation()
   const dispatch: any = useDispatch()
@@ -27,72 +56,94 @@ const SPBLocalList = () => {
   const {divisionId, date, organizationId, organizationName, divisionName} = route.params || {}
 
   const [page, setPage] = useState(1)
-  const [allDocs, setAllDocs] = useState<any[]>([])
+  const [allDocs, setAllDocs] = useState<ISpbLocalDoc[]>([])
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
-  const spbLocalListTemp = useSelector((s: any) => s.spbLocal?.spbLocalListTemp || [])
+  const spbLocalListTemp = useSelector((s: any) => s.spbLocal?.spbLocalListTemp) || EMPTY_TEMP_LIST
   const isConnected = useSelector((s: any) => s.network?.isConnected)
+  const spbLocalListTempRef = useRef(spbLocalListTemp)
+  spbLocalListTempRef.current = spbLocalListTemp
+
+  const prevSyncingRef = useRef(false)
 
   const docs = allDocs
   const isLoading = loading
 
   const [search, setSearch] = useState('')
 
-  const filteredDocs = docs.filter((item: any) => {
-    const kendaraan = item.gardenTonnage?.item?.name || item.gardenTonnage?.item?.serialNumber || ''
-    const blok = item.items?.map((i: any) => i.block?.code).join(' ') || ''
-    const tph = item.items?.map((i: any) => i.tph?.name).join(' ') || ''
+  const filteredDocs = docs.filter((item: ISpbLocalDoc) => {
+    const kendaraan = item.gardenTonnage?.item?.name || item.gardenTonnage?.item?.serialNumber || item.kendaraan || ''
+    const blok = item.items?.map((i) => i.block?.code).join(' ') || ''
+    const tph = item.items?.map((i) => i.tph?.name).join(' ') || ''
     const q = search.toLowerCase()
     return kendaraan.toLowerCase().includes(q) || blok.toLowerCase().includes(q) || tph.toLowerCase().includes(q)
   })
 
-  const totalJJG = docs.reduce((sum: number, item: any) => {
-    const itemTotal = item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0
+  const totalJJG = docs.reduce((sum: number, item: ISpbLocalDoc) => {
+    const itemTotal = item.items?.reduce((s: number, i) => s + (i.janjang || 0), 0) || 0
     return sum + itemTotal
   }, 0)
 
   const fetchData = useCallback((p = 1) => {
+    if (!divisionId || !date) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     System.instance.spbLocalService.list({divisionId, date, page: p, limit: 20})
       .then((res: any) => {
         const responseData = res?.data?.response
         const newDocs = Array.isArray(responseData?.docs) ? responseData.docs : Array.isArray(responseData) ? responseData : []
-        const tempItems = spbLocalListTemp.filter((t: any) => t.divisionId === divisionId && t.tempId)
+        const tempItems = (spbLocalListTempRef.current || []).filter((t: any) => t.divisionId === divisionId && t.tempId)
         if (p === 1) setAllDocs([...tempItems, ...newDocs])
         else setAllDocs(prev => [...prev, ...newDocs])
       })
       .catch(() => {
         if (p === 1) {
-          const tempItems = spbLocalListTemp.filter((t: any) => t.divisionId === divisionId && t.tempId)
+          const tempItems = (spbLocalListTempRef.current || []).filter((t: any) => t.divisionId === divisionId && t.tempId)
           setAllDocs(tempItems)
         }
       })
       .finally(() => setLoading(false))
-  }, [divisionId, date, spbLocalListTemp])
+  }, [divisionId, date])
 
   useEffect(() => {
     if (isFocused) {
       fetchData(1)
       // Prefetch data for offline use saat online
-      dispatch(actions.getDraftOptions.request({loading: true, data: {organizationId, date}}))
-      dispatch(actions.monitoringTph.getMonitoringTphList.request({
-        loading: true,
-        data: {divisionId, month: moment(date).format('M'), year: moment(date).format('YYYY'), limit: 9999, page: 0},
-      }))
+      if (organizationId && date) {
+        dispatch(actions.getDraftOptions.request({loading: true, data: {organizationId, date}}))
+      }
+      if (divisionId && date) {
+        dispatch(actions.monitoringTph.getMonitoringTphList.request({
+          loading: true,
+          data: {divisionId, month: moment(date).format('M'), year: moment(date).format('YYYY'), limit: 9999, page: 0},
+        }))
+      }
     }
-  }, [isFocused])
+  }, [isFocused, fetchData, organizationId, divisionId, date, dispatch])
+
+  // Sync temp items into allDocs whenever temp items change without re-fetching network
+  useEffect(() => {
+    if (!divisionId) return
+    const tempItems = spbLocalListTemp.filter((t: any) => t.divisionId === divisionId && t.tempId)
+    setAllDocs(prev => {
+      const serverDocs = prev.filter((d: ISpbLocalDoc) => !d.tempId)
+      return [...tempItems, ...serverDocs]
+    })
+  }, [spbLocalListTemp, divisionId])
   
-  // Detect saat syncing berubah
+  // Detect saat syncing berubah: hanya refresh data jika sebelumnya sedang syncing dan sekarang telah selesai
   useEffect(() => {
     const isSyncing = spbLocalListTemp.some((item: any) => item.syncStatus === 'syncing')
     setSyncing(isSyncing)
     
-    // Jika ada yang syncing, refresh list setelah selesai
-    if (!isSyncing && spbLocalListTemp.length === 0) {
+    if (prevSyncingRef.current && !isSyncing) {
       fetchData(1)
     }
-  }, [spbLocalListTemp])
+    prevSyncingRef.current = isSyncing
+  }, [spbLocalListTemp, fetchData])
   
   const handleManualSync = () => {
     if (!isConnected) {
@@ -171,11 +222,11 @@ const SPBLocalList = () => {
     </View>
   )
 
-  const renderItem = ({item}: any) => {
+  const renderItem = ({item}: {item: ISpbLocalDoc}) => {
     const kendaraan = item.gardenTonnage?.item?.name
       ? `${item.gardenTonnage.item.name}${item.gardenTonnage.item.serialNumber ? ` - ${item.gardenTonnage.item.serialNumber}` : ''}`
       : item.kendaraan || '-'
-    const totalJJG = item.items?.reduce((s: number, i: any) => s + (i.janjang || 0), 0) || 0
+    const totalJJG = item.items?.reduce((s: number, i) => s + (i.janjang || 0), 0) || 0
     const tphCount = item.items?.length || 0
     const isTemp = Boolean(item.tempId)
     const syncStatus = item.syncStatus
@@ -220,7 +271,7 @@ const SPBLocalList = () => {
               <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
                 <AntDesign name="edit" size={18} color={theme.colors.accent} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+              <TouchableOpacity onPress={() => item.id && handleDelete(item.id)} style={styles.deleteBtn}>
                 <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
               </TouchableOpacity>
             </>

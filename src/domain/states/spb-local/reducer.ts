@@ -13,7 +13,9 @@ export interface IRSSpbLocal {
   spbLocalListTemp?: ISpbLocalTemp[]
 }
 
-const DEFAULT_STATE: IRSSpbLocal = {}
+const DEFAULT_STATE: IRSSpbLocal = {
+  spbLocalListTemp: [],
+}
 
 const spbLocalReducer = createReducer<IRSSpbLocal, ActionsType>(DEFAULT_STATE)
   .handleAction(
