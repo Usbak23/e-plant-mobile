@@ -21,8 +21,23 @@ const formatDate = (dateStr: string) => {
   return `${dd}/${mm}/${d.getFullYear()}`
 }
 
+export interface IMonitoringTphItem {
+  id?: string
+  tphId?: string
+  tphName?: string
+  tphCode?: string
+  blockId?: string
+  blockCode?: string
+  plantingYear?: string
+  date?: string
+  totalJanjang?: number
+  pickedJanjang?: number
+  sisaJanjang?: number
+  photo?: string | null
+}
+
 interface Props {
-  item: any
+  item: IMonitoringTphItem
 }
 
 const MonitoringTphCard = ({item}: Props) => {
