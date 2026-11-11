@@ -811,14 +811,18 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled
           disabledText={String(Math.max(0,
-            parseInt(item?.numberOfLength || '0') -
-            parseInt(item?.rawFruitChecked || '0') -
-            parseInt(item?.rottenFruitChecked || '0')
+            parseInt(item?.numberOfLength || '0', 10) -
+            parseInt(item?.rawFruitChecked || '0', 10) -
+            parseInt(item?.rottenFruitChecked || '0', 10) -
+            parseInt(item?.lateRipeChecked || '0', 10) -
+            parseInt(item?.abnormalFruitChecked || '0', 10)
           ))}
           value={String(Math.max(0,
-            parseInt(item?.numberOfLength || '0') -
-            parseInt(item?.rawFruitChecked || '0') -
-            parseInt(item?.rottenFruitChecked || '0')
+            parseInt(item?.numberOfLength || '0', 10) -
+            parseInt(item?.rawFruitChecked || '0', 10) -
+            parseInt(item?.rottenFruitChecked || '0', 10) -
+            parseInt(item?.lateRipeChecked || '0', 10) -
+            parseInt(item?.abnormalFruitChecked || '0', 10)
           ))}
           name={`[${index}]totalJJGSiapAngkut`}
           isNumber
