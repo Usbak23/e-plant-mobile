@@ -793,16 +793,18 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.looseChecked}
-          placeholder="Contoh: 1"
+          placeholder="Contoh: 1.5"
           name={`[${index}]looseChecked`}
           defaultValue=""
           errorText={item?.looseChecked?.length === 0 ? 'Brondolan harus diisi' : undefined}
           value={item?.looseChecked}
-          onChangeText={(value: any) => {
+          onChangeText={(value: string) => {
             setFieldTphForm(index, 'looseChecked', value)
           }}
           isRequired
           isNumber
+          isFloat={true}
+          precisionDigit={1}
         />
         <TextInput
           label="Total JJG Siap Angkut"
