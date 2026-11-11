@@ -19,18 +19,18 @@ export default class BKMService extends BaseService {
       harvesterId: formData?.harvesterId,
       cutNumber: formData?.cutNumber,
       gardenTonnageId: formData?.gardenTonnageId,
-      tphs: formData?.tphs?.map(e => ({
+      tphs: formData?.tphs?.map((e: IBPBKSFormDataCreate['tphs'][number]) => ({
         tphId: e?.tphId,
         blockId: e?.blockId,
         plantingYear: e?.plantingYear,
-        numberOfLength: parseInt(e?.numberOfLength?.toString() || '0'),
-        loose: parseInt(e?.loose?.toString() || '0'),
-        ripeFruitChecked: parseInt(e?.ripeFruitChecked?.toString() || '0'),
-        rawFruitChecked: parseInt(e?.rawFruitChecked?.toString() || '0'),
-        lateRipeChecked: parseInt(e?.lateRipeChecked?.toString() || '0'),
-        rottenFruitChecked: parseInt(e?.rottenFruitChecked?.toString() || '0'),
-        longHandleChecked: parseInt(e?.longHandleChecked?.toString() || '0'),
-        looseChecked: parseInt(e?.looseChecked?.toString() || '0'),
+        numberOfLength: parseInt(e?.numberOfLength?.toString() || '0', 10),
+        loose: parseInt(e?.loose?.toString() || '0', 10),
+        ripeFruitChecked: parseInt(e?.ripeFruitChecked?.toString() || '0', 10),
+        rawFruitChecked: parseInt(e?.rawFruitChecked?.toString() || '0', 10),
+        lateRipeChecked: parseInt(e?.lateRipeChecked?.toString() || '0', 10),
+        rottenFruitChecked: parseInt(e?.rottenFruitChecked?.toString() || '0', 10),
+        longHandleChecked: parseInt(e?.longHandleChecked?.toString() || '0', 10),
+        looseChecked: parseFloat(e?.looseChecked?.toString() || '0'),
       })),
     }
 
