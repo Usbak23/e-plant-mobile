@@ -13,7 +13,7 @@ import IconBuilding from '@assets/icons/ic_small_building.svg'
 import IconCalendar from '@assets/icons/ic_small_calendar.svg'
 import IconGroupWork from '@assets/icons/ic_group_work.svg'
 
-import MonitoringTphCard from './monitoring-tph-card'
+import MonitoringTphCard, {IMonitoringTphItem} from './monitoring-tph-card'
 
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 const ICON_SIZE = 17
@@ -58,17 +58,19 @@ const MonitoringTphList = () => {
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [accumulatedData, setAccumulatedData] = useState<any[]>([])
+  const [accumulatedData, setAccumulatedData] = useState<IMonitoringTphItem[]>([])
   const [currentPage, setCurrentPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const isLoadingMore = useRef(false)
 
-  const filteredData = accumulatedData.filter((item: any) => {
+  const filteredData = accumulatedData.filter((item: IMonitoringTphItem) => {
+    if ((item?.sisaJanjang ?? 0) <= 0) return false
     const matchSearch =
       (item?.tphName || item?.tphCode || '').toLowerCase().includes(search.toLowerCase()) ||
       (item?.blockCode || '').toLowerCase().includes(search.toLowerCase())
     if (!matchSearch) return false
     if (statusFilter === 'all') return true
+    if (!item?.date) return false
     const diff = getDiffDays(item.date)
     if (statusFilter === '3') return diff >= 3
     return diff === parseInt(statusFilter, 10)
@@ -148,7 +150,7 @@ const MonitoringTphList = () => {
     return
   }, [])
 
-  const renderItem = ({item}: any) => <MonitoringTphCard item={item} />
+  const renderItem = ({item}: {item: IMonitoringTphItem}) => <MonitoringTphCard item={item} />
 
   return (
     <SafeAreaView style={styles.root}>
