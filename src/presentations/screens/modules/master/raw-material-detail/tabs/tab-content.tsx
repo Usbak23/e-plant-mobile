@@ -11,7 +11,5 @@ interface ITabItemProps {
 }
 
 const TabItem : React.FC<ITabItemProps> = (props) => {
-    return (
-
-    )
+    return null
 }

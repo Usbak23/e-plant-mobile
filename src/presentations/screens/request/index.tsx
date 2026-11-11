@@ -7,17 +7,17 @@ import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 import {theme} from '@app/presentations/utils/styles'
 import {Header, Menu} from '@app/presentations/_shared-components'
 import ProfileRightHeader from '@app/presentations/_shared-components/ProfileRightHeader'
-import React, {useEffect, useState} from 'react'
-import {Dimensions, FlatList, SafeAreaView, StyleSheet, View} from 'react-native'
+import React from 'react'
+import {FlatList, SafeAreaView, StyleSheet, View, useWindowDimensions} from 'react-native'
 import {RequestMenus} from './request-menus'
-
-const window = Dimensions.get('window')
-const screen = Dimensions.get('screen')
 
 const RequestPage = () => {
   const isAllowedToSeeMyRequest = useIsAllowedToSeeMyRequest()
   const isAllowedToSeeListOfRequestRequest = useIsAllowedToSeeListOfRequest()
   const isAllowedToSeeWarehouseManagement = useIsAllowedToSeeWarehouseManagement()
+
+  const {width, height} = useWindowDimensions()
+  const isWide = width >= 600 || width > height
 
   const constructMenus = RequestMenus.filter(menu => {
     if (menu.slug == ROLE_ACCESS_SLUG.SEE_MY_REQUEST) {
@@ -29,25 +29,20 @@ const RequestPage = () => {
     }
     return true
   })
-  const [dimensions, setDimensions] = useState({window, screen})
 
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({window, screen}) => {
-      setDimensions({window, screen})
-    })
-    return () => subscription?.remove()
-  })
-
-  const renderItem = ({item, index}: any) => <Menu key={index.toString()} menuItem={item} />
+  const renderItem = ({item, index}: any) => (
+    <Menu key={index.toString()} menuItem={item} columns={isWide ? 4 : 2} />
+  )
 
   return (
     <SafeAreaView style={styles.root}>
       <Header title="Gudang" headerRight={() => <ProfileRightHeader />} />
       <View style={styles.body}>
-        {dimensions.window.height > dimensions.window.width ? (
+        {!isWide ? (
           <FlatList
             key={'v'}
             numColumns={2}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}
@@ -58,6 +53,7 @@ const RequestPage = () => {
           <FlatList
             key={'h'}
             numColumns={4}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}
