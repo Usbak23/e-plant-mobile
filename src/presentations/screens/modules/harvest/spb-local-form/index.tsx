@@ -31,6 +31,17 @@ const SPBLocalForm = () => {
   const route: any = useRoute()
   const {divisionId, date, organizationId, organizationName, divisionName, editItem} = route.params || {}
   const isEdit = Boolean(editItem)
+  const isCompleted = isEdit && (
+    editItem?.gardenTonnage?.status === 'submitted' ||
+    Number((editItem?.gardenTonnage as any)?.grossWeight) > 0
+  )
+
+  useEffect(() => {
+    if (isCompleted) {
+      showErrorToast('SPB Local pada kendaraan ini tidak dapat diubah karena Tonase Kebun sudah dilengkapi')
+      navigation.goBack()
+    }
+  }, [isCompleted])
 
   const formStatus = useSpbLocalFormStatus()
   const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
@@ -178,6 +189,10 @@ const SPBLocalForm = () => {
   }
 
   const handleSubmit = () => {
+    if (isCompleted) {
+      showErrorToast('SPB Local pada kendaraan ini tidak dapat diubah karena Tonase Kebun sudah dilengkapi')
+      return
+    }
     if (!validate()) return
     if (formStatus?.loading) return // Prevent double submit
     
@@ -294,7 +309,7 @@ const SPBLocalForm = () => {
 
       <View style={styles.submitWrap}>
         <Button
-          disabled={formStatus?.loading}
+          disabled={formStatus?.loading || isCompleted}
           onPress={handleSubmit}>
           <Text color="white">{formStatus?.loading ? 'Loading...' : isEdit ? 'Simpan Perubahan' : 'Simpan'}</Text>
         </Button>

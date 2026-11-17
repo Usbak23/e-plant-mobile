@@ -229,6 +229,7 @@ const SPBLocalList = () => {
     const totalJJG = item.items?.reduce((s: number, i) => s + (i.janjang || 0), 0) || 0
     const tphCount = item.items?.length || 0
     const isTemp = Boolean(item.tempId)
+    const isCompleted = item.gardenTonnage?.status === 'submitted' || Number((item.gardenTonnage as any)?.grossWeight) > 0
     const syncStatus = item.syncStatus
 
     const getSyncBadge = () => {
@@ -267,15 +268,22 @@ const SPBLocalList = () => {
           <Text size={13} color={theme.colors.accent} type="semibold">{kendaraan}</Text>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             {getSyncBadge()}
-            {!isTemp && item.gardenTonnage?.status !== 'submitted' && <>
-              <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
-                <AntDesign name="edit" size={18} color={theme.colors.accent} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => item.id && handleDelete(item.id)} style={styles.deleteBtn}>
-                <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
-              </TouchableOpacity>
-            </>
-            }
+            {!isTemp && !isCompleted && (
+              <>
+                <TouchableOpacity onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {divisionId, date, organizationId, organizationName, divisionName, editItem: item})} style={styles.deleteBtn}>
+                  <AntDesign name="edit" size={18} color={theme.colors.accent} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => item.id && handleDelete(item.id)} style={styles.deleteBtn}>
+                  <AntDesign name="delete" size={18} color={theme.colors.danger || 'red'} />
+                </TouchableOpacity>
+              </>
+            )}
+            {!isTemp && isCompleted && (
+              <View style={[styles.syncBadge, {backgroundColor: '#E8F5E9'}]}>
+                <AntDesign name="checkcircleo" size={10} color="#2E7D32" />
+                <Text size={10} color="#2E7D32" style={{marginLeft: 4}}>Tonase Selesai</Text>
+              </View>
+            )}
           </View>
         </View>
         <View style={{flexDirection: 'row', marginTop: 8}}>
