@@ -93,8 +93,8 @@ const BPBKSForm = () => {
       rottenFruitChecked: item?.rottenFruitChecked != null ? String(Number(item.rottenFruitChecked)) : '',
       longHandleChecked: item?.longHandleChecked != null ? String(Number(item.longHandleChecked)) : '',
       looseChecked: item?.looseChecked != null ? String(Number(item.looseChecked)) : '',
-      abnormalFruitChecked: item?.abnormalFruitChecked != null ? String(Number(item.abnormalFruitChecked)) : '0',
-      sunburnFruitChecked: item?.sunburnFruitChecked != null ? String(Number(item.sunburnFruitChecked)) : '0',
+      abnormalFruitChecked: item?.abnormalFruitChecked != null ? String(Number(item.abnormalFruitChecked)) : '',
+      sunburnFruitChecked: item?.sunburnFruitChecked != null ? String(Number(item.sunburnFruitChecked)) : '',
     },
   ] : [])
 
@@ -138,8 +138,8 @@ const BPBKSForm = () => {
             rottenFruitChecked: e?.rottenFruitChecked?.toString(),
             longHandleChecked: e?.longHandleChecked?.toString(),
             looseChecked: e?.looseChecked?.toString(),
-            abnormalFruitChecked: e?.abnormalFruitChecked != null ? String(Number(e.abnormalFruitChecked)) : '0',
-            sunburnFruitChecked: e?.sunburnFruitChecked != null ? String(Number(e.sunburnFruitChecked)) : '0',
+            abnormalFruitChecked: e?.abnormalFruitChecked != null ? String(Number(e.abnormalFruitChecked)) : '',
+            sunburnFruitChecked: e?.sunburnFruitChecked != null ? String(Number(e.sunburnFruitChecked)) : '',
             viewOnly: true,
           }
         })
@@ -191,8 +191,10 @@ const BPBKSForm = () => {
       'rottenFruitChecked',
       'longHandleChecked',
       'looseChecked',
+      'abnormalFruitChecked',
+      'sunburnFruitChecked',
     ]
-    if (tphForm.some((e: any) => !fieldTph.every((f: string) => e[f]))) {
+    if (tphForm.some((e: any) => !fieldTph.every((f: string) => e[f] !== undefined && e[f] !== null && String(e[f]).trim() !== ''))) {
       showErrorToast('Harap lengkapi semua data TPH!')
       return false
     }
@@ -460,6 +462,63 @@ const BPBKSForm = () => {
     }
   }, [formBPBKSStatus?.data])
 
+  const isFormValid = React.useMemo(() => {
+    // 1. Validasi header utama (React Hook Form + pemanen terpilih)
+    if (!isValid || !selectedUser) {
+      return false
+    }
+
+    // 2. Minimal 1 TPH
+    if (!tphForm || tphForm.length === 0) {
+      return false
+    }
+
+    // 3. Cek TPH duplikat
+    const all = [...tphForm, ...defaultTph]
+    if (checkIsBlockAndPlantingYearIsSame(all)) {
+      return false
+    }
+
+    // 4. Periksa setiap item TPH
+    const mandatoryFields = [
+      'tphId',
+      'blockId',
+      'plantingYear',
+      'numberOfLength',
+      'rawFruitChecked',
+      'lateRipeChecked',
+      'rottenFruitChecked',
+      'longHandleChecked',
+      'looseChecked',
+      'abnormalFruitChecked',
+      'sunburnFruitChecked',
+    ]
+
+    for (const tph of tphForm) {
+      const isComplete = mandatoryFields.every((f: string) => {
+        const val = (tph as any)?.[f]
+        return val !== undefined && val !== null && String(val).trim() !== ''
+      })
+      if (!isComplete) {
+        return false
+      }
+
+      const ripeFruit = calculateRipeFruit(tph)
+      if (ripeFruit < 0) {
+        return false
+      }
+
+      if (!isEdit) {
+        const itemTph = tph as any
+        if (!itemTph.photoFruitFront || !itemTph.photoFruitBack || !itemTph.photoFruitSide || !itemTph.photoKrani) {
+          return false
+        }
+      }
+    }
+
+    return true
+  }, [isValid, selectedUser, tphForm, defaultTph, isEdit])
+
   const HeaderView = () => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
       <Header title={isEdit ? 'Ubah BPBKS' : 'Tambah BPBKS'} />
@@ -585,15 +644,15 @@ const BPBKSForm = () => {
                       blockId: data.blockId,
                       plantingYear: data.plantingYear?.[0]?.toString() || '',
                       tphId: data.tphId,
-                      numberOfLength: '0',
-                      ripeFruitChecked: '0',
-                      rawFruitChecked: '0',
-                      lateRipeChecked: '0',
-                      rottenFruitChecked: '0',
-                      longHandleChecked: '0',
-                      looseChecked: '0',
-                      abnormalFruitChecked: '0',
-                      sunburnFruitChecked: '0',
+                      numberOfLength: '',
+                      ripeFruitChecked: '',
+                      rawFruitChecked: '',
+                      lateRipeChecked: '',
+                      rottenFruitChecked: '',
+                      longHandleChecked: '',
+                      looseChecked: '',
+                      abnormalFruitChecked: '',
+                      sunburnFruitChecked: '',
                       photoFruitFront: null,
                       photoFruitBack: null,
                       photoFruitSide: null,
@@ -612,7 +671,7 @@ const BPBKSForm = () => {
       <View style={styles.wrapSubmitButton}>
         <Button
           style={{ marginBottom: 26 }}
-          disabled={Boolean(formBPBKSStatus?.loading || !isValid)}
+          disabled={Boolean(formBPBKSStatus?.loading || !isFormValid)}
           onPress={handleSubmit(onSubmit)}>
           <Text color="white">{formBPBKSStatus?.loading ? 'Loading...' : 'Simpan'}</Text>
         </Button>
@@ -703,7 +762,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.numberOfLength}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]numberOfLength`}
           defaultValue=""
           errorText={item?.numberOfLength?.length === 0 ? 'Jumlah Janjang harus diisi' : undefined}
@@ -740,7 +799,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.rawFruitChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]rawFruitChecked`}
           defaultValue=""
           errorText={item?.rawFruitChecked?.length === 0 ? 'Buah Mentah harus diisi' : undefined}
@@ -759,7 +818,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.lateRipeChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]lateRipeChecked`}
           defaultValue=""
           errorText={item?.lateRipeChecked?.length === 0 ? 'Lewat Matang harus diisi' : undefined}
@@ -775,7 +834,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.rottenFruitChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]rottenFruitChecked`}
           defaultValue=""
           errorText={item?.rottenFruitChecked?.length === 0 ? 'Buah Busuk harus diisi' : undefined}
@@ -793,7 +852,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.looseChecked}
-          placeholder="Contoh: 1.5"
+          placeholder="0"
           name={`[${index}]looseChecked`}
           defaultValue=""
           errorText={item?.looseChecked?.length === 0 ? 'Brondolan harus diisi' : undefined}
@@ -837,7 +896,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.longHandleChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]longHandleChecked`}
           defaultValue=""
           errorText={item?.longHandleChecked?.length === 0 ? 'Gagang Panjang harus diisi' : undefined}
@@ -845,6 +904,7 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           onChangeText={(value: any) => {
             setFieldTphForm(index, 'longHandleChecked', value)
           }}
+          isRequired
           isNumber
         />
         <TextInput
@@ -852,13 +912,15 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.abnormalFruitChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]abnormalFruitChecked`}
-          defaultValue="0"
-          value={item?.abnormalFruitChecked ?? '0'}
+          defaultValue=""
+          errorText={item?.abnormalFruitChecked?.length === 0 ? 'Buah Abnormal harus diisi' : undefined}
+          value={item?.abnormalFruitChecked ?? ''}
           onChangeText={(value: any) => {
             setFieldTphForm(index, 'abnormalFruitChecked', value)
           }}
+          isRequired
           isNumber
         />
       </Row>
@@ -868,13 +930,15 @@ const TPHView = ({ isEdit, index, setFieldTphForm, control, blocks, blockAll, tp
           control={control}
           disabled={item?.viewOnly}
           disabledText={item?.sunburnFruitChecked}
-          placeholder="Contoh: 1"
+          placeholder="0"
           name={`[${index}]sunburnFruitChecked`}
-          defaultValue="0"
-          value={item?.sunburnFruitChecked ?? '0'}
+          defaultValue=""
+          errorText={item?.sunburnFruitChecked?.length === 0 ? 'Buah Matahari harus diisi' : undefined}
+          value={item?.sunburnFruitChecked ?? ''}
           onChangeText={(value: any) => {
             setFieldTphForm(index, 'sunburnFruitChecked', value)
           }}
+          isRequired
           isNumber
         />
         <View style={{ flex: 1 }} />
