@@ -1,11 +1,11 @@
-E-Plantation Staging v6.9.0
+E-Plantation Staging v6.10.0
 
-Build: #26
+Build: #28
 Environment: Staging
 
 Recent changes:
-- Merge branch 'feat/offline-first' into 'staging'
-- fix(bpbks-form): fix TPH form layout and field visibility
-- feat(bpbks): add Kualitas Panen fields (Buah Abnormal & Buah Matahari), fix field labels, and add Total JJG Siap Angkut
--  fix(bpbks): photos not uploaded to Minio on submit
-- chore:add file do not commit
+- feat(harvest/bpbks-form): replace default 0 with placeholder and disable submit until all required fields are filled
+- feat(mobile/spb-local): lock editing and hide edit action when garden tonnage is completed
+- feat(mobile/monitoring-tph): display Jumlah Janjang di TPH and Janjang Terangkut
+- feat(mobile/bpbks): display Jumlah Janjang Panen and Jumlah Janjang Kirim
+- fix(harvest): fix spb-local loading loop and filter zero-bunch in monitoring tph
