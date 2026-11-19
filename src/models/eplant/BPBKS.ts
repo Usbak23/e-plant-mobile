@@ -54,6 +54,7 @@ export interface Bpbks {
   id: string
   date: Date
   totalLength: number
+  totalReadyToSend?: number
   division: Division
   foreman: Foreman
 }

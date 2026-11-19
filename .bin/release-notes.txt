@@ -1,11 +1,11 @@
-E-Plantation Staging v6.9.0
+E-Plantation Staging v6.12.0
 
-Build: #26
+Build: #31
 Environment: Staging
 
 Recent changes:
 - Merge branch 'feat/offline-first' into 'staging'
-- fix(bpbks-form): fix TPH form layout and field visibility
-- feat(bpbks): add Kualitas Panen fields (Buah Abnormal & Buah Matahari), fix field labels, and add Total JJG Siap Angkut
--  fix(bpbks): photos not uploaded to Minio on submit
-- chore:add file do not commit
+- fix(harvest/spb-local): support loading leftover/restan fruit from previous dates and preserve original bpbksDate
+- [skip ci] bump version 6.11.0
+- Merge remote-tracking branch 'gitlab/staging' into feat/offline-first # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit.
+- fix(android): set android.hardware.wifi feature to required false

@@ -23,6 +23,7 @@ interface SpbLocalItem {
   tphName: string
   janjang: string
   sisaJanjang: number
+  bpbksDate?: string
 }
 
 const SPBLocalForm = () => {
@@ -31,6 +32,17 @@ const SPBLocalForm = () => {
   const route: any = useRoute()
   const {divisionId, date, organizationId, organizationName, divisionName, editItem} = route.params || {}
   const isEdit = Boolean(editItem)
+  const isCompleted = isEdit && (
+    editItem?.gardenTonnage?.status === 'submitted' ||
+    Number((editItem?.gardenTonnage as any)?.grossWeight) > 0
+  )
+
+  useEffect(() => {
+    if (isCompleted) {
+      showErrorToast('SPB Local pada kendaraan ini tidak dapat diubah karena Tonase Kebun sudah dilengkapi')
+      navigation.goBack()
+    }
+  }, [isCompleted])
 
   const formStatus = useSpbLocalFormStatus()
   const draftOptionsCache = useSelector((state: RootStateType) => state.tonnageGarden?.draftOptions?.data || [])
@@ -45,6 +57,7 @@ const SPBLocalForm = () => {
       tphName: i.tph?.name || i.tphName || '-',
       janjang: String(i.janjang || 0),
       sisaJanjang: i.janjang || 0,
+      bpbksDate: i.bpbksDate ? moment(i.bpbksDate).format('YYYY-MM-DD') : date,
     }))
   })
   const [selectedGardenTonnageId, setSelectedGardenTonnageId] = useState(editItem?.gardenTonnage?.id || editItem?.gardenTonnageId || '')
@@ -81,17 +94,21 @@ const SPBLocalForm = () => {
     }).then((res: any) => {
       const responseData = res?.data?.response
       const docs = Array.isArray(responseData?.docs) ? responseData.docs : Array.isArray(responseData) ? responseData : []
-      // Filter by exact date to get correct sisaJanjang for this specific day
-      const dateStr = moment(date).format('YYYY-MM-DD')
-      const filtered = docs.filter((d: any) => moment(d.date).format('YYYY-MM-DD') === dateStr)
+      // Ambil semua TPH yang memiliki sisa janjang > 0 dan dipanen pada atau sebelum tanggal SPB Local (termasuk buah restan)
+      const filtered = docs.filter((d: any) =>
+        (Number(d.sisaJanjang) || 0) > 0 &&
+        moment(d.date).isSameOrBefore(moment(date), 'day')
+      )
       setMonitoringData(filtered)
       // Cache to Redux for offline use
       dispatch(actions.monitoringTph.getMonitoringTphList.success({loading: false, data: {docs, totalPages: 1, page: 0}}))
     }).catch(() => {
       // Offline fallback: use Redux cache
       const cachedDocs = Array.isArray(monitoringTphCache?.docs) ? monitoringTphCache.docs : []
-      const dateStr = moment(date).format('YYYY-MM-DD')
-      setMonitoringData(cachedDocs.filter((d: any) => moment(d.date).format('YYYY-MM-DD') === dateStr))
+      setMonitoringData(cachedDocs.filter((d: any) =>
+        (Number(d.sisaJanjang) || 0) > 0 &&
+        moment(d.date).isSameOrBefore(moment(date), 'day')
+      ))
     })
       .finally(() => setMonitoringLoading(false))
   }, [])
@@ -119,31 +136,47 @@ const SPBLocalForm = () => {
 
   const handleScanResult = (data: any) => {
     if (!data) return
-    const exists = items.find(i => i.tphId === data.tphId)
-    if (exists) {
-      showErrorToast('TPH sudah ditambahkan')
+    const matchingTphs = monitoringData.filter((m: any) =>
+      (m.tphId || m.tph?.id) === data.tphId ||
+      (m.tphCode && data.tphCode && m.tphCode === data.tphCode)
+    )
+
+    if (matchingTphs.length === 0) {
+      showErrorToast(`Tidak ada sisa janjang untuk TPH ini (Sisa: 0)`)
       return
     }
-    const matchingTph = monitoringData.find((m: any) =>
-      (m.tphId || m.tph?.id) === data.tphId ||
-      m.tphCode === data.tphCode
-    )
-    const sisaJanjang = matchingTph?.sisaJanjang ?? 0
-    const tphName = data.tphName || data.tph?.name || '-'
-    const blockCode = data.blockCode || data.blockName || data.block?.code || '-'
-    const plantingYear = data.plantingYear?.[0]?.toString() || data.block?.plantingYear?.[0]?.toString() || '-'
-    setItems(prev => [
-      ...prev,
-      {
+
+    const newItemsToAdd: SpbLocalItem[] = []
+    for (const match of matchingTphs) {
+      const matchDate = moment(match.date).format('YYYY-MM-DD')
+      const exists = items.some(i => i.tphId === data.tphId && (i.bpbksDate === matchDate || !i.bpbksDate))
+      if (exists) continue
+
+      const sisaJanjang = Number(match.sisaJanjang) || 0
+      if (sisaJanjang <= 0) continue
+
+      const tphName = data.tphName || data.tph?.name || match.tphName || '-'
+      const blockCode = data.blockCode || data.blockName || data.block?.code || match.blockCode || '-'
+      const plantingYear = data.plantingYear?.[0]?.toString() || data.block?.plantingYear?.[0]?.toString() || match.plantingYear || '-'
+
+      newItemsToAdd.push({
         tphId: data.tphId,
-        blockId: data.blockId,
+        blockId: data.blockId || match.blockId,
         blockCode,
         plantingYear,
         tphName,
         janjang: String(sisaJanjang),
         sisaJanjang,
-      },
-    ])
+        bpbksDate: matchDate,
+      })
+    }
+
+    if (newItemsToAdd.length === 0) {
+      showErrorToast('TPH sudah ditambahkan')
+      return
+    }
+
+    setItems(prev => [...prev, ...newItemsToAdd])
   }
 
   const handleRemoveItem = (index: number) => {
@@ -178,6 +211,10 @@ const SPBLocalForm = () => {
   }
 
   const handleSubmit = () => {
+    if (isCompleted) {
+      showErrorToast('SPB Local pada kendaraan ini tidak dapat diubah karena Tonase Kebun sudah dilengkapi')
+      return
+    }
     if (!validate()) return
     if (formStatus?.loading) return // Prevent double submit
     
@@ -192,7 +229,7 @@ const SPBLocalForm = () => {
       gardenTonnage: selectedKendaraan ? {
         id: selectedKendaraan.id,
         item: selectedKendaraan.item,
-        driver: selectedKendaraan.driver,
+        driver: (selectedKendaraan as any)?.driver,
       } : undefined,
       // Simpan juga kendaraan name untuk display
       kendaraan: selectedKendaraan?.item 
@@ -203,7 +240,7 @@ const SPBLocalForm = () => {
         blockId: item.blockId,
         plantingYear: item.plantingYear,
         janjang: parseInt(item.janjang),
-        bpbksDate: date,
+        bpbksDate: item.bpbksDate || date,
         // Tambahkan data lengkap untuk offline display
         tph: monitoringData.find(m => m.tphId === item.tphId || m.tph?.id === item.tphId)?.tph,
         block: monitoringData.find(m => m.blockId === item.blockId)?.block,
@@ -264,9 +301,25 @@ const SPBLocalForm = () => {
                 <Text size={13} type="semibold">{item.tphName}</Text>
               </View>
               <View>
+                <Text size={12} color={theme.colors.label}>Status Panen</Text>
+                <Text
+                  size={13}
+                  type="semibold"
+                  style={{
+                    color: item.bpbksDate && item.bpbksDate !== date ? '#E65100' : theme.colors.primary,
+                  }}>
+                  {item.bpbksDate && item.bpbksDate !== date
+                    ? `Restan (${moment(item.bpbksDate).format('DD MMM')})`
+                    : 'Hari Ini'}
+                </Text>
+              </View>
+            </Row>
+            <Row>
+              <View>
                 <Text size={12} color={theme.colors.label}>Sisa Janjang</Text>
                 <Text size={13} type="semibold">{Math.max(0, item.sisaJanjang - (parseInt(item.janjang) || 0))}</Text>
               </View>
+              <View />
             </Row>
             <TextInput
               label="Jumlah Janjang"
@@ -294,7 +347,7 @@ const SPBLocalForm = () => {
 
       <View style={styles.submitWrap}>
         <Button
-          disabled={formStatus?.loading}
+          disabled={formStatus?.loading || isCompleted}
           onPress={handleSubmit}>
           <Text color="white">{formStatus?.loading ? 'Loading...' : isEdit ? 'Simpan Perubahan' : 'Simpan'}</Text>
         </Button>

@@ -287,12 +287,25 @@ const BPBKSList = () => {
     />
   )
 
+  const totalDeliveryLength =
+    bpbksAll?.data?.bpbks?.totalReadyToSend ??
+    (allDocs || []).reduce((acc: number, item: Doc) => {
+      const numLength = Number(item?.numberOfLength) || 0
+      const rawFruit = Number(item?.rawFruitChecked) || 0
+      const rottenFruit = Number(item?.rottenFruitChecked) || 0
+      const lateRipe = Number(item?.lateRipeChecked) || 0
+      const abnormalFruit = Number(item?.abnormalFruitChecked) || 0
+      const readyToSend = Math.max(0, numLength - rawFruit - rottenFruit - lateRipe - abnormalFruit)
+      return acc + readyToSend
+    }, 0)
+
   const ListHeaderComponent = () => (
     <View style={{marginHorizontal: 18, marginTop: 16, marginBottom: 6}}>
       <DetailInfo 
         bpbksData={{
           ...bpbksData, 
           totalLength: bpbksAll?.data?.bpbks?.totalLength,
+          totalDeliveryLength,
           gardenTonnage: bpbksAll?.data?.bpbks?.gardenTonnage
         }} 
       />
