@@ -1,11 +1,11 @@
-E-Plantation Staging v6.10.0
+E-Plantation Staging v6.11.0
 
-Build: #28
+Build: #30
 Environment: Staging
 
 Recent changes:
+- Merge remote-tracking branch 'gitlab/staging' into feat/offline-first # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit.
+- fix(android): set android.hardware.wifi feature to required false
+- [skip ci] bump version 6.10.0
 - feat(harvest/bpbks-form): replace default 0 with placeholder and disable submit until all required fields are filled
 - feat(mobile/spb-local): lock editing and hide edit action when garden tonnage is completed
-- feat(mobile/monitoring-tph): display Jumlah Janjang di TPH and Janjang Terangkut
-- feat(mobile/bpbks): display Jumlah Janjang Panen and Jumlah Janjang Kirim
-- fix(harvest): fix spb-local loading loop and filter zero-bunch in monitoring tph
