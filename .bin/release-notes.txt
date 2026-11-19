@@ -1,11 +1,11 @@
-E-Plantation Production v7.0.0
+E-Plantation Production v8.0.0
 
-Build: #12
+Build: #13
 Environment: Production
 
 Recent changes:
+- Merge branch 'production' into 'feat/offline-first'
+- [skip ci] bump version 7.0.0
 - Merge branch 'staging' into 'production'
 - [skip ci] bump version 6.12.0
 - Merge branch 'feat/offline-first' into 'staging'
-- fix(harvest/spb-local): support loading leftover/restan fruit from previous dates and preserve original bpbksDate
-- [skip ci] bump version 6.11.0
