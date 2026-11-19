@@ -1,11 +1,11 @@
-E-Plantation Staging v6.10.0
+E-Plantation Production v7.0.0
 
-Build: #28
-Environment: Staging
+Build: #12
+Environment: Production
 
 Recent changes:
-- feat(harvest/bpbks-form): replace default 0 with placeholder and disable submit until all required fields are filled
-- feat(mobile/spb-local): lock editing and hide edit action when garden tonnage is completed
-- feat(mobile/monitoring-tph): display Jumlah Janjang di TPH and Janjang Terangkut
-- feat(mobile/bpbks): display Jumlah Janjang Panen and Jumlah Janjang Kirim
-- fix(harvest): fix spb-local loading loop and filter zero-bunch in monitoring tph
+- Merge branch 'staging' into 'production'
+- [skip ci] bump version 6.12.0
+- Merge branch 'feat/offline-first' into 'staging'
+- fix(harvest/spb-local): support loading leftover/restan fruit from previous dates and preserve original bpbksDate
+- [skip ci] bump version 6.11.0
