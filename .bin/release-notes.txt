@@ -1,11 +1,11 @@
-E-Plantation Staging v6.11.0
+E-Plantation Staging v6.12.0
 
-Build: #30
+Build: #31
 Environment: Staging
 
 Recent changes:
+- Merge branch 'feat/offline-first' into 'staging'
+- fix(harvest/spb-local): support loading leftover/restan fruit from previous dates and preserve original bpbksDate
+- [skip ci] bump version 6.11.0
 - Merge remote-tracking branch 'gitlab/staging' into feat/offline-first # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit.
 - fix(android): set android.hardware.wifi feature to required false
-- [skip ci] bump version 6.10.0
-- feat(harvest/bpbks-form): replace default 0 with placeholder and disable submit until all required fields are filled
-- feat(mobile/spb-local): lock editing and hide edit action when garden tonnage is completed
