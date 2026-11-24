@@ -93,8 +93,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
-        versionCode 30
-        versionName "8.0.0"
+        versionCode 31
+        versionName "8.1.0"
         def appEnv = System.getenv("ENV") ?: ""
         def envPrefix = appEnv ? "-${appEnv}" : ""
         base.archivesName = "eplant${envPrefix}-v${versionName}(${versionCode})"
