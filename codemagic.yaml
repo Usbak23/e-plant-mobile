@@ -50,9 +50,12 @@ workflows:
       
       - name: Build Android APK
         script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | awk '{print $2}')
           cd android
           ./gradlew clean
           ./gradlew assembleRelease
+          find app/build/outputs/apk/release -name "*.apk" -exec mv {} "app/build/outputs/apk/release/eplant-${ENV}-v${APP_VERSION}(${VERSION_CODE}).apk" \;
       
       - name: Generate release notes
         script: |
@@ -138,13 +141,17 @@ workflows:
       
       - name: Bump version
         script: |
-          npx react-native bump-version --type minor
+          chmod +x sag-dev
+          ./sag-dev bump auto
       
       - name: Build Android APK
         script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | awk '{print $2}')
           cd android
           ./gradlew clean
           ./gradlew assembleRelease
+          find app/build/outputs/apk/release -name "*.apk" -exec mv {} "app/build/outputs/apk/release/eplant-${ENV}-v${APP_VERSION}(${VERSION_CODE}).apk" \;
       
       - name: Generate release notes
         script: |
@@ -237,14 +244,19 @@ workflows:
       
       - name: Bump version
         script: |
-          npx react-native bump-version --type major
+          chmod +x sag-dev
+          ./sag-dev bump auto
       
       - name: Build Android APK & Bundle
         script: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          VERSION_CODE=$(grep "versionCode" android/app/build.gradle | awk '{print $2}')
           cd android
           ./gradlew clean
           ./gradlew assembleRelease
           ./gradlew bundleRelease
+          find app/build/outputs/apk/release -name "*.apk" -exec mv {} "app/build/outputs/apk/release/eplant-${ENV}-v${APP_VERSION}(${VERSION_CODE}).apk" \;
+          find app/build/outputs/bundle/release -name "*.aab" -exec mv {} "app/build/outputs/bundle/release/eplant-${ENV}-v${APP_VERSION}(${VERSION_CODE}).aab" \;
       
       - name: Generate release notes
         script: |

@@ -93,8 +93,11 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
-        versionCode 28
-        versionName "6.12.0"
+        versionCode 30
+        versionName "8.0.0"
+        def appEnv = System.getenv("ENV") ?: ""
+        def envPrefix = appEnv ? "-${appEnv}" : ""
+        base.archivesName = "eplant${envPrefix}-v${versionName}(${versionCode})"
     }
     signingConfigs {
         debug {

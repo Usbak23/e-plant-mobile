@@ -7,7 +7,7 @@ import { Doc } from '@app/models/eplant/BPBKS'
 import { Table, Row } from 'react-native-table-component'
 import { theme } from '@app/presentations/utils/styles'
 import BPBKSEmployeeTableHeader from './table-header'
-const widthArr = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+const widthArr = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 
 const BPBKSEmployeeDetail = () => {
   const route: any = useRoute()
@@ -30,7 +30,6 @@ const BPBKSEmployeeDetail = () => {
     ['Tanggal', moment(date).format('DD MMMM YYYY')],
     ['Organisasi', organizationName],
     ['Divisi', divisionName],
-    ['Blok', item?.tph?.block?.code || '-'],
     ['Mandor', foremanName],
     ['No. Kendaraan', item?.bpbks?.gardenTonnage?.item?.name
       ? `${item.bpbks.gardenTonnage.item.name} - ${item.bpbks.gardenTonnage.item.serialNumber || ''}`
@@ -42,6 +41,7 @@ const BPBKSEmployeeDetail = () => {
     tphs
       ?.filter(e => e?.harvester?.id === item?.harvester?.id)
       ?.map((tph: Doc) => {
+        const blockCode = tph?.block?.code || tph?.tph?.block?.code || item?.tph?.block?.code || '-'
         const ripeFruitChecked = `${parseInt(tph?.numberOfLength || '0') +
           parseInt(tph?.ripeFruitChecked || '0') +
           parseInt(tph?.rawFruitChecked || '0') +
@@ -50,6 +50,7 @@ const BPBKSEmployeeDetail = () => {
           parseInt(tph?.longHandleChecked || '0')
           }`
         return [
+          blockCode,
           tph?.tph?.name || '-',
           tph?.plantingYear != undefined ? tph?.plantingYear : '-',
           tph?.numberOfLength != undefined ? tph?.numberOfLength : '-',
