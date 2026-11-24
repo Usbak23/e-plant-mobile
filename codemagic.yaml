@@ -138,7 +138,8 @@ workflows:
       
       - name: Bump version
         script: |
-          npx react-native bump-version --type minor
+          chmod +x sag-dev
+          ./sag-dev bump auto
       
       - name: Build Android APK
         script: |
@@ -237,7 +238,8 @@ workflows:
       
       - name: Bump version
         script: |
-          npx react-native bump-version --type major
+          chmod +x sag-dev
+          ./sag-dev bump auto
       
       - name: Build Android APK & Bundle
         script: |
