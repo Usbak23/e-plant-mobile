@@ -41,7 +41,7 @@ const BPBKSEmployeeDetail = () => {
     tphs
       ?.filter(e => e?.harvester?.id === item?.harvester?.id)
       ?.map((tph: Doc) => {
-        const blockCode = tph?.tph?.block?.code || (tph as any)?.block?.code || item?.tph?.block?.code || '-'
+        const blockCode = tph?.block?.code || tph?.tph?.block?.code || item?.tph?.block?.code || '-'
         const ripeFruitChecked = `${parseInt(tph?.numberOfLength || '0') +
           parseInt(tph?.ripeFruitChecked || '0') +
           parseInt(tph?.rawFruitChecked || '0') +
