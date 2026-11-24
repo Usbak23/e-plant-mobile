@@ -9,8 +9,8 @@ const dataHeader = ['Matang', 'Mentah', 'Lewat Matang', 'Busuk', 'Gagang PJG', '
 const BPBKSEmployeeTableHeader = () => (
   <TableWrapper style={{ flexDirection: 'row' }} borderStyle={{ borderWidth: 1, borderColor: theme.colors.grey }}>
     <Row
-      data={['TPH', 'Tahun Tanam', 'Jumlah Janjang']}
-      widthArr={[100, 100, 100]}
+      data={['Blok', 'TPH', 'Tahun Tanam', 'Jumlah Janjang']}
+      widthArr={[100, 100, 100, 100]}
       style={styles.tableHeader}
       textStyle={styles.tableHeaderText}
     />
