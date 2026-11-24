@@ -11,6 +11,7 @@ const SPBLocalDetail = () => {
   const navigation: any = useNavigation()
   const route: any = useRoute()
   const {item, divisionId, date, organizationName, divisionName} = route.params || {}
+  const isCompleted = item?.gardenTonnage?.status === 'submitted' || Number((item?.gardenTonnage as any)?.grossWeight) > 0
 
   const kendaraan = item?.gardenTonnage?.item?.name
     ? `${item.gardenTonnage.item.name} - ${item.gardenTonnage.item.serialNumber || ''}`
@@ -61,6 +62,12 @@ const SPBLocalDetail = () => {
         <Text color={theme.colors.label} size={11}>Total JJG</Text>
         <Text color={theme.colors.accent} size={14} type="semibold">{totalJJG}</Text>
       </View>
+      {isCompleted && (
+        <View style={{flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, marginTop: 4, marginBottom: 8}}>
+          <AntDesign name="checkcircleo" size={12} color="#2E7D32" />
+          <Text size={11} color="#2E7D32" style={{marginLeft: 6}}>Tonase Kebun sudah dilengkapi (Terkunci)</Text>
+        </View>
+      )}
 
       <View style={styles.tableHeader}>
         <Text size={11} color="white" style={{flex: 1}}>Blok</Text>
@@ -76,13 +83,15 @@ const SPBLocalDetail = () => {
       <Header
         title="Detail SPB Local"
         rightComponent={
-          <TouchableOpacity
-            onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {
-              divisionId, date, organizationName, divisionName, editItem: item
-            })}
-            style={{padding: 8}}>
-            <AntDesign name="edit" size={20} color={theme.colors.accent} />
-          </TouchableOpacity>
+          !isCompleted ? (
+            <TouchableOpacity
+              onPress={() => navigation.navigate(Routes.SPB_LOCAL_FORM, {
+                divisionId, date, organizationName, divisionName, editItem: item
+              })}
+              style={{padding: 8}}>
+              <AntDesign name="edit" size={20} color={theme.colors.accent} />
+            </TouchableOpacity>
+          ) : undefined
         }
       />
       <FlatList

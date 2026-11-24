@@ -129,7 +129,7 @@ const CustomTextInput = React.forwardRef<TextInput, Props>((props, ref) => {
                 placeholder={props.placeholder}
                 autoFocus={props.autoFocus}
                 textAlignVertical={props.textAlignVertical}
-                onChangeText={text => {
+                onChangeText={(text: string) => {
                   if (props.isNumber && !props.isFloat) {
                     const filteredText = numberOnly(text, false)
                     props.onChangeText && props.onChangeText(filteredText)
@@ -138,15 +138,17 @@ const CustomTextInput = React.forwardRef<TextInput, Props>((props, ref) => {
                   }
 
                   if (props.isNumber && props.isFloat) {
-                    if (text) {
-                      const filteredText = numberOnly(text, true)
-                      const validated = filteredText.match(/^(\d*\.{0,1}\d{0,2}$)/)
+                    const normalizedText = text ? text.replace(',', '.') : ''
+                    const filteredText = numberOnly(normalizedText, true)
+                    const maxDigits = props.precisionDigit !== undefined ? props.precisionDigit : 2
+                    const regex = new RegExp(`^(\\d*\\.{0,1}\\d{0,${maxDigits}})$`)
+                    if (filteredText) {
+                      const validated = filteredText.match(regex)
                       if (validated) {
                         props.onChangeText && props.onChangeText(filteredText)
                         onChange(filteredText)
                       }
                     } else {
-                      const filteredText = numberOnly(text, true)
                       props.onChangeText && props.onChangeText(filteredText)
                       onChange(filteredText)
                     }
@@ -168,7 +170,7 @@ const CustomTextInput = React.forwardRef<TextInput, Props>((props, ref) => {
                 placeholderTextColor={props?.useDarkTheme ? theme.colors.thirdWhiteTransparent : theme.colors.darkGray}
                 onFocus={() => setState({...state, focus: true})}
                 onBlur={() => setState({...state, focus: false})}
-                keyboardType={props.isNumber ? 'phone-pad' : 'default'}
+                keyboardType={props.isNumber ? (props.isFloat ? 'decimal-pad' : 'phone-pad') : 'default'}
                 autoCapitalize={props.uppercase ? 'characters' : 'none'}
                 secureTextEntry={props.isPassword ? state.hide : false}
               />

@@ -8,12 +8,10 @@ import {
 import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 import {Header, Menu} from '@app/presentations/_shared-components'
 import ProfileRightHeader from '@app/presentations/_shared-components/ProfileRightHeader'
-import React, {useEffect, useState} from 'react'
-import {Dimensions, FlatList, StatusBar, StyleSheet, View} from 'react-native'
+import React from 'react'
+import {FlatList, StatusBar, StyleSheet, View, useWindowDimensions} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {harvestMenus} from './harvest-menus'
-const window = Dimensions.get('window')
-const screen = Dimensions.get('screen')
 
 const HarvestModulePage = () => {
   const isAllowedToSeeBKMHarvest = useIsAllowedToSeeBKMHarvest()
@@ -22,14 +20,8 @@ const HarvestModulePage = () => {
   const isAllowedToSeeTonnageGarden = useIsAllowedToSeeTonnageGarden()
   const isAllowedToSeeTonnagePKS = useIsAllowedToSeeTonnagePKS()
 
-  const [dimensions, setDimensions] = useState({window, screen})
-
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({window, screen}) => {
-      setDimensions({window, screen})
-    })
-    return () => subscription?.remove()
-  })
+  const {width, height} = useWindowDimensions()
+  const isWide = width >= 600 || width > height
 
   const HeaderView = () => (
     <Header title="Panen" headerRight={() => <ProfileRightHeader />} style={{marginHorizontal: -12}} />
@@ -50,17 +42,20 @@ const HarvestModulePage = () => {
     return true
   })
 
-  const renderItem = ({item, index}: any) => <Menu key={index.toString()} menuItem={item} />
+  const renderItem = ({item, index}: any) => (
+    <Menu key={index.toString()} menuItem={item} columns={isWide ? 4 : 2} />
+  )
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
       <View style={styles.menuView}>
         <HeaderView />
-        {dimensions.window.height > dimensions.window.width ? (
+        {!isWide ? (
           <FlatList
             key="v"
             numColumns={2}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}
@@ -71,6 +66,7 @@ const HarvestModulePage = () => {
           <FlatList
             key="h"
             numColumns={4}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}

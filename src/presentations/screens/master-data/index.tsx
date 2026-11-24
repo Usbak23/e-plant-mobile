@@ -1,6 +1,6 @@
 import {Header, Menu} from '@app/presentations/_shared-components'
-import React, {useEffect, useState} from 'react'
-import {StyleSheet, View, FlatList, StatusBar, Dimensions} from 'react-native'
+import React from 'react'
+import {StyleSheet, View, FlatList, StatusBar, useWindowDimensions} from 'react-native'
 import {MasterDataMenus} from './master-data-menus'
 
 import ProfileRightHeader from '@app/presentations/_shared-components/ProfileRightHeader'
@@ -15,9 +15,6 @@ import {
 } from '@app/domain/states/user/hooks'
 import {ROLE_ACCESS_SLUG} from '@app/models/eplant/Role'
 
-const window = Dimensions.get('window')
-const screen = Dimensions.get('screen')
-
 const MasterData = () => {
   const isAllowedToSeeOrganization = useIsAllowedToSeeOrganization()
   const isAllowedToSeeDivision = useIsAllowedToSeeDivision()
@@ -26,16 +23,12 @@ const MasterData = () => {
   const isAllowedToSeeMaterial = useIsAllowedToSeeMaterial()
   const isAllowedToSeeToolsAndItems = useIsAllowedToSeeToolsAndItems()
 
-  const renderItem = ({item, index}: any) => <Menu key={index.toString()} menuItem={item} />
+  const {width, height} = useWindowDimensions()
+  const isWide = width >= 600 || width > height
 
-  const [dimensions, setDimensions] = useState({window, screen})
-
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({window, screen}) => {
-      setDimensions({window, screen})
-    })
-    return () => subscription?.remove()
-  })
+  const renderItem = ({item, index}: any) => (
+    <Menu key={index.toString()} menuItem={item} columns={isWide ? 4 : 2} />
+  )
 
   const constructMenus = MasterDataMenus.filter(menu => {
     if (menu.slug == ROLE_ACCESS_SLUG.SEE_ORGANIZATION) {
@@ -63,10 +56,11 @@ const MasterData = () => {
       <StatusBar barStyle="dark-content" backgroundColor="white" />
       <View style={styles.menuView}>
         <HeaderView />
-        {dimensions.window.height > dimensions.window.width ? (
+        {!isWide ? (
           <FlatList
             key={'v'}
             numColumns={2}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}
@@ -77,6 +71,7 @@ const MasterData = () => {
           <FlatList
             key={'h'}
             numColumns={4}
+            columnWrapperStyle={{justifyContent: 'center'}}
             data={constructMenus}
             contentContainerStyle={{paddingBottom: 100}}
             keyExtractor={item => item.title}

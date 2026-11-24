@@ -13,7 +13,7 @@ import IconBuilding from '@assets/icons/ic_small_building.svg'
 import IconCalendar from '@assets/icons/ic_small_calendar.svg'
 import IconGroupWork from '@assets/icons/ic_group_work.svg'
 
-import MonitoringTphCard from './monitoring-tph-card'
+import MonitoringTphCard, {IMonitoringTphItem} from './monitoring-tph-card'
 
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 const ICON_SIZE = 17
@@ -50,25 +50,37 @@ const MonitoringTphList = () => {
   const cacheKey = `${divisionId}_${month}_${year}`
   const cachedItem = monitoringTphCache[cacheKey]
   
-  const totalJanjang = isOffline && cachedItem?.summary?.totalJanjang 
-    ? cachedItem.summary.totalJanjang 
-    : (summaryState?.loading === false ? (summaryState?.data?.totalJanjang ?? summaryState?.data?.sisaJanjang ?? 0) : 0)
+  const totalJanjangDiTph =
+    isOffline && cachedItem?.summary
+      ? cachedItem.summary.totalJanjangDiTph ?? cachedItem.summary.sisaJanjang ?? 0
+      : summaryState?.loading === false
+      ? summaryState?.data?.totalJanjangDiTph ?? summaryState?.data?.sisaJanjang ?? 0
+      : 0
+
+  const janjangTerangkut =
+    isOffline && cachedItem?.summary
+      ? cachedItem.summary.janjangTerangkut ?? cachedItem.summary.pickedJanjang ?? 0
+      : summaryState?.loading === false
+      ? summaryState?.data?.janjangTerangkut ?? summaryState?.data?.pickedJanjang ?? 0
+      : 0
   
   const loading = listState?.loading || false
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [accumulatedData, setAccumulatedData] = useState<any[]>([])
+  const [accumulatedData, setAccumulatedData] = useState<IMonitoringTphItem[]>([])
   const [currentPage, setCurrentPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const isLoadingMore = useRef(false)
 
-  const filteredData = accumulatedData.filter((item: any) => {
+  const filteredData = accumulatedData.filter((item: IMonitoringTphItem) => {
+    if ((item?.sisaJanjang ?? 0) <= 0) return false
     const matchSearch =
       (item?.tphName || item?.tphCode || '').toLowerCase().includes(search.toLowerCase()) ||
       (item?.blockCode || '').toLowerCase().includes(search.toLowerCase())
     if (!matchSearch) return false
     if (statusFilter === 'all') return true
+    if (!item?.date) return false
     const diff = getDiffDays(item.date)
     if (statusFilter === '3') return diff >= 3
     return diff === parseInt(statusFilter, 10)
@@ -148,7 +160,7 @@ const MonitoringTphList = () => {
     return
   }, [])
 
-  const renderItem = ({item}: any) => <MonitoringTphCard item={item} />
+  const renderItem = ({item}: {item: IMonitoringTphItem}) => <MonitoringTphCard item={item} />
 
   return (
     <SafeAreaView style={styles.root}>
@@ -208,11 +220,21 @@ const MonitoringTphList = () => {
                 <Text color={theme.colors.textThinBlack} size={12}>{MONTHS[parseInt(month, 10) - 1]} {year}</Text>
               </View>
             </View>
+            <View style={styles.infoItem} />
+          </View>
+          <View style={styles.infoRow}>
             <View style={styles.infoItem}>
               <View style={styles.smallIconView}><IconGroupWork width={ICON_SIZE} height={ICON_SIZE} /></View>
               <View style={styles.leftSpacer}>
-                <Text style={styles.infoLabel} size={11}>Total Janjang</Text>
-                <Text color={theme.colors.textThinBlack} size={12}>{totalJanjang}</Text>
+                <Text style={styles.infoLabel} size={11}>Jumlah Janjang di TPH</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{totalJanjangDiTph}</Text>
+              </View>
+            </View>
+            <View style={styles.infoItem}>
+              <View style={styles.smallIconView}><IconGroupWork width={ICON_SIZE} height={ICON_SIZE} /></View>
+              <View style={styles.leftSpacer}>
+                <Text style={styles.infoLabel} size={11}>Janjang Terangkut</Text>
+                <Text color={theme.colors.textThinBlack} size={12}>{janjangTerangkut}</Text>
               </View>
             </View>
           </View>

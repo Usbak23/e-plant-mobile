@@ -75,10 +75,23 @@ const AKPDetailInfo = ({bpbksData}: any) => {
           </View>
           <View style={[styles.leftSpacer, {flex: 1}]}>
             <Text style={styles.itemTitle} size={11}>
-              Jumlah Janjang
+              Jumlah Janjang Panen
             </Text>
             <Text color={theme.colors.textThinBlack} size={12}>
-              {bpbksData?.totalLength || '0'}
+              {bpbksData?.totalLength ?? '0'}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.itemWrapper}>
+          <View style={styles.smallIconView}>
+            <IconGroupWork width={ICON_SIZE} height={ICON_SIZE} />
+          </View>
+          <View style={[styles.leftSpacer, {flex: 1}]}>
+            <Text style={styles.itemTitle} size={11}>
+              Jumlah Janjang Kirim
+            </Text>
+            <Text color={theme.colors.textThinBlack} size={12}>
+              {bpbksData?.totalDeliveryLength ?? '0'}
             </Text>
           </View>
         </View>

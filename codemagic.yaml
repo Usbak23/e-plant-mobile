@@ -31,8 +31,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -122,8 +123,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -196,7 +198,7 @@ workflows:
     environment:
       groups:
         - eplant-credentials
-        - google-play-credentials
+        # - google-play-credentials
       vars:
         PACKAGE_NAME: 'com.eplantation.mobile.app'
         ENV: 'prod'
@@ -220,8 +222,9 @@ workflows:
       
       - name: Setup keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          echo "$CM_KEYSTORE" | base64 --decode > /tmp/keystore.keystore
           cp /tmp/keystore.keystore android/app/production.keystore
+          ls -lh android/app/production.keystore
       
       - name: Init Android SDK
         script: |
@@ -236,10 +239,11 @@ workflows:
         script: |
           npx react-native bump-version --type major
       
-      - name: Build Android Bundle
+      - name: Build Android APK & Bundle
         script: |
           cd android
           ./gradlew clean
+          ./gradlew assembleRelease
           ./gradlew bundleRelease
       
       - name: Generate release notes
@@ -286,18 +290,19 @@ workflows:
       - .bin/release-notes.txt
     
     publishing:
-      google_play:
-        credentials: $GOOGLE_PLAY_KEY
-        track: production
-        in_app_update_priority: 3
-        rollout_fraction: 0.999
-        changes_not_sent_for_review: false
-        submit_as_draft: false
+      # Disabled auto release to Google Play Store
+      # google_play:
+      #   credentials: $GOOGLE_PLAY_KEY
+      #   track: production
+      #   in_app_update_priority: 3
+      #   rollout_fraction: 0.999
+      #   changes_not_sent_for_review: false
+      #   submit_as_draft: false
       email:
         recipients:
           - developer@sahabatagro.co.id
           - freddy.pm@sahabatagro.co.id
-          - sys.analys@sahabatatagro.co.id
+          - sys.analys@sahabatagro.co.id
         notify:
           success: true
           failure: true
