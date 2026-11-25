@@ -5,6 +5,35 @@ GIT_PASSWORD=$GITLAB_PASSWORD
 
 function bump {
   BUMP_TYPE=$2
+
+  if [[ -z $BUMP_TYPE ]] || [[ $BUMP_TYPE = "auto" ]]
+  then
+    HEAD_MSG=$(git log -n 1 --pretty=format:"%s")
+    if echo "$HEAD_MSG" | grep -q "\[major\]"; then
+      BUMP_TYPE="major"
+    elif echo "$HEAD_MSG" | grep -q "\[minor\]"; then
+      BUMP_TYPE="minor"
+    elif echo "$HEAD_MSG" | grep -q "\[patch\]"; then
+      BUMP_TYPE="patch"
+    else
+      LAST_BUMP=$(git log --grep="\[skip ci\] bump version" -n 1 --format="%H")
+      if [ -n "$LAST_BUMP" ]; then
+        COMMITS=$(git log "$LAST_BUMP"..HEAD --pretty=format:"%s")
+      else
+        COMMITS=$(git log -n 5 --pretty=format:"%s")
+      fi
+
+      if echo "$COMMITS" | grep -qE "(\[major\]|BREAKING CHANGE|^[a-zA-Z]+(\([^)]+\))?!:)"; then
+        BUMP_TYPE="major"
+      elif echo "$COMMITS" | grep -qE "(\[minor\]|^feat(\([^)]+\))?:)"; then
+        BUMP_TYPE="minor"
+      else
+        BUMP_TYPE="patch"
+      fi
+    fi
+    echo "Auto-detected bump type from commits: $BUMP_TYPE"
+  fi
+
   echo "bump type $BUMP_TYPE"
 
   if [[ $BUMP_TYPE = "major" ]]
@@ -17,7 +46,7 @@ function bump {
   then
     npx react-native bump-version --type $BUMP_TYPE
   else
-    echo "2nd argument not accepted, only accept 'major', 'minor' or 'patch'"
+    echo "2nd argument not accepted, only accept 'auto', 'major', 'minor' or 'patch'"
   fi
 }
 
