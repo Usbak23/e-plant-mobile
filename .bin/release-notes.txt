@@ -1,11 +1,11 @@
-E-Plantation Staging v8.1.1
+E-Plantation Production v8.1.2
 
-Build: #33
-Environment: Staging
+Build: #14
+Environment: Production
 
 Recent changes:
+- Merge branch 'staging' into 'production'
+- [skip ci] bump version 8.1.1
 - [skip ci] bump version 8.1.0
 - Merge branch 'feat/offline-first' into 'staging'
 - ci(codemagic): rename output APK and AAB files with environment and version
-- build(android): include environment, versionName, and versionCode in output APK/AAB filenames
-- ci(codemagic): use auto commit-based version bump for staging and production
